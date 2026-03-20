@@ -7,104 +7,144 @@
 <style>
 *{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent;user-select:none}
 html,body{width:100%;height:100%;overflow:hidden;background:#0a0518;font-family:'Segoe UI',system-ui,sans-serif;color:#fff}
-#game{display:flex;flex-direction:column;height:100%;max-width:480px;margin:0 auto;padding:12px 16px env(safe-area-inset-bottom)}
+#game{display:flex;flex-direction:column;height:100%;max-width:480px;margin:0 auto;padding:10px 14px env(safe-area-inset-bottom)}
 
-/* Top bar */
-.top-bar{text-align:center;padding:6px 0}
-.currency-name{font-size:11px;letter-spacing:3px;color:#a89cdb;text-transform:uppercase}
-.currency-value{font-size:40px;font-weight:700;color:#fff5d4;text-shadow:0 0 20px rgba(255,200,60,.3)}
-.rate{font-size:13px;color:#6dba6d;margin-top:2px}
-.nova-info{font-size:12px;color:#ff8866;margin-top:2px}
+.top-bar{text-align:center;padding:4px 0}
+.currency-name{font-size:10px;letter-spacing:3px;color:#a89cdb;text-transform:uppercase}
+.currency-value{font-size:36px;font-weight:700;color:#fff5d4;text-shadow:0 0 20px rgba(255,200,60,.3)}
+.rate{font-size:12px;color:#6dba6d;margin-top:1px}
+.nova-info{font-size:11px;color:#ff8866;margin-top:1px}
+.buff-bar{font-size:10px;color:#c084fc;margin-top:2px;min-height:14px}
 
-/* Combo bar */
-.combo-bar-wrap{height:22px;display:flex;align-items:center;gap:8px;margin:4px 0}
-.combo-label{font-size:13px;font-weight:700;color:#fbbf24;white-space:nowrap;min-width:50px}
-.combo-track{flex:1;height:6px;background:rgba(255,255,255,.08);border-radius:3px;overflow:hidden}
+.combo-bar-wrap{height:20px;display:flex;align-items:center;gap:6px;margin:2px 0}
+.combo-label{font-size:12px;font-weight:700;color:#fbbf24;white-space:nowrap;min-width:40px}
+.combo-track{flex:1;height:5px;background:rgba(255,255,255,.08);border-radius:3px;overflow:hidden}
 .combo-fill{height:100%;width:0%;background:linear-gradient(90deg,#f59e0b,#ef4444);border-radius:3px;transition:width .15s}
 .combo-bar-wrap.hidden{opacity:0}
 
-/* Orb area */
 .orb-area{flex:2;display:flex;align-items:center;justify-content:center;position:relative;min-height:0}
-#orb{width:170px;height:170px;border-radius:50%;background:radial-gradient(circle at 35% 35%,#c084fc,#7c3aed 50%,#4c1d95);box-shadow:0 0 40px rgba(139,92,246,.4),0 0 80px rgba(139,92,246,.2),inset 0 -8px 20px rgba(0,0,0,.3);cursor:pointer;transition:transform .08s ease;position:relative;z-index:2}
+#orb{width:150px;height:150px;border-radius:50%;background:radial-gradient(circle at 35% 35%,#c084fc,#7c3aed 50%,#4c1d95);box-shadow:0 0 40px rgba(139,92,246,.4),0 0 80px rgba(139,92,246,.2),inset 0 -8px 20px rgba(0,0,0,.3);cursor:pointer;transition:transform .08s ease;position:relative;z-index:2}
 #orb:active{transform:scale(.88)}
-#orb .label{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-size:20px;font-weight:700;letter-spacing:2px;text-shadow:0 2px 8px rgba(0,0,0,.5)}
-.glow{position:absolute;width:250px;height:250px;border-radius:50%;background:radial-gradient(circle,rgba(139,92,246,.2),transparent 70%);animation:pulse 2s ease-in-out infinite;z-index:1}
+#orb .label{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-size:18px;font-weight:700;letter-spacing:2px;text-shadow:0 2px 8px rgba(0,0,0,.5)}
+.glow{position:absolute;width:220px;height:220px;border-radius:50%;background:radial-gradient(circle,rgba(139,92,246,.2),transparent 70%);animation:pulse 2s ease-in-out infinite;z-index:1}
 @keyframes pulse{0%,100%{transform:scale(1);opacity:.6}50%{transform:scale(1.12);opacity:1}}
 
-/* Floating text */
-.floater{position:absolute;font-size:24px;font-weight:700;color:#fde68a;text-shadow:0 0 8px rgba(253,230,138,.5);pointer-events:none;z-index:10;animation:floatUp .8s ease-out forwards}
-.floater.crit{font-size:36px;color:#ff4444;text-shadow:0 0 16px rgba(255,60,60,.8),0 0 30px rgba(255,60,60,.4);animation:floatUpCrit .9s ease-out forwards}
-@keyframes floatUp{0%{opacity:1;transform:translateY(0) scale(1)}100%{opacity:0;transform:translateY(-100px) scale(.8)}}
-@keyframes floatUpCrit{0%{opacity:1;transform:translateY(0) scale(1.5)}20%{transform:translateY(-15px) scale(1.2)}100%{opacity:0;transform:translateY(-120px) scale(.7)}}
+.floater{position:absolute;font-size:22px;font-weight:700;color:#fde68a;text-shadow:0 0 8px rgba(253,230,138,.5);pointer-events:none;z-index:10;animation:floatUp .8s ease-out forwards}
+.floater.crit{font-size:32px;color:#ff4444;text-shadow:0 0 16px rgba(255,60,60,.8),0 0 30px rgba(255,60,60,.4);animation:floatUpCrit .9s ease-out forwards}
+@keyframes floatUp{0%{opacity:1;transform:translateY(0) scale(1)}100%{opacity:0;transform:translateY(-90px) scale(.8)}}
+@keyframes floatUpCrit{0%{opacity:1;transform:translateY(0) scale(1.5)}20%{transform:translateY(-15px) scale(1.2)}100%{opacity:0;transform:translateY(-110px) scale(.7)}}
 
-/* Screen flash */
 .screen-flash{position:fixed;inset:0;pointer-events:none;z-index:50;opacity:0}
 @keyframes flash{0%{opacity:.4}100%{opacity:0}}
-
-/* Screen shake */
 .shake{animation:shake .15s ease}
 @keyframes shake{0%,100%{transform:translate(0)}25%{transform:translate(-4px,2px)}50%{transform:translate(3px,-3px)}75%{transform:translate(-2px,3px)}}
 
-/* Golden Meteor */
-.meteor{position:absolute;width:50px;height:50px;border-radius:50%;background:radial-gradient(circle at 35% 35%,#fef08a,#f59e0b 50%,#b45309);box-shadow:0 0 20px rgba(245,158,11,.6),0 0 40px rgba(245,158,11,.3);cursor:pointer;z-index:20;animation:meteorFloat 3s ease-in-out infinite;pointer-events:auto}
+.meteor{position:absolute;width:46px;height:46px;border-radius:50%;background:radial-gradient(circle at 35% 35%,#fef08a,#f59e0b 50%,#b45309);box-shadow:0 0 20px rgba(245,158,11,.6),0 0 40px rgba(245,158,11,.3);cursor:pointer;z-index:20;animation:meteorFloat 3s ease-in-out infinite;pointer-events:auto}
 .meteor::after{content:'';position:absolute;top:-4px;left:-4px;right:-4px;bottom:-4px;border-radius:50%;border:2px solid rgba(254,240,138,.5);animation:meteorRing 1s ease-in-out infinite}
 @keyframes meteorFloat{0%,100%{transform:translateY(0) rotate(0deg)}50%{transform:translateY(-10px) rotate(180deg)}}
 @keyframes meteorRing{0%,100%{transform:scale(1);opacity:.5}50%{transform:scale(1.3);opacity:1}}
-.meteor-label{position:absolute;top:-22px;left:50%;transform:translateX(-50%);font-size:11px;font-weight:700;color:#fef08a;white-space:nowrap;text-shadow:0 0 6px rgba(245,158,11,.8)}
-.meteor-timer{position:absolute;bottom:-18px;left:50%;transform:translateX(-50%);font-size:10px;color:#fbbf24;white-space:nowrap}
+.meteor-label{position:absolute;top:-20px;left:50%;transform:translateX(-50%);font-size:10px;font-weight:700;color:#fef08a;white-space:nowrap}
+.meteor-timer{position:absolute;bottom:-16px;left:50%;transform:translateX(-50%);font-size:9px;color:#fbbf24;white-space:nowrap}
 
-/* Panels */
-.sep{height:1px;background:linear-gradient(90deg,transparent,rgba(139,92,246,.3),transparent);margin:6px 0}
+/* Boss challenge bar */
+.boss-bar{position:absolute;bottom:10px;left:10px;right:10px;z-index:30;background:rgba(20,10,40,.9);border:1px solid rgba(239,68,68,.5);border-radius:10px;padding:8px 12px;text-align:center}
+.boss-name{font-size:13px;font-weight:700;color:#ef4444}
+.boss-hp-track{height:8px;background:rgba(255,255,255,.1);border-radius:4px;margin:4px 0;overflow:hidden}
+.boss-hp-fill{height:100%;background:linear-gradient(90deg,#ef4444,#f59e0b);border-radius:4px;transition:width .1s}
+.boss-timer{font-size:10px;color:#fbbf24}
+.boss-reward{font-size:10px;color:#6dba6d}
 
-/* Tabs */
-.tab-bar{display:flex;gap:4px;margin-bottom:6px}
-.tab{flex:1;padding:6px 0;text-align:center;font-size:12px;font-weight:600;letter-spacing:1px;color:#7c6cb5;background:rgba(20,12,40,.6);border:1px solid rgba(100,80,180,.2);border-radius:8px;cursor:pointer;transition:all .15s}
+.sep{height:1px;background:linear-gradient(90deg,transparent,rgba(139,92,246,.3),transparent);margin:4px 0}
+
+.tab-bar{display:flex;gap:3px;margin-bottom:4px}
+.tab{flex:1;padding:5px 0;text-align:center;font-size:10px;font-weight:600;letter-spacing:1px;color:#7c6cb5;background:rgba(20,12,40,.6);border:1px solid rgba(100,80,180,.2);border-radius:8px;cursor:pointer;transition:all .15s;position:relative}
 .tab.active{color:#fff;background:rgba(60,40,120,.6);border-color:rgba(139,92,246,.5)}
+.tab-notif{position:absolute;top:2px;right:6px;width:7px;height:7px;border-radius:50%;background:#ef4444;display:none}
+
 .tab-panel{display:none;flex:1;overflow-y:auto;-webkit-overflow-scrolling:touch;min-height:0}
 .tab-panel.active{display:flex;flex-direction:column}
 .tab-panel::-webkit-scrollbar{display:none}
 
-/* Shop items */
-.shop{flex:1;overflow-y:auto;-webkit-overflow-scrolling:touch;padding-bottom:12px}
+.shop{flex:1;overflow-y:auto;-webkit-overflow-scrolling:touch;padding-bottom:10px}
 .shop::-webkit-scrollbar{display:none}
-.section-title{font-size:11px;letter-spacing:2px;color:#7c6cb5;text-align:center;margin:6px 0 4px}
+.section-title{font-size:10px;letter-spacing:2px;color:#7c6cb5;text-align:center;margin:5px 0 3px}
 
-.btn{width:100%;padding:10px 14px;margin-bottom:5px;background:rgba(30,20,60,.8);border:1px solid rgba(100,80,180,.35);border-radius:12px;color:#fff;font-size:13px;text-align:left;cursor:pointer;transition:background .15s,border-color .15s;display:flex;justify-content:space-between;align-items:center}
-.btn:active{background:rgba(50,30,90,.9);border-color:rgba(120,100,200,.6)}
+.btn{width:100%;padding:8px 12px;margin-bottom:4px;background:rgba(30,20,60,.8);border:1px solid rgba(100,80,180,.35);border-radius:10px;color:#fff;font-size:12px;text-align:left;cursor:pointer;transition:background .15s;display:flex;justify-content:space-between;align-items:center}
+.btn:active{background:rgba(50,30,90,.9)}
 .btn.disabled{opacity:.35;pointer-events:none}
 .btn .info{display:flex;flex-direction:column;gap:1px}
-.btn .name{font-weight:600;font-size:14px}
-.btn .detail{font-size:11px;color:#a89cdb}
-.btn .cost{font-size:13px;color:#fde68a;font-weight:600;white-space:nowrap}
+.btn .name{font-weight:600;font-size:13px}
+.btn .detail{font-size:10px;color:#a89cdb}
+.btn .cost{font-size:12px;color:#fde68a;font-weight:600;white-space:nowrap}
 
-.btn.prestige{background:rgba(130,20,30,.7);border-color:rgba(255,100,80,.5);text-align:center;justify-content:center;margin-top:6px}
-.btn.prestige .name{color:#ffd4cc;font-size:15px}
-.btn.prestige .detail{color:#ff9988;font-size:12px}
+.btn.prestige{background:rgba(130,20,30,.7);border-color:rgba(255,100,80,.5);text-align:center;justify-content:center;margin-top:4px}
+.btn.prestige .name{color:#ffd4cc;font-size:14px}
+.btn.prestige .detail{color:#ff9988;font-size:11px}
+
+.btn.wheel-btn{background:rgba(80,20,100,.6);border-color:rgba(192,132,252,.4);text-align:center;justify-content:center;margin-bottom:8px}
+.btn.wheel-btn .name{color:#c084fc}
+.btn.wheel-btn.ready{border-color:rgba(192,132,252,.8);animation:wheelPulse 1.5s ease-in-out infinite}
+@keyframes wheelPulse{0%,100%{box-shadow:0 0 0 rgba(192,132,252,0)}50%{box-shadow:0 0 15px rgba(192,132,252,.3)}}
 
 /* Achievements */
-.achiev{padding:10px 14px;margin-bottom:5px;background:rgba(30,20,60,.6);border:1px solid rgba(100,80,180,.2);border-radius:10px;display:flex;gap:12px;align-items:center}
+.achiev{padding:8px 12px;margin-bottom:4px;background:rgba(30,20,60,.6);border:1px solid rgba(100,80,180,.2);border-radius:10px;display:flex;gap:10px;align-items:center}
 .achiev.done{border-color:rgba(245,158,11,.4);background:rgba(60,40,20,.4)}
-.achiev-icon{font-size:24px;width:36px;text-align:center;flex-shrink:0}
+.achiev-icon{font-size:20px;width:30px;text-align:center;flex-shrink:0}
 .achiev-info{flex:1;min-width:0}
-.achiev-name{font-size:13px;font-weight:600}
-.achiev-desc{font-size:11px;color:#a89cdb;margin-top:1px}
-.achiev-reward{font-size:10px;color:#fbbf24;margin-top:2px}
-.achiev-bar{height:4px;background:rgba(255,255,255,.08);border-radius:2px;margin-top:4px;overflow:hidden}
+.achiev-name{font-size:12px;font-weight:600}
+.achiev-desc{font-size:10px;color:#a89cdb;margin-top:1px}
+.achiev-reward{font-size:9px;color:#fbbf24;margin-top:1px}
+.achiev-bar{height:3px;background:rgba(255,255,255,.08);border-radius:2px;margin-top:3px;overflow:hidden}
 .achiev-bar-fill{height:100%;background:linear-gradient(90deg,#7c3aed,#c084fc);border-radius:2px;transition:width .3s}
 .achiev.done .achiev-bar-fill{background:linear-gradient(90deg,#f59e0b,#fbbf24)}
 
-/* Toast */
-.toast{position:fixed;top:60px;left:50%;transform:translateX(-50%) translateY(-20px);background:rgba(30,20,60,.95);border:1px solid rgba(245,158,11,.5);border-radius:12px;padding:10px 20px;text-align:center;z-index:100;opacity:0;pointer-events:none;transition:all .3s ease}
-.toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
-.toast-title{font-size:14px;font-weight:700;color:#fbbf24}
-.toast-desc{font-size:11px;color:#a89cdb;margin-top:2px}
+/* Skill tree */
+.skill{padding:8px 12px;margin-bottom:4px;background:rgba(30,20,60,.6);border:1px solid rgba(100,80,180,.2);border-radius:10px;display:flex;gap:10px;align-items:center;cursor:pointer}
+.skill.owned{border-color:rgba(74,222,128,.4);background:rgba(20,60,30,.3)}
+.skill.affordable{border-color:rgba(192,132,252,.5)}
+.skill-icon{font-size:20px;width:30px;text-align:center;flex-shrink:0}
+.skill-info{flex:1}
+.skill-name{font-size:12px;font-weight:600}
+.skill-desc{font-size:10px;color:#a89cdb;margin-top:1px}
+.skill-cost{font-size:11px;color:#ff8866;font-weight:600;white-space:nowrap}
+.skill.owned .skill-cost{color:#4ade80}
 
-/* Offline banner */
-.offline-banner{position:fixed;top:0;left:0;right:0;background:rgba(20,10,40,.97);border-bottom:1px solid rgba(139,92,246,.4);padding:20px;text-align:center;z-index:100;animation:slideDown .4s ease}
+/* Wheel modal */
+.modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,.8);z-index:200;display:none;align-items:center;justify-content:center}
+.modal-overlay.show{display:flex}
+.wheel-modal{background:rgba(20,12,40,.97);border:2px solid rgba(139,92,246,.5);border-radius:20px;padding:20px;text-align:center;width:90%;max-width:340px}
+.wheel-title{font-size:18px;font-weight:700;color:#c084fc;margin-bottom:12px}
+.wheel-container{position:relative;width:240px;height:240px;margin:0 auto 16px}
+.wheel-canvas{width:240px;height:240px}
+.wheel-pointer{position:absolute;top:-8px;left:50%;transform:translateX(-50%);width:0;height:0;border-left:10px solid transparent;border-right:10px solid transparent;border-top:20px solid #fbbf24;z-index:2;filter:drop-shadow(0 0 4px rgba(251,191,36,.5))}
+.wheel-result{font-size:16px;font-weight:700;color:#fde68a;margin:8px 0;min-height:24px}
+.wheel-spin-btn{padding:10px 36px;background:#7c3aed;border:none;border-radius:10px;color:#fff;font-size:16px;font-weight:600;cursor:pointer}
+.wheel-spin-btn:disabled{opacity:.4;cursor:default}
+.wheel-close{margin-top:10px;padding:6px 24px;background:transparent;border:1px solid rgba(139,92,246,.4);border-radius:8px;color:#a89cdb;font-size:13px;cursor:pointer}
+
+/* Daily streak modal */
+.streak-modal{background:rgba(20,12,40,.97);border:2px solid rgba(245,158,11,.5);border-radius:20px;padding:24px;text-align:center;width:90%;max-width:340px}
+.streak-title{font-size:18px;font-weight:700;color:#fbbf24;margin-bottom:4px}
+.streak-subtitle{font-size:13px;color:#a89cdb;margin-bottom:16px}
+.streak-days{display:flex;gap:6px;justify-content:center;flex-wrap:wrap;margin-bottom:16px}
+.streak-day{width:38px;height:44px;border-radius:8px;background:rgba(30,20,60,.8);border:1px solid rgba(100,80,180,.3);display:flex;flex-direction:column;align-items:center;justify-content:center;font-size:9px;color:#7c6cb5}
+.streak-day.claimed{background:rgba(60,40,20,.6);border-color:rgba(245,158,11,.5);color:#fbbf24}
+.streak-day.today{border-color:#fbbf24;box-shadow:0 0 8px rgba(245,158,11,.3)}
+.streak-day .day-num{font-weight:700;font-size:11px}
+.streak-day .day-reward{font-size:8px;margin-top:1px}
+.streak-claim{padding:10px 36px;background:#f59e0b;border:none;border-radius:10px;color:#000;font-size:15px;font-weight:700;cursor:pointer}
+.streak-claim:disabled{opacity:.4}
+
+.toast{position:fixed;top:50px;left:50%;transform:translateX(-50%) translateY(-20px);background:rgba(30,20,60,.95);border:1px solid rgba(245,158,11,.5);border-radius:12px;padding:8px 18px;text-align:center;z-index:100;opacity:0;pointer-events:none;transition:all .3s ease;max-width:90%}
+.toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+.toast-title{font-size:13px;font-weight:700;color:#fbbf24}
+.toast-desc{font-size:10px;color:#a89cdb;margin-top:2px}
+
+.offline-banner{position:fixed;top:0;left:0;right:0;background:rgba(20,10,40,.97);border-bottom:1px solid rgba(139,92,246,.4);padding:16px;text-align:center;z-index:100;animation:slideDown .4s ease}
 @keyframes slideDown{from{transform:translateY(-100%)}to{transform:translateY(0)}}
-.offline-banner h3{color:#c084fc;margin-bottom:6px}
-.offline-banner p{color:#fde68a;font-size:18px}
-.offline-banner button{margin-top:12px;padding:8px 32px;background:#7c3aed;border:none;border-radius:8px;color:#fff;font-size:16px;cursor:pointer}
+.offline-banner h3{color:#c084fc;margin-bottom:4px;font-size:16px}
+.offline-banner p{color:#fde68a;font-size:16px}
+.offline-banner button{margin-top:10px;padding:7px 28px;background:#7c3aed;border:none;border-radius:8px;color:#fff;font-size:14px;cursor:pointer}
 </style>
 </head>
 <body>
@@ -114,6 +154,7 @@ html,body{width:100%;height:100%;overflow:hidden;background:#0a0518;font-family:
     <div class="currency-value" id="dustVal">0</div>
     <div class="rate" id="rateVal">0/s</div>
     <div class="nova-info" id="novaInfo"></div>
+    <div class="buff-bar" id="buffBar"></div>
   </div>
 
   <div class="combo-bar-wrap hidden" id="comboWrap">
@@ -129,12 +170,17 @@ html,body{width:100%;height:100%;overflow:hidden;background:#0a0518;font-family:
   <div class="sep"></div>
 
   <div class="tab-bar">
-    <div class="tab active" data-tab="shop">SHOP</div>
-    <div class="tab" data-tab="achievements">ACHIEVEMENTS</div>
+    <div class="tab active" data-tab="shop">SHOP<div class="tab-notif" id="wheelNotif"></div></div>
+    <div class="tab" data-tab="skills">SKILLS</div>
+    <div class="tab" data-tab="achievements">TROPHIES</div>
   </div>
 
   <div class="tab-panel active" data-panel="shop">
     <div class="shop" id="shop"></div>
+  </div>
+
+  <div class="tab-panel" data-panel="skills">
+    <div class="shop" id="skillList"></div>
   </div>
 
   <div class="tab-panel" data-panel="achievements">
@@ -144,6 +190,30 @@ html,body{width:100%;height:100%;overflow:hidden;background:#0a0518;font-family:
 
 <div class="screen-flash" id="screenFlash"></div>
 <div class="toast" id="toast"><div class="toast-title" id="toastTitle"></div><div class="toast-desc" id="toastDesc"></div></div>
+
+<!-- Wheel Modal -->
+<div class="modal-overlay" id="wheelOverlay">
+  <div class="wheel-modal">
+    <div class="wheel-title">LUCKY WHEEL</div>
+    <div class="wheel-container">
+      <div class="wheel-pointer"></div>
+      <canvas class="wheel-canvas" id="wheelCanvas" width="240" height="240"></canvas>
+    </div>
+    <div class="wheel-result" id="wheelResult"></div>
+    <button class="wheel-spin-btn" id="wheelSpinBtn">SPIN!</button>
+    <br><button class="wheel-close" id="wheelClose">Close</button>
+  </div>
+</div>
+
+<!-- Daily Streak Modal -->
+<div class="modal-overlay" id="streakOverlay">
+  <div class="streak-modal">
+    <div class="streak-title" id="streakTitle">Daily Streak!</div>
+    <div class="streak-subtitle" id="streakSubtitle"></div>
+    <div class="streak-days" id="streakDays"></div>
+    <button class="streak-claim" id="streakClaim">Claim Reward</button>
+  </div>
+</div>
 
 <script>
 // =========================================================
@@ -160,18 +230,26 @@ const S = {
     {name:"Warp Conduit",     count:0, baseCost:200000,   baseRate:1500},
     {name:"Galaxy Harvester", count:0, baseCost:3300000,  baseRate:12000},
   ],
-  // Combo
   comboCount: 0, comboTimer: 0, comboMultiplier: 1,
-  // Achievements
   achieved: {},
-  // Meteor
   meteorActive: false,
-  // Stats
   critCount: 0, meteorsCollected: 0,
+  // Wheel
+  wheelCooldown: 0, wheelSpins: 0,
+  // Buffs: {type, remaining, value}
+  buffs: [],
+  // Daily streak
+  dailyStreak: 0, lastClaimDay: "", todayClaimed: false,
+  // Skills
+  skills: {},
+  // Boss
+  bossesDefeated: 0,
+  // Challenge state (not saved)
+  challengeActive: false, challengeHP: 0, challengeMaxHP: 0, challengeTimer: 0, challengeReward: 0, challengeName: "",
 };
 
 // =========================================================
-// SOUND ENGINE (Web Audio API — no files needed)
+// SOUND ENGINE
 // =========================================================
 let audioCtx = null;
 function ensureAudio() {
@@ -181,160 +259,164 @@ function ensureAudio() {
 }
 
 const SFX = {
-  // Satisfying pop — short sine burst with pitch variation
   tap() {
-    const ctx = ensureAudio();
-    const o = ctx.createOscillator();
-    const g = ctx.createGain();
-    o.type = "sine";
-    o.frequency.value = 660 + Math.random() * 120;
+    const ctx = ensureAudio(); const o = ctx.createOscillator(); const g = ctx.createGain();
+    o.type = "sine"; o.frequency.value = 660 + Math.random() * 120;
     o.frequency.exponentialRampToValueAtTime(400, ctx.currentTime + 0.06);
     g.gain.setValueAtTime(0.18, ctx.currentTime);
     g.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.08);
-    o.connect(g); g.connect(ctx.destination);
-    o.start(); o.stop(ctx.currentTime + 0.08);
+    o.connect(g); g.connect(ctx.destination); o.start(); o.stop(ctx.currentTime + 0.08);
   },
-
-  // CRIT — bass thump + sparkle overtone
   crit() {
     const ctx = ensureAudio();
-    // Bass thump
-    const o1 = ctx.createOscillator();
-    const g1 = ctx.createGain();
-    o1.type = "sine";
-    o1.frequency.setValueAtTime(150, ctx.currentTime);
+    const o1 = ctx.createOscillator(); const g1 = ctx.createGain();
+    o1.type = "sine"; o1.frequency.setValueAtTime(150, ctx.currentTime);
     o1.frequency.exponentialRampToValueAtTime(50, ctx.currentTime + 0.15);
     g1.gain.setValueAtTime(0.35, ctx.currentTime);
     g1.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.2);
-    o1.connect(g1); g1.connect(ctx.destination);
-    o1.start(); o1.stop(ctx.currentTime + 0.2);
-    // High sparkle
-    const o2 = ctx.createOscillator();
-    const g2 = ctx.createGain();
-    o2.type = "triangle";
-    o2.frequency.setValueAtTime(1800, ctx.currentTime);
+    o1.connect(g1); g1.connect(ctx.destination); o1.start(); o1.stop(ctx.currentTime + 0.2);
+    const o2 = ctx.createOscillator(); const g2 = ctx.createGain();
+    o2.type = "triangle"; o2.frequency.setValueAtTime(1800, ctx.currentTime);
     o2.frequency.exponentialRampToValueAtTime(2400, ctx.currentTime + 0.1);
     g2.gain.setValueAtTime(0.12, ctx.currentTime);
     g2.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.15);
-    o2.connect(g2); g2.connect(ctx.destination);
-    o2.start(); o2.stop(ctx.currentTime + 0.15);
+    o2.connect(g2); g2.connect(ctx.destination); o2.start(); o2.stop(ctx.currentTime + 0.15);
   },
-
-  // Combo tier up — ascending arpeggio
   comboUp(tier) {
-    const ctx = ensureAudio();
-    const baseFreq = 500 + tier * 80;
-    [0, 0.06, 0.12].forEach((delay, i) => {
-      const o = ctx.createOscillator();
-      const g = ctx.createGain();
-      o.type = "square";
-      o.frequency.value = baseFreq + i * 150;
-      g.gain.setValueAtTime(0.08, ctx.currentTime + delay);
-      g.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + delay + 0.1);
-      o.connect(g); g.connect(ctx.destination);
-      o.start(ctx.currentTime + delay);
-      o.stop(ctx.currentTime + delay + 0.1);
+    const ctx = ensureAudio(); const bf = 500 + tier * 80;
+    [0, 0.06, 0.12].forEach((d, i) => {
+      const o = ctx.createOscillator(); const g = ctx.createGain();
+      o.type = "square"; o.frequency.value = bf + i * 150;
+      g.gain.setValueAtTime(0.08, ctx.currentTime + d);
+      g.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + d + 0.1);
+      o.connect(g); g.connect(ctx.destination); o.start(ctx.currentTime + d); o.stop(ctx.currentTime + d + 0.1);
     });
   },
-
-  // Buy — satisfying click-chime
   buy() {
-    const ctx = ensureAudio();
-    const o = ctx.createOscillator();
-    const g = ctx.createGain();
-    o.type = "triangle";
-    o.frequency.setValueAtTime(880, ctx.currentTime);
+    const ctx = ensureAudio(); const o = ctx.createOscillator(); const g = ctx.createGain();
+    o.type = "triangle"; o.frequency.setValueAtTime(880, ctx.currentTime);
     o.frequency.exponentialRampToValueAtTime(1100, ctx.currentTime + 0.05);
     o.frequency.exponentialRampToValueAtTime(880, ctx.currentTime + 0.1);
     g.gain.setValueAtTime(0.15, ctx.currentTime);
     g.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.12);
-    o.connect(g); g.connect(ctx.destination);
-    o.start(); o.stop(ctx.currentTime + 0.12);
+    o.connect(g); g.connect(ctx.destination); o.start(); o.stop(ctx.currentTime + 0.12);
   },
-
-  // Meteor appear — shimmering alert
   meteorAppear() {
     const ctx = ensureAudio();
-    [0, 0.1, 0.2].forEach((delay, i) => {
-      const o = ctx.createOscillator();
-      const g = ctx.createGain();
-      o.type = "sine";
-      o.frequency.value = 600 + i * 200;
-      g.gain.setValueAtTime(0.1, ctx.currentTime + delay);
-      g.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + delay + 0.15);
-      o.connect(g); g.connect(ctx.destination);
-      o.start(ctx.currentTime + delay);
-      o.stop(ctx.currentTime + delay + 0.15);
+    [0, 0.1, 0.2].forEach((d, i) => {
+      const o = ctx.createOscillator(); const g = ctx.createGain();
+      o.type = "sine"; o.frequency.value = 600 + i * 200;
+      g.gain.setValueAtTime(0.1, ctx.currentTime + d);
+      g.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + d + 0.15);
+      o.connect(g); g.connect(ctx.destination); o.start(ctx.currentTime + d); o.stop(ctx.currentTime + d + 0.15);
     });
   },
-
-  // Meteor collect — coin cascade
   meteorCollect() {
     const ctx = ensureAudio();
-    [0, 0.05, 0.1, 0.15, 0.2, 0.28].forEach((delay, i) => {
-      const o = ctx.createOscillator();
-      const g = ctx.createGain();
-      o.type = "sine";
-      o.frequency.value = 800 + i * 200;
-      g.gain.setValueAtTime(0.12, ctx.currentTime + delay);
-      g.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + delay + 0.12);
-      o.connect(g); g.connect(ctx.destination);
-      o.start(ctx.currentTime + delay);
-      o.stop(ctx.currentTime + delay + 0.12);
+    [0, 0.05, 0.1, 0.15, 0.2, 0.28].forEach((d, i) => {
+      const o = ctx.createOscillator(); const g = ctx.createGain();
+      o.type = "sine"; o.frequency.value = 800 + i * 200;
+      g.gain.setValueAtTime(0.12, ctx.currentTime + d);
+      g.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + d + 0.12);
+      o.connect(g); g.connect(ctx.destination); o.start(ctx.currentTime + d); o.stop(ctx.currentTime + d + 0.12);
     });
   },
-
-  // Achievement — triumphant fanfare
   achievement() {
     const ctx = ensureAudio();
-    const notes = [523, 659, 784, 1047]; // C5 E5 G5 C6
-    notes.forEach((freq, i) => {
-      const delay = i * 0.1;
-      const o = ctx.createOscillator();
-      const g = ctx.createGain();
-      o.type = "triangle";
-      o.frequency.value = freq;
-      g.gain.setValueAtTime(0.12, ctx.currentTime + delay);
-      g.gain.setValueAtTime(0.12, ctx.currentTime + delay + 0.08);
-      g.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + delay + 0.25);
-      o.connect(g); g.connect(ctx.destination);
-      o.start(ctx.currentTime + delay);
-      o.stop(ctx.currentTime + delay + 0.25);
+    [523, 659, 784, 1047].forEach((freq, i) => {
+      const d = i * 0.1; const o = ctx.createOscillator(); const g = ctx.createGain();
+      o.type = "triangle"; o.frequency.value = freq;
+      g.gain.setValueAtTime(0.12, ctx.currentTime + d);
+      g.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + d + 0.25);
+      o.connect(g); g.connect(ctx.destination); o.start(ctx.currentTime + d); o.stop(ctx.currentTime + d + 0.25);
     });
   },
-
-  // Prestige — epic whoosh + deep boom
   prestige() {
     const ctx = ensureAudio();
-    // Rising whoosh (noise-like via detuned oscillators)
     for (let i = 0; i < 5; i++) {
-      const o = ctx.createOscillator();
-      const g = ctx.createGain();
-      o.type = "sawtooth";
-      o.frequency.setValueAtTime(100 + i * 50, ctx.currentTime);
+      const o = ctx.createOscillator(); const g = ctx.createGain();
+      o.type = "sawtooth"; o.frequency.setValueAtTime(100 + i * 50, ctx.currentTime);
       o.frequency.exponentialRampToValueAtTime(2000 + i * 200, ctx.currentTime + 0.4);
       g.gain.setValueAtTime(0.04, ctx.currentTime);
       g.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.5);
-      o.connect(g); g.connect(ctx.destination);
-      o.start(); o.stop(ctx.currentTime + 0.5);
+      o.connect(g); g.connect(ctx.destination); o.start(); o.stop(ctx.currentTime + 0.5);
     }
-    // Deep boom at end
     setTimeout(() => {
-      const o = ctx.createOscillator();
-      const g = ctx.createGain();
-      o.type = "sine";
-      o.frequency.setValueAtTime(80, ctx.currentTime);
-      o.frequency.exponentialRampToValueAtTime(30, ctx.currentTime + 0.4);
-      g.gain.setValueAtTime(0.3, ctx.currentTime);
-      g.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.5);
-      o.connect(g); g.connect(ctx.destination);
-      o.start(); o.stop(ctx.currentTime + 0.5);
+      const ctx2 = ensureAudio(); const o = ctx2.createOscillator(); const g = ctx2.createGain();
+      o.type = "sine"; o.frequency.setValueAtTime(80, ctx2.currentTime);
+      o.frequency.exponentialRampToValueAtTime(30, ctx2.currentTime + 0.4);
+      g.gain.setValueAtTime(0.3, ctx2.currentTime);
+      g.gain.exponentialRampToValueAtTime(0.001, ctx2.currentTime + 0.5);
+      o.connect(g); g.connect(ctx2.destination); o.start(); o.stop(ctx2.currentTime + 0.5);
     }, 350);
+  },
+  wheelSpin() {
+    const ctx = ensureAudio();
+    for (let i = 0; i < 12; i++) {
+      setTimeout(() => {
+        const o = ctx.createOscillator(); const g = ctx.createGain();
+        o.type = "sine"; o.frequency.value = 400 + i * 50;
+        g.gain.setValueAtTime(0.06, ctx.currentTime);
+        g.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.06);
+        o.connect(g); g.connect(ctx.destination); o.start(); o.stop(ctx.currentTime + 0.06);
+      }, i * (150 + i * 15));
+    }
+  },
+  wheelWin() {
+    const ctx = ensureAudio();
+    [659, 784, 988, 1319].forEach((f, i) => {
+      const d = i * 0.08;
+      const o = ctx.createOscillator(); const g = ctx.createGain();
+      o.type = "sine"; o.frequency.value = f;
+      g.gain.setValueAtTime(0.15, ctx.currentTime + d);
+      g.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + d + 0.3);
+      o.connect(g); g.connect(ctx.destination); o.start(ctx.currentTime + d); o.stop(ctx.currentTime + d + 0.3);
+    });
+  },
+  bossAppear() {
+    const ctx = ensureAudio();
+    [0, 0.15].forEach((d, i) => {
+      const o = ctx.createOscillator(); const g = ctx.createGain();
+      o.type = "sawtooth"; o.frequency.value = i === 0 ? 200 : 150;
+      g.gain.setValueAtTime(0.12, ctx.currentTime + d);
+      g.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + d + 0.2);
+      o.connect(g); g.connect(ctx.destination); o.start(ctx.currentTime + d); o.stop(ctx.currentTime + d + 0.2);
+    });
+  },
+  bossHit() {
+    const ctx = ensureAudio(); const o = ctx.createOscillator(); const g = ctx.createGain();
+    o.type = "square"; o.frequency.value = 200 + Math.random() * 100;
+    o.frequency.exponentialRampToValueAtTime(100, ctx.currentTime + 0.05);
+    g.gain.setValueAtTime(0.1, ctx.currentTime);
+    g.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.06);
+    o.connect(g); g.connect(ctx.destination); o.start(); o.stop(ctx.currentTime + 0.06);
+  },
+  bossDefeat() {
+    const ctx = ensureAudio();
+    [523, 659, 784, 1047, 1319].forEach((f, i) => {
+      const d = i * 0.06;
+      const o = ctx.createOscillator(); const g = ctx.createGain();
+      o.type = "triangle"; o.frequency.value = f;
+      g.gain.setValueAtTime(0.14, ctx.currentTime + d);
+      g.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + d + 0.3);
+      o.connect(g); g.connect(ctx.destination); o.start(ctx.currentTime + d); o.stop(ctx.currentTime + d + 0.3);
+    });
+  },
+  streak() {
+    const ctx = ensureAudio();
+    [440, 554, 659, 880].forEach((f, i) => {
+      const d = i * 0.12;
+      const o = ctx.createOscillator(); const g = ctx.createGain();
+      o.type = "sine"; o.frequency.value = f;
+      g.gain.setValueAtTime(0.12, ctx.currentTime + d);
+      g.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + d + 0.2);
+      o.connect(g); g.connect(ctx.destination); o.start(ctx.currentTime + d); o.stop(ctx.currentTime + d + 0.2);
+    });
   },
 };
 
 // =========================================================
-// NUMBER FORMATTING
+// FORMAT
 // =========================================================
 const SUFFIXES = ["","K","M","B","T","Qa","Qi","Sx","Sp","Oc","No","Dc"];
 function fmt(n) {
@@ -345,17 +427,74 @@ function fmt(n) {
 }
 
 // =========================================================
+// SKILL TREE
+// =========================================================
+const SKILLS = [
+  {id:"autotap1", name:"Auto Tap I",       desc:"1 auto-tap per second",          cost:2,  icon:"\uD83E\uDD16", req:null},
+  {id:"autotap2", name:"Auto Tap II",      desc:"3 auto-taps per second",         cost:5,  icon:"\uD83E\uDD16", req:"autotap1"},
+  {id:"autotap3", name:"Auto Tap III",     desc:"8 auto-taps per second",         cost:12, icon:"\uD83E\uDD16", req:"autotap2"},
+  {id:"crit1",    name:"Precision I",      desc:"Crit chance: 5% -> 10%",         cost:3,  icon:"\uD83C\uDFAF", req:null},
+  {id:"crit2",    name:"Precision II",     desc:"Crit chance: 10% -> 18%",        cost:8,  icon:"\uD83C\uDFAF", req:"crit1"},
+  {id:"critdmg1", name:"Devastation I",    desc:"Crit damage: 10x -> 20x",       cost:4,  icon:"\u26A1",       req:null},
+  {id:"critdmg2", name:"Devastation II",   desc:"Crit damage: 20x -> 50x",       cost:10, icon:"\u26A1",       req:"critdmg1"},
+  {id:"meteor1",  name:"Meteor Magnet I",  desc:"Meteors 40% more frequent",      cost:3,  icon:"\u2604\uFE0F", req:null},
+  {id:"meteor2",  name:"Meteor Magnet II", desc:"Meteors 70% more frequent",      cost:7,  icon:"\u2604\uFE0F", req:"meteor1"},
+  {id:"wheel1",   name:"Lucky Charm",      desc:"Wheel cooldown halved",          cost:5,  icon:"\uD83C\uDFA1", req:null},
+  {id:"synergy",  name:"Generator Synergy",desc:"Each gen type boosts others +5%",cost:10, icon:"\uD83D\uDD17", req:null},
+  {id:"megacrit", name:"Omega Crit",       desc:"1% chance for 500x MEGA crit",   cost:20, icon:"\uD83D\uDCA0", req:"critdmg2"},
+];
+
+function hasSkill(id) { return !!S.skills[id]; }
+function getAutoTapRate() {
+  if (hasSkill("autotap3")) return 8;
+  if (hasSkill("autotap2")) return 3;
+  if (hasSkill("autotap1")) return 1;
+  return 0;
+}
+function getCritChance() {
+  let base = 0.05;
+  if (hasSkill("crit1")) base = 0.10;
+  if (hasSkill("crit2")) base = 0.18;
+  // Buff
+  const b = S.buffs.find(b => b.type === "crit");
+  if (b) base += 0.10;
+  return base;
+}
+function getCritMult() {
+  if (hasSkill("critdmg2")) return 50;
+  if (hasSkill("critdmg1")) return 20;
+  return 10;
+}
+function getMeteorDelay() {
+  let base = 30 + Math.random() * 60;
+  if (hasSkill("meteor2")) base *= 0.3;
+  else if (hasSkill("meteor1")) base *= 0.6;
+  return base;
+}
+function getWheelCooldown() {
+  return hasSkill("wheel1") ? 150 : 300;
+}
+function getSynergyBonus() {
+  if (!hasSkill("synergy")) return 1;
+  let types = 0;
+  for (const g of S.gens) { if (g.count > 0) types++; }
+  return 1 + types * 0.05;
+}
+
+// =========================================================
 // CORE CALCULATIONS
 // =========================================================
 function achievBonus() {
-  let bonus = 0;
-  for (const a of ACHIEVEMENTS) {
-    if (S.achieved[a.id]) bonus += a.bonus;
-  }
-  return 1 + bonus;
+  let b = 0;
+  for (const a of ACHIEVEMENTS) { if (S.achieved[a.id]) b += a.bonus; }
+  return 1 + b;
 }
 function prestigeMult() { return 1 + S.novaCrystals * 0.1; }
-function globalMult() { return prestigeMult() * achievBonus(); }
+function buffMult() {
+  const b = S.buffs.find(b => b.type === "2x");
+  return b ? 2 : 1;
+}
+function globalMult() { return prestigeMult() * achievBonus() * getSynergyBonus() * buffMult(); }
 function tapPower() { return (1 + S.tapLevel * 0.5) * globalMult(); }
 function genCost(i) { return S.gens[i].baseCost * Math.pow(1.15, S.gens[i].count); }
 function genRate(i) { return S.gens[i].baseRate * S.gens[i].count * globalMult(); }
@@ -366,223 +505,342 @@ function prestigeGain() { return S.lifetimeDust < 1e6 ? 0 : Math.floor(Math.sqrt
 // =========================================================
 // COMBO SYSTEM
 // =========================================================
-const COMBO_DECAY = 1.2; // seconds to decay
+const COMBO_DECAY = 1.2;
 const COMBO_TIERS = [
-  {taps: 0,  mult: 1,  label: "x1"},
-  {taps: 5,  mult: 1.5, label: "x1.5"},
-  {taps: 15, mult: 2,  label: "x2"},
-  {taps: 30, mult: 3,  label: "x3"},
-  {taps: 50, mult: 5,  label: "x5"},
-  {taps: 80, mult: 8,  label: "x8"},
-  {taps: 120,mult: 12, label: "x12!"},
+  {taps:0,mult:1,label:"x1"},{taps:5,mult:1.5,label:"x1.5"},{taps:15,mult:2,label:"x2"},
+  {taps:30,mult:3,label:"x3"},{taps:50,mult:5,label:"x5"},{taps:80,mult:8,label:"x8"},
+  {taps:120,mult:12,label:"x12!"},
 ];
-
-function getComboTier() {
-  let tier = COMBO_TIERS[0];
-  for (const t of COMBO_TIERS) {
-    if (S.comboCount >= t.taps) tier = t;
-  }
-  return tier;
-}
-
-function getNextComboTier() {
-  for (const t of COMBO_TIERS) {
-    if (S.comboCount < t.taps) return t;
-  }
-  return null;
-}
-
+function getComboTier() { let t = COMBO_TIERS[0]; for (const c of COMBO_TIERS) { if (S.comboCount >= c.taps) t = c; } return t; }
+function getNextComboTier() { for (const c of COMBO_TIERS) { if (S.comboCount < c.taps) return c; } return null; }
 function addCombo() {
-  const prevTier = getComboTier();
-  S.comboCount++;
-  S.comboTimer = COMBO_DECAY;
-  const tier = getComboTier();
-  S.comboMultiplier = tier.mult;
-  if (tier.mult > prevTier.mult) SFX.comboUp(COMBO_TIERS.indexOf(tier));
+  const prev = getComboTier();
+  S.comboCount++; S.comboTimer = COMBO_DECAY;
+  const tier = getComboTier(); S.comboMultiplier = tier.mult;
+  if (tier.mult > prev.mult) SFX.comboUp(COMBO_TIERS.indexOf(tier));
 }
-
 function updateCombo(dt) {
   if (S.comboTimer > 0) {
     S.comboTimer -= dt;
-    if (S.comboTimer <= 0) {
-      S.comboCount = 0;
-      S.comboTimer = 0;
-      S.comboMultiplier = 1;
-    }
+    if (S.comboTimer <= 0) { S.comboCount = 0; S.comboTimer = 0; S.comboMultiplier = 1; }
   }
-  // Update UI
   const wrap = document.getElementById("comboWrap");
   const label = document.getElementById("comboLabel");
   const fill = document.getElementById("comboFill");
-
   if (S.comboCount > 0) {
     wrap.classList.remove("hidden");
-    const tier = getComboTier();
-    const next = getNextComboTier();
+    const tier = getComboTier(); const next = getNextComboTier();
     label.textContent = tier.label;
     label.style.color = tier.mult >= 5 ? "#ef4444" : tier.mult >= 2 ? "#f59e0b" : "#fbbf24";
-    if (next) {
-      const progress = (S.comboCount - (tier.taps || 0)) / (next.taps - (tier.taps || 0));
-      fill.style.width = (progress * 100) + "%";
-    } else {
-      fill.style.width = "100%";
-    }
-    // Decay visualization
+    fill.style.width = next ? ((S.comboCount - (tier.taps||0)) / (next.taps - (tier.taps||0)) * 100) + "%" : "100%";
     fill.style.opacity = Math.max(0.3, S.comboTimer / COMBO_DECAY);
-  } else {
-    wrap.classList.add("hidden");
-  }
+  } else { wrap.classList.add("hidden"); }
 }
 
 // =========================================================
-// CRITICAL TAPS
+// CRITS
 // =========================================================
-const CRIT_CHANCE = 0.05;
-const CRIT_MULTIPLIER = 10;
+function rollCrit() { return Math.random() < getCritChance(); }
+function rollMegaCrit() { return hasSkill("megacrit") && Math.random() < 0.01; }
+function screenShake() { const g = document.getElementById("game"); g.classList.remove("shake"); void g.offsetWidth; g.classList.add("shake"); }
+function screenFlash(c) { const e = document.getElementById("screenFlash"); e.style.background = c; e.style.animation = "none"; void e.offsetWidth; e.style.animation = "flash .3s ease-out forwards"; }
 
-function rollCrit() {
-  return Math.random() < CRIT_CHANCE;
+// =========================================================
+// BUFFS
+// =========================================================
+function addBuff(type, duration, value) {
+  S.buffs = S.buffs.filter(b => b.type !== type);
+  S.buffs.push({type, remaining: duration, value});
 }
-
-function screenShake() {
-  const game = document.getElementById("game");
-  game.classList.remove("shake");
-  void game.offsetWidth; // reflow
-  game.classList.add("shake");
-}
-
-function screenFlash(color) {
-  const el = document.getElementById("screenFlash");
-  el.style.background = color;
-  el.style.animation = "none";
-  void el.offsetWidth;
-  el.style.animation = "flash .3s ease-out forwards";
+function updateBuffs(dt) {
+  S.buffs = S.buffs.filter(b => { b.remaining -= dt; return b.remaining > 0; });
+  const bar = document.getElementById("buffBar");
+  bar.textContent = S.buffs.map(b => {
+    const t = Math.ceil(b.remaining);
+    if (b.type === "2x") return "2X PRODUCTION " + t + "s";
+    if (b.type === "crit") return "+CRIT " + t + "s";
+    if (b.type === "autoburst") return "AUTO-BURST " + t + "s";
+    return "";
+  }).filter(Boolean).join(" | ");
 }
 
 // =========================================================
 // GOLDEN METEOR
 // =========================================================
-let meteorEl = null;
-let meteorTimeout = null;
-let meteorExpireTimeout = null;
-
-function scheduleMeteor() {
-  const delay = (30 + Math.random() * 60) * 1000; // 30-90 seconds
-  meteorTimeout = setTimeout(spawnMeteor, delay);
-}
-
+let meteorEl = null, meteorTimeout = null, meteorExpireTimeout = null;
+function scheduleMeteor() { meteorTimeout = setTimeout(spawnMeteor, getMeteorDelay() * 1000); }
 function spawnMeteor() {
-  if (S.meteorActive) return;
-  S.meteorActive = true;
-
-  const area = document.getElementById("orbArea");
-  const rect = area.getBoundingClientRect();
-
-  meteorEl = document.createElement("div");
-  meteorEl.className = "meteor";
-
-  // Random position within orb area
-  const x = 20 + Math.random() * (rect.width - 90);
-  const y = 10 + Math.random() * (rect.height - 90);
-  meteorEl.style.left = x + "px";
-  meteorEl.style.top = y + "px";
-
-  // Reward type
-  const rewardMult = 30 + Math.floor(Math.random() * 70); // 30-100x current tap
-  const labelEl = document.createElement("div");
-  labelEl.className = "meteor-label";
-  labelEl.textContent = "TAP ME!";
-  meteorEl.appendChild(labelEl);
-
-  const timerEl = document.createElement("div");
-  timerEl.className = "meteor-timer";
-  timerEl.textContent = "5s";
-  meteorEl.appendChild(timerEl);
-
-  meteorEl.addEventListener("pointerdown", (e) => {
-    e.stopPropagation();
-    collectMeteor(rewardMult);
-  });
-
-  area.appendChild(meteorEl);
-  SFX.meteorAppear();
-
-  // Countdown
-  let timeLeft = 5;
-  const countdownInterval = setInterval(() => {
-    timeLeft--;
-    if (timerEl) timerEl.textContent = timeLeft + "s";
-    if (timeLeft <= 0) clearInterval(countdownInterval);
-  }, 1000);
-
-  // Expire after 5 seconds
-  meteorExpireTimeout = setTimeout(() => {
-    removeMeteor();
-    scheduleMeteor();
-  }, 5000);
+  if (S.meteorActive) return; S.meteorActive = true;
+  const area = document.getElementById("orbArea"); const rect = area.getBoundingClientRect();
+  meteorEl = document.createElement("div"); meteorEl.className = "meteor";
+  meteorEl.style.left = (20 + Math.random() * (rect.width - 90)) + "px";
+  meteorEl.style.top = (10 + Math.random() * (rect.height - 90)) + "px";
+  const mult = 30 + Math.floor(Math.random() * 70);
+  const lbl = document.createElement("div"); lbl.className = "meteor-label"; lbl.textContent = "TAP ME!"; meteorEl.appendChild(lbl);
+  const tmr = document.createElement("div"); tmr.className = "meteor-timer"; tmr.textContent = "5s"; meteorEl.appendChild(tmr);
+  meteorEl.addEventListener("pointerdown", e => { e.stopPropagation(); collectMeteor(mult); });
+  area.appendChild(meteorEl); SFX.meteorAppear();
+  let left = 5;
+  const ci = setInterval(() => { left--; if (tmr) tmr.textContent = left + "s"; if (left <= 0) clearInterval(ci); }, 1000);
+  meteorExpireTimeout = setTimeout(() => { removeMeteor(); scheduleMeteor(); }, 5000);
 }
-
 function collectMeteor(mult) {
   if (!S.meteorActive) return;
   const reward = tapPower() * mult;
-  S.dust += reward;
-  S.lifetimeDust += reward;
-  S.allTimeDust += reward;
-  S.meteorsCollected++;
-
-  // Big flash
-  screenFlash("rgba(245, 158, 11, 0.5)");
-  screenShake();
-  SFX.meteorCollect();
+  S.dust += reward; S.lifetimeDust += reward; S.allTimeDust += reward; S.meteorsCollected++;
+  screenFlash("rgba(245,158,11,0.5)"); screenShake(); SFX.meteorCollect();
   if (navigator.vibrate) navigator.vibrate([50, 30, 50]);
-
-  // Floating text
-  const f = document.createElement("div");
-  f.className = "floater crit";
-  f.textContent = "+" + fmt(reward);
-  f.style.color = "#fbbf24";
-  f.style.left = "50%";
-  f.style.top = "40%";
-  f.style.transform = "translateX(-50%)";
-  document.getElementById("orbArea").appendChild(f);
-  setTimeout(() => f.remove(), 900);
-
+  const f = document.createElement("div"); f.className = "floater crit"; f.textContent = "+" + fmt(reward);
+  f.style.color = "#fbbf24"; f.style.left = "50%"; f.style.top = "40%"; f.style.transform = "translateX(-50%)";
+  document.getElementById("orbArea").appendChild(f); setTimeout(() => f.remove(), 900);
   showToast("METEOR CAUGHT!", "+" + fmt(reward) + " Stardust");
+  clearTimeout(meteorExpireTimeout); removeMeteor(); scheduleMeteor(); checkAchievements();
+}
+function removeMeteor() { if (meteorEl) { meteorEl.remove(); meteorEl = null; } S.meteorActive = false; }
 
-  clearTimeout(meteorExpireTimeout);
-  removeMeteor();
-  scheduleMeteor();
-  checkAchievements();
+// =========================================================
+// TAP CHALLENGES (BOSSES)
+// =========================================================
+const BOSSES = [
+  {name:"Void Titan", hp:30, time:10, mult:200},
+  {name:"Nebula Serpent", hp:50, time:12, mult:400},
+  {name:"Dark Pulsar", hp:80, time:12, mult:800},
+  {name:"Entropy Wraith", hp:120, time:15, mult:1500},
+  {name:"Cosmic Devourer", hp:200, time:15, mult:3000},
+];
+let bossTimeout = null, bossBarEl = null;
+
+function scheduleBoss() {
+  const delay = (180 + Math.random() * 120) * 1000;
+  bossTimeout = setTimeout(spawnBoss, delay);
+}
+function spawnBoss() {
+  if (S.challengeActive) return;
+  const idx = Math.min(S.bossesDefeated, BOSSES.length - 1);
+  const boss = BOSSES[idx];
+  S.challengeActive = true;
+  S.challengeHP = boss.hp; S.challengeMaxHP = boss.hp;
+  S.challengeTimer = boss.time; S.challengeReward = tapPower() * boss.mult;
+  S.challengeName = boss.name;
+  SFX.bossAppear(); if (navigator.vibrate) navigator.vibrate([60, 40, 60]);
+  showToast("BOSS APPEARED!", "Tap " + boss.hp + " times in " + boss.time + "s!");
+  // Create boss bar
+  const area = document.getElementById("orbArea");
+  bossBarEl = document.createElement("div"); bossBarEl.className = "boss-bar";
+  bossBarEl.innerHTML = `<div class="boss-name">${boss.name}</div>
+    <div class="boss-hp-track"><div class="boss-hp-fill" id="bossHpFill" style="width:100%"></div></div>
+    <div class="boss-timer" id="bossTimerText">${boss.time}s</div>
+    <div class="boss-reward">Reward: ${fmt(S.challengeReward)} Stardust</div>`;
+  area.appendChild(bossBarEl);
+}
+function hitBoss() {
+  if (!S.challengeActive) return;
+  S.challengeHP--;
+  SFX.bossHit();
+  const fill = document.getElementById("bossHpFill");
+  if (fill) fill.style.width = (S.challengeHP / S.challengeMaxHP * 100) + "%";
+  if (S.challengeHP <= 0) defeatBoss();
+}
+function defeatBoss() {
+  S.dust += S.challengeReward; S.lifetimeDust += S.challengeReward; S.allTimeDust += S.challengeReward;
+  S.bossesDefeated++; S.challengeActive = false;
+  SFX.bossDefeat(); screenFlash("rgba(74,222,128,0.4)"); screenShake();
+  if (navigator.vibrate) navigator.vibrate([30, 20, 30, 20, 60]);
+  showToast(S.challengeName + " DEFEATED!", "+" + fmt(S.challengeReward) + " Stardust");
+  if (bossBarEl) { bossBarEl.remove(); bossBarEl = null; }
+  scheduleBoss(); checkAchievements();
+}
+function failBoss() {
+  S.challengeActive = false;
+  showToast("BOSS ESCAPED!", S.challengeName + " got away...");
+  if (bossBarEl) { bossBarEl.remove(); bossBarEl = null; }
+  scheduleBoss();
+}
+function updateBoss(dt) {
+  if (!S.challengeActive) return;
+  S.challengeTimer -= dt;
+  const tmr = document.getElementById("bossTimerText");
+  if (tmr) tmr.textContent = Math.ceil(S.challengeTimer) + "s";
+  if (S.challengeTimer <= 0) failBoss();
 }
 
-function removeMeteor() {
-  if (meteorEl) {
-    meteorEl.remove();
-    meteorEl = null;
+// =========================================================
+// LUCKY WHEEL
+// =========================================================
+const WHEEL_SEGMENTS = [
+  {label:"2X PROD\n30s",    color:"#7c3aed", action:()=>{ addBuff("2x", 30); return "2X Production for 30s!"; }},
+  {label:"DUST\nJACKPOT",   color:"#059669", action:()=>{ const r = totalRate()*300||tapPower()*100; S.dust+=r; S.lifetimeDust+=r; S.allTimeDust+=r; return "+"+fmt(r)+" Stardust!"; }},
+  {label:"+CRIT\n60s",      color:"#dc2626", action:()=>{ addBuff("crit", 60); return "+10% Crit Chance for 60s!"; }},
+  {label:"AUTO\nBURST",     color:"#0284c7", action:()=>{ addBuff("autoburst", 30, 10); return "Auto-burst 10/s for 30s!"; }},
+  {label:"NOVA\nSHARD",     color:"#d97706", action:()=>{ S.novaCrystals+=0.5; return "+0.5 Nova Crystals!"; }},
+  {label:"MEGA\nDUST",      color:"#7e22ce", action:()=>{ const r = totalRate()*60||tapPower()*30; S.dust+=r; S.lifetimeDust+=r; S.allTimeDust+=r; return "+"+fmt(r)+" Stardust!"; }},
+];
+
+let wheelAngle = 0, wheelSpinning = false;
+const wheelCanvas = document.getElementById("wheelCanvas");
+const wheelCtx = wheelCanvas.getContext("2d");
+
+function drawWheel() {
+  const cx = 120, cy = 120, r = 110;
+  const seg = WHEEL_SEGMENTS.length;
+  const arc = (Math.PI * 2) / seg;
+  wheelCtx.clearRect(0, 0, 240, 240);
+  for (let i = 0; i < seg; i++) {
+    const angle = wheelAngle + i * arc;
+    wheelCtx.beginPath(); wheelCtx.moveTo(cx, cy);
+    wheelCtx.arc(cx, cy, r, angle - arc / 2, angle + arc / 2);
+    wheelCtx.fillStyle = WHEEL_SEGMENTS[i].color; wheelCtx.fill();
+    wheelCtx.strokeStyle = "rgba(255,255,255,0.2)"; wheelCtx.lineWidth = 1; wheelCtx.stroke();
+    // Label
+    wheelCtx.save(); wheelCtx.translate(cx, cy); wheelCtx.rotate(angle);
+    wheelCtx.fillStyle = "#fff"; wheelCtx.font = "bold 10px sans-serif"; wheelCtx.textAlign = "center";
+    const lines = WHEEL_SEGMENTS[i].label.split("\n");
+    lines.forEach((l, li) => wheelCtx.fillText(l, r * 0.6, -4 + li * 12));
+    wheelCtx.restore();
   }
-  S.meteorActive = false;
+  // Center circle
+  wheelCtx.beginPath(); wheelCtx.arc(cx, cy, 18, 0, Math.PI * 2);
+  wheelCtx.fillStyle = "#1a0a30"; wheelCtx.fill();
+  wheelCtx.strokeStyle = "#7c3aed"; wheelCtx.lineWidth = 2; wheelCtx.stroke();
 }
+drawWheel();
+
+function spinWheel() {
+  if (wheelSpinning || S.wheelCooldown > 0) return;
+  wheelSpinning = true;
+  S.wheelCooldown = getWheelCooldown(); S.wheelSpins++;
+  document.getElementById("wheelSpinBtn").disabled = true;
+  document.getElementById("wheelResult").textContent = "";
+  SFX.wheelSpin();
+
+  const targetSeg = Math.floor(Math.random() * WHEEL_SEGMENTS.length);
+  const seg = WHEEL_SEGMENTS.length;
+  const arc = (Math.PI * 2) / seg;
+  // Spin 4-6 full rotations + land on target
+  const targetAngle = -(targetSeg * arc) + (Math.PI * 2 * (4 + Math.random() * 2));
+  const startAngle = wheelAngle;
+  const duration = 3000;
+  const startTime = performance.now();
+
+  function animateSpin(now) {
+    const elapsed = now - startTime;
+    const t = Math.min(elapsed / duration, 1);
+    const ease = 1 - Math.pow(1 - t, 3); // ease out cubic
+    wheelAngle = startAngle + targetAngle * ease;
+    drawWheel();
+    if (t < 1) {
+      requestAnimationFrame(animateSpin);
+    } else {
+      wheelSpinning = false;
+      const result = WHEEL_SEGMENTS[targetSeg].action();
+      document.getElementById("wheelResult").textContent = result;
+      SFX.wheelWin(); screenFlash("rgba(192,132,252,0.3)");
+      document.getElementById("wheelSpinBtn").disabled = true;
+      updateUI();
+    }
+  }
+  requestAnimationFrame(animateSpin);
+}
+
+document.getElementById("wheelSpinBtn").addEventListener("click", spinWheel);
+document.getElementById("wheelClose").addEventListener("click", () => {
+  document.getElementById("wheelOverlay").classList.remove("show");
+});
+
+// =========================================================
+// DAILY STREAK
+// =========================================================
+const STREAK_REWARDS = [
+  {day:1, dust:100,     label:"100"},
+  {day:2, dust:500,     label:"500"},
+  {day:3, dust:2000,    label:"2K"},
+  {day:4, dust:10000,   label:"10K"},
+  {day:5, dust:50000,   label:"50K"},
+  {day:6, dust:200000,  label:"200K"},
+  {day:7, nova:1, dust:0, label:"Nova!"},
+];
+
+function getTodayStr() {
+  const d = new Date();
+  return d.getFullYear() + "-" + String(d.getMonth()+1).padStart(2,"0") + "-" + String(d.getDate()).padStart(2,"0");
+}
+
+function checkDailyStreak() {
+  const today = getTodayStr();
+  if (S.lastClaimDay === today) { S.todayClaimed = true; return; }
+  // Check if streak continues or resets
+  const last = S.lastClaimDay ? new Date(S.lastClaimDay) : null;
+  const now = new Date(today);
+  if (last) {
+    const diff = Math.floor((now - last) / 86400000);
+    if (diff > 1) S.dailyStreak = 0; // Missed a day — reset
+  }
+  S.todayClaimed = false;
+  showStreakModal();
+}
+
+function showStreakModal() {
+  const overlay = document.getElementById("streakOverlay");
+  const dayIdx = S.dailyStreak % 7;
+  document.getElementById("streakTitle").textContent = S.dailyStreak > 0 ? "Day " + (S.dailyStreak + 1) + " Streak!" : "Daily Reward!";
+  document.getElementById("streakSubtitle").textContent = S.dailyStreak > 0 ? "Keep your streak alive!" : "Welcome! Claim your reward:";
+  const container = document.getElementById("streakDays");
+  let html = "";
+  for (let i = 0; i < 7; i++) {
+    const r = STREAK_REWARDS[i];
+    const claimed = i < dayIdx;
+    const isToday = i === dayIdx;
+    html += `<div class="streak-day${claimed ? " claimed" : ""}${isToday ? " today" : ""}">
+      <div class="day-num">D${i+1}</div>
+      <div class="day-reward">${r.label}</div>
+    </div>`;
+  }
+  container.innerHTML = html;
+  document.getElementById("streakClaim").disabled = false;
+  overlay.classList.add("show");
+}
+
+document.getElementById("streakClaim").addEventListener("click", () => {
+  if (S.todayClaimed) return;
+  const dayIdx = S.dailyStreak % 7;
+  const reward = STREAK_REWARDS[dayIdx];
+  // Scale dust reward by current production
+  const dustReward = reward.dust * Math.max(1, globalMult());
+  S.dust += dustReward; S.lifetimeDust += dustReward; S.allTimeDust += dustReward;
+  if (reward.nova) S.novaCrystals += reward.nova;
+  S.dailyStreak++; S.lastClaimDay = getTodayStr(); S.todayClaimed = true;
+  SFX.streak(); screenFlash("rgba(245,158,11,0.3)");
+  if (reward.nova) showToast("STREAK BONUS!", "+1 Nova Crystal!");
+  else showToast("Daily Reward!", "+" + fmt(dustReward) + " Stardust");
+  document.getElementById("streakClaim").disabled = true;
+  document.getElementById("streakOverlay").classList.remove("show");
+  save(); updateUI();
+});
 
 // =========================================================
 // ACHIEVEMENTS
 // =========================================================
 const ACHIEVEMENTS = [
-  {id:"tap100",     name:"First Steps",      desc:"Tap 100 times",              check:()=>S.totalTaps>=100,       bonus:0.05, icon:"\u2B50"},
-  {id:"tap1000",    name:"Tap Addict",        desc:"Tap 1,000 times",            check:()=>S.totalTaps>=1000,      bonus:0.10, icon:"\uD83D\uDD25"},
-  {id:"tap10000",   name:"Finger Fury",       desc:"Tap 10,000 times",           check:()=>S.totalTaps>=10000,     bonus:0.15, icon:"\uD83D\uDCAA"},
-  {id:"dust1k",     name:"Dust Collector",     desc:"Earn 1K total Stardust",     check:()=>S.allTimeDust>=1e3,     bonus:0.05, icon:"\u2728"},
-  {id:"dust1m",     name:"Stardust Magnate",   desc:"Earn 1M total Stardust",     check:()=>S.allTimeDust>=1e6,     bonus:0.10, icon:"\uD83D\uDCAB"},
-  {id:"dust1b",     name:"Cosmic Tycoon",      desc:"Earn 1B total Stardust",     check:()=>S.allTimeDust>=1e9,     bonus:0.15, icon:"\uD83C\uDF0C"},
-  {id:"gen1",       name:"Automation",         desc:"Buy first generator",        check:()=>S.gens[0].count>=1,     bonus:0.05, icon:"\u2699\uFE0F"},
-  {id:"gen50",      name:"Factory Floor",      desc:"Own 50 total generators",    check:()=>totalGens()>=50,        bonus:0.10, icon:"\uD83C\uDFED"},
-  {id:"crit10",     name:"Lucky Strikes",      desc:"Land 10 critical taps",      check:()=>S.critCount>=10,        bonus:0.05, icon:"\uD83C\uDFAF"},
-  {id:"crit100",    name:"Crit Machine",       desc:"Land 100 critical taps",     check:()=>S.critCount>=100,       bonus:0.10, icon:"\u26A1"},
-  {id:"meteor5",    name:"Meteor Hunter",      desc:"Catch 5 golden meteors",     check:()=>S.meteorsCollected>=5,  bonus:0.10, icon:"\u2604\uFE0F"},
-  {id:"meteor25",   name:"Cosmic Catcher",     desc:"Catch 25 golden meteors",    check:()=>S.meteorsCollected>=25, bonus:0.15, icon:"\uD83E\uDE90"},
-  {id:"prestige1",  name:"Supernova",          desc:"Prestige for the first time",check:()=>S.prestigeCount>=1,     bonus:0.10, icon:"\uD83D\uDCA5"},
-  {id:"prestige5",  name:"Serial Exploder",    desc:"Prestige 5 times",           check:()=>S.prestigeCount>=5,     bonus:0.15, icon:"\uD83C\uDF1F"},
-  {id:"combo5",     name:"Combo Starter",      desc:"Reach x5 combo",             check:()=>S.comboMultiplier>=5,   bonus:0.05, icon:"\uD83D\uDD17"},
-  {id:"combo12",    name:"MAXIMUM COMBO",      desc:"Reach x12 combo",            check:()=>S.comboMultiplier>=12,  bonus:0.15, icon:"\uD83C\uDF2A\uFE0F"},
+  {id:"tap100",   name:"First Steps",    desc:"Tap 100 times",              check:()=>S.totalTaps>=100,       bonus:0.05, icon:"\u2B50"},
+  {id:"tap1000",  name:"Tap Addict",     desc:"Tap 1,000 times",            check:()=>S.totalTaps>=1000,      bonus:0.10, icon:"\uD83D\uDD25"},
+  {id:"tap10000", name:"Finger Fury",    desc:"Tap 10,000 times",           check:()=>S.totalTaps>=10000,     bonus:0.15, icon:"\uD83D\uDCAA"},
+  {id:"dust1k",   name:"Dust Collector", desc:"Earn 1K total Stardust",     check:()=>S.allTimeDust>=1e3,     bonus:0.05, icon:"\u2728"},
+  {id:"dust1m",   name:"Stardust Magnate",desc:"Earn 1M total Stardust",    check:()=>S.allTimeDust>=1e6,     bonus:0.10, icon:"\uD83D\uDCAB"},
+  {id:"dust1b",   name:"Cosmic Tycoon",  desc:"Earn 1B total Stardust",     check:()=>S.allTimeDust>=1e9,     bonus:0.15, icon:"\uD83C\uDF0C"},
+  {id:"gen1",     name:"Automation",     desc:"Buy first generator",        check:()=>S.gens[0].count>=1,     bonus:0.05, icon:"\u2699\uFE0F"},
+  {id:"gen50",    name:"Factory Floor",  desc:"Own 50 total generators",    check:()=>totalGens()>=50,        bonus:0.10, icon:"\uD83C\uDFED"},
+  {id:"crit10",   name:"Lucky Strikes",  desc:"Land 10 critical taps",      check:()=>S.critCount>=10,        bonus:0.05, icon:"\uD83C\uDFAF"},
+  {id:"crit100",  name:"Crit Machine",   desc:"Land 100 critical taps",     check:()=>S.critCount>=100,       bonus:0.10, icon:"\u26A1"},
+  {id:"meteor5",  name:"Meteor Hunter",  desc:"Catch 5 golden meteors",     check:()=>S.meteorsCollected>=5,  bonus:0.10, icon:"\u2604\uFE0F"},
+  {id:"meteor25", name:"Cosmic Catcher", desc:"Catch 25 golden meteors",    check:()=>S.meteorsCollected>=25, bonus:0.15, icon:"\uD83E\uDE90"},
+  {id:"prestige1",name:"Supernova",      desc:"Prestige for the first time",check:()=>S.prestigeCount>=1,     bonus:0.10, icon:"\uD83D\uDCA5"},
+  {id:"prestige5",name:"Serial Exploder",desc:"Prestige 5 times",           check:()=>S.prestigeCount>=5,     bonus:0.15, icon:"\uD83C\uDF1F"},
+  {id:"combo5",   name:"Combo Starter",  desc:"Reach x5 combo",             check:()=>S.comboMultiplier>=5,   bonus:0.05, icon:"\uD83D\uDD17"},
+  {id:"combo12",  name:"MAXIMUM COMBO",  desc:"Reach x12 combo",            check:()=>S.comboMultiplier>=12,  bonus:0.15, icon:"\uD83C\uDF2A\uFE0F"},
+  {id:"boss5",    name:"Boss Slayer",    desc:"Defeat 5 bosses",            check:()=>S.bossesDefeated>=5,    bonus:0.10, icon:"\u2694\uFE0F"},
+  {id:"boss20",   name:"Titan Crusher",  desc:"Defeat 20 bosses",           check:()=>S.bossesDefeated>=20,   bonus:0.15, icon:"\uD83D\uDDE1\uFE0F"},
+  {id:"spin10",   name:"Lucky Spinner",  desc:"Spin the wheel 10 times",    check:()=>S.wheelSpins>=10,       bonus:0.05, icon:"\uD83C\uDFA1"},
+  {id:"streak7",  name:"Dedicated",      desc:"7-day login streak",         check:()=>S.dailyStreak>=7,       bonus:0.15, icon:"\uD83D\uDCC5"},
 ];
 
 function totalGens() { return S.gens.reduce((s, g) => s + g.count, 0); }
@@ -592,8 +850,7 @@ function checkAchievements() {
     if (!S.achieved[a.id] && a.check()) {
       S.achieved[a.id] = true;
       showToast("Achievement: " + a.name, a.desc + " | +" + (a.bonus * 100) + "% all");
-      screenFlash("rgba(245, 158, 11, 0.3)");
-      SFX.achievement();
+      screenFlash("rgba(245,158,11,0.3)"); SFX.achievement();
       if (navigator.vibrate) navigator.vibrate([30, 20, 30, 20, 30]);
     }
   }
@@ -601,53 +858,83 @@ function checkAchievements() {
 
 function buildAchievements() {
   const el = document.getElementById("achievList");
-  let html = "";
-  const totalBonus = ((achievBonus() - 1) * 100).toFixed(0);
-  html += `<div class="section-title">TOTAL BONUS: +${totalBonus}%</div>`;
-
+  let html = `<div class="section-title">BONUS: +${((achievBonus()-1)*100).toFixed(0)}%</div>`;
   for (const a of ACHIEVEMENTS) {
     const done = S.achieved[a.id];
-    let progress = 0;
-    // Approximate progress for display
+    let p = done ? 1 : 0;
     if (!done) {
-      if (a.id.startsWith("tap"))    progress = Math.min(1, S.totalTaps / parseInt(a.desc.match(/[\d,]+/)[0].replace(/,/g,"")));
-      else if (a.id.startsWith("dust")) {
-        const target = a.desc.includes("1K") ? 1e3 : a.desc.includes("1M") ? 1e6 : 1e9;
-        progress = Math.min(1, S.allTimeDust / target);
-      }
-      else if (a.id.startsWith("crit"))   progress = Math.min(1, S.critCount / parseInt(a.desc.match(/\d+/)[0]));
-      else if (a.id.startsWith("meteor")) progress = Math.min(1, S.meteorsCollected / parseInt(a.desc.match(/\d+/)[0]));
-      else if (a.id.startsWith("prestige")) progress = Math.min(1, S.prestigeCount / parseInt(a.desc.match(/\d+/)?.[0] || "1"));
-      else if (a.id === "gen1")  progress = Math.min(1, S.gens[0].count);
-      else if (a.id === "gen50") progress = Math.min(1, totalGens() / 50);
-      else if (a.id === "combo5") progress = Math.min(1, S.comboMultiplier / 5);
-      else if (a.id === "combo12") progress = Math.min(1, S.comboMultiplier / 12);
+      const m = a.desc.match(/[\d,]+/);
+      const target = m ? parseInt(m[0].replace(/,/g,"")) : 1;
+      if (a.id.startsWith("tap")) p = S.totalTaps / target;
+      else if (a.id.startsWith("dust")) { const t = a.desc.includes("1K")?1e3:a.desc.includes("1M")?1e6:1e9; p = S.allTimeDust/t; }
+      else if (a.id.startsWith("crit")) p = S.critCount/target;
+      else if (a.id.startsWith("meteor")) p = S.meteorsCollected/target;
+      else if (a.id.startsWith("prestige")) p = S.prestigeCount/target;
+      else if (a.id==="gen1") p = S.gens[0].count;
+      else if (a.id==="gen50") p = totalGens()/50;
+      else if (a.id==="combo5") p = S.comboMultiplier/5;
+      else if (a.id==="combo12") p = S.comboMultiplier/12;
+      else if (a.id.startsWith("boss")) p = S.bossesDefeated/target;
+      else if (a.id==="spin10") p = S.wheelSpins/10;
+      else if (a.id==="streak7") p = S.dailyStreak/7;
+      p = Math.min(p, 1);
     }
-
-    html += `<div class="achiev${done ? " done" : ""}">
-      <div class="achiev-icon">${a.icon}</div>
-      <div class="achiev-info">
-        <div class="achiev-name">${a.name}</div>
-        <div class="achiev-desc">${a.desc}</div>
-        <div class="achiev-reward">${done ? "UNLOCKED" : "Reward"}: +${(a.bonus * 100).toFixed(0)}% all production</div>
-        <div class="achiev-bar"><div class="achiev-bar-fill" style="width:${done ? 100 : (progress * 100)}%"></div></div>
-      </div>
-    </div>`;
+    html += `<div class="achiev${done?" done":""}"><div class="achiev-icon">${a.icon}</div><div class="achiev-info">
+      <div class="achiev-name">${a.name}</div><div class="achiev-desc">${a.desc}</div>
+      <div class="achiev-reward">${done?"UNLOCKED":"Reward"}: +${(a.bonus*100).toFixed(0)}%</div>
+      <div class="achiev-bar"><div class="achiev-bar-fill" style="width:${p*100}%"></div></div></div></div>`;
   }
   el.innerHTML = html;
 }
 
 // =========================================================
-// TOAST NOTIFICATIONS
+// SKILL TREE UI
+// =========================================================
+function buildSkillTree() {
+  const el = document.getElementById("skillList");
+  let html = `<div class="section-title">NOVA CRYSTALS: ${fmt(S.novaCrystals)}</div>`;
+  for (const sk of SKILLS) {
+    const owned = hasSkill(sk.id);
+    const locked = sk.req && !hasSkill(sk.req);
+    const affordable = !owned && !locked && S.novaCrystals >= sk.cost;
+    let cls = "skill";
+    if (owned) cls += " owned";
+    else if (affordable) cls += " affordable";
+    else if (locked) cls += " disabled";
+    html += `<div class="${cls}" data-skill="${sk.id}">
+      <div class="skill-icon">${sk.icon}</div><div class="skill-info">
+      <div class="skill-name">${sk.name}</div>
+      <div class="skill-desc">${sk.desc}${locked?" (Requires "+SKILLS.find(s=>s.id===sk.req).name+")":""}</div></div>
+      <div class="skill-cost">${owned?"OWNED":sk.cost+" NC"}</div></div>`;
+  }
+  el.innerHTML = html;
+}
+
+document.getElementById("skillList").addEventListener("pointerdown", e => {
+  const el = e.target.closest(".skill");
+  if (!el) return;
+  const id = el.dataset.skill;
+  const sk = SKILLS.find(s => s.id === id);
+  if (!sk || hasSkill(id)) return;
+  if (sk.req && !hasSkill(sk.req)) return;
+  if (S.novaCrystals < sk.cost) { showToast("Not enough", "Need " + sk.cost + " Nova Crystals"); return; }
+  S.novaCrystals -= sk.cost;
+  S.skills[id] = true;
+  SFX.achievement(); screenFlash("rgba(74,222,128,0.3)");
+  showToast("Skill Unlocked!", sk.name);
+  buildSkillTree(); updateUI(); save();
+});
+
+// =========================================================
+// TOAST
 // =========================================================
 let toastTimer = null;
 function showToast(title, desc) {
-  const toast = document.getElementById("toast");
+  const t = document.getElementById("toast");
   document.getElementById("toastTitle").textContent = title;
   document.getElementById("toastDesc").textContent = desc;
-  toast.classList.add("show");
-  clearTimeout(toastTimer);
-  toastTimer = setTimeout(() => toast.classList.remove("show"), 2500);
+  t.classList.add("show"); clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => t.classList.remove("show"), 2500);
 }
 
 // =========================================================
@@ -660,63 +947,64 @@ document.querySelectorAll(".tab").forEach(tab => {
     tab.classList.add("active");
     document.querySelector(`[data-panel="${tab.dataset.tab}"]`).classList.add("active");
     if (tab.dataset.tab === "achievements") buildAchievements();
+    if (tab.dataset.tab === "skills") buildSkillTree();
   });
 });
 
 // =========================================================
 // SAVE / LOAD
 // =========================================================
-const SAVE_KEY = "tapnova_save_v2";
+const SAVE_KEY = "tapnova_save_v3";
 function save() {
   const d = {
-    dust: S.dust, lifetimeDust: S.lifetimeDust, allTimeDust: S.allTimeDust,
-    novaCrystals: S.novaCrystals, tapLevel: S.tapLevel,
-    prestigeCount: S.prestigeCount, totalTaps: S.totalTaps,
-    critCount: S.critCount, meteorsCollected: S.meteorsCollected,
-    gens: S.gens.map(g => g.count), achieved: S.achieved,
-    ts: Date.now()
+    dust:S.dust, lifetimeDust:S.lifetimeDust, allTimeDust:S.allTimeDust,
+    novaCrystals:S.novaCrystals, tapLevel:S.tapLevel,
+    prestigeCount:S.prestigeCount, totalTaps:S.totalTaps,
+    critCount:S.critCount, meteorsCollected:S.meteorsCollected,
+    gens:S.gens.map(g=>g.count), achieved:S.achieved,
+    skills:S.skills, wheelCooldown:S.wheelCooldown, wheelSpins:S.wheelSpins,
+    dailyStreak:S.dailyStreak, lastClaimDay:S.lastClaimDay,
+    bossesDefeated:S.bossesDefeated,
+    ts:Date.now()
   };
   try { localStorage.setItem(SAVE_KEY, JSON.stringify(d)); } catch(e) {}
 }
 function load() {
   try {
-    const raw = localStorage.getItem(SAVE_KEY);
+    // Try v3 first, fallback to v2
+    let raw = localStorage.getItem(SAVE_KEY) || localStorage.getItem("tapnova_save_v2");
     if (!raw) return 0;
     const d = JSON.parse(raw);
-    S.dust = d.dust || 0;
-    S.lifetimeDust = d.lifetimeDust || 0;
-    S.allTimeDust = d.allTimeDust || 0;
-    S.novaCrystals = d.novaCrystals || 0;
-    S.tapLevel = d.tapLevel || 0;
-    S.prestigeCount = d.prestigeCount || 0;
-    S.totalTaps = d.totalTaps || 0;
-    S.critCount = d.critCount || 0;
-    S.meteorsCollected = d.meteorsCollected || 0;
-    S.achieved = d.achieved || {};
-    if (d.gens) d.gens.forEach((c, i) => { if (S.gens[i]) S.gens[i].count = c; });
-    return d.ts ? (Date.now() - d.ts) / 1000 : 0;
+    S.dust=d.dust||0; S.lifetimeDust=d.lifetimeDust||0; S.allTimeDust=d.allTimeDust||0;
+    S.novaCrystals=d.novaCrystals||0; S.tapLevel=d.tapLevel||0;
+    S.prestigeCount=d.prestigeCount||0; S.totalTaps=d.totalTaps||0;
+    S.critCount=d.critCount||0; S.meteorsCollected=d.meteorsCollected||0;
+    S.achieved=d.achieved||{}; S.skills=d.skills||{};
+    S.wheelCooldown=d.wheelCooldown||0; S.wheelSpins=d.wheelSpins||0;
+    S.dailyStreak=d.dailyStreak||0; S.lastClaimDay=d.lastClaimDay||"";
+    S.bossesDefeated=d.bossesDefeated||0;
+    if (d.gens) d.gens.forEach((c,i)=>{ if(S.gens[i]) S.gens[i].count=c; });
+    return d.ts ? (Date.now()-d.ts)/1000 : 0;
   } catch(e) { return 0; }
 }
 
 // =========================================================
-// OFFLINE PROGRESS
+// OFFLINE
 // =========================================================
 function applyOffline(elapsed) {
-  const cap = 7200;
-  elapsed = Math.min(elapsed, cap);
+  const cap = 7200; elapsed = Math.min(elapsed, cap);
+  // Reduce wheel cooldown by elapsed time
+  S.wheelCooldown = Math.max(0, S.wheelCooldown - elapsed);
   const rate = totalRate();
   if (rate <= 0 || elapsed < 60) return;
   const earned = rate * elapsed;
-  S.dust += earned;
-  S.lifetimeDust += earned;
-  S.allTimeDust += earned;
+  S.dust += earned; S.lifetimeDust += earned; S.allTimeDust += earned;
   showOfflineBanner(earned, elapsed);
 }
 function showOfflineBanner(earned, elapsed) {
-  const div = document.createElement("div");
-  div.className = "offline-banner";
+  const div = document.createElement("div"); div.className = "offline-banner";
   const mins = Math.floor(elapsed / 60);
-  div.innerHTML = `<h3>Welcome Back!</h3><p>+${fmt(earned)} Stardust</p><p style="font-size:13px;color:#a89cdb">${mins} min${mins !== 1 ? "s" : ""} away</p><button onclick="this.parentElement.remove()">Collect</button>`;
+  div.innerHTML = `<h3>Welcome Back!</h3><p>+${fmt(earned)} Stardust</p><p style="font-size:12px;color:#a89cdb">${mins} min${mins!==1?"s":""} away</p><button onclick="this.parentElement.remove()">Collect</button>`;
   document.body.appendChild(div);
 }
 
@@ -726,53 +1014,58 @@ function showOfflineBanner(earned, elapsed) {
 const orbArea = document.getElementById("orbArea");
 const orb = document.getElementById("orb");
 
-orb.addEventListener("pointerdown", e => {
-  e.preventDefault();
+function doTap(x, y, isAuto) {
   S.totalTaps++;
-  addCombo();
-
-  const isCrit = rollCrit();
-  let amount = tapPower() * S.comboMultiplier;
+  if (!isAuto) addCombo();
+  const isMega = rollMegaCrit();
+  const isCrit = isMega || rollCrit();
+  let amount = tapPower() * (isAuto ? 1 : S.comboMultiplier);
+  if (isMega) { amount *= 500; }
+  else if (isCrit) { amount *= getCritMult(); }
 
   if (isCrit) {
-    amount *= CRIT_MULTIPLIER;
     S.critCount++;
-    screenShake();
-    screenFlash("rgba(255, 60, 60, 0.35)");
+    screenShake(); screenFlash(isMega ? "rgba(255,200,0,0.5)" : "rgba(255,60,60,0.35)");
     SFX.crit();
-    if (navigator.vibrate) navigator.vibrate([40, 20, 60]);
-  } else {
+    if (navigator.vibrate) navigator.vibrate(isMega ? [60,30,60,30,60] : [40,20,60]);
+  } else if (!isAuto) {
     SFX.tap();
     if (navigator.vibrate) navigator.vibrate(20);
   }
 
-  S.dust += amount;
-  S.lifetimeDust += amount;
-  S.allTimeDust += amount;
+  S.dust += amount; S.lifetimeDust += amount; S.allTimeDust += amount;
+
+  // Hit boss
+  if (S.challengeActive && !isAuto) hitBoss();
 
   // Floating text
-  const f = document.createElement("div");
-  f.className = isCrit ? "floater crit" : "floater";
-  f.textContent = (isCrit ? "CRIT +" : "+") + fmt(amount);
-  const rect = orbArea.getBoundingClientRect();
-  f.style.left = (e.clientX - rect.left - 30 + (Math.random() * 40 - 20)) + "px";
-  f.style.top = (e.clientY - rect.top - 20) + "px";
-  orbArea.appendChild(f);
-  setTimeout(() => f.remove(), isCrit ? 900 : 800);
+  if (!isAuto || Math.random() < 0.15) {
+    const f = document.createElement("div");
+    f.className = isCrit ? "floater crit" : "floater";
+    if (isMega) { f.textContent = "MEGA +" + fmt(amount); f.style.color = "#fef08a"; }
+    else f.textContent = (isCrit ? "CRIT +" : "+") + fmt(amount);
+    f.style.left = (x + (Math.random()*40-20)) + "px";
+    f.style.top = (y - 20) + "px";
+    orbArea.appendChild(f);
+    setTimeout(() => f.remove(), isCrit ? 900 : 800);
+  }
 
-  // Dynamic orb glow based on combo
   updateOrbVisuals();
-  updateUI();
-  checkAchievements();
+}
+
+orb.addEventListener("pointerdown", e => {
+  e.preventDefault();
+  const rect = orbArea.getBoundingClientRect();
+  doTap(e.clientX - rect.left - 30, e.clientY - rect.top, false);
+  updateUI(); checkAchievements();
 });
 
 function updateOrbVisuals() {
-  const mult = S.comboMultiplier;
-  const glow = document.getElementById("glow");
-  if (mult >= 8) {
+  const m = S.comboMultiplier; const glow = document.getElementById("glow");
+  if (m >= 8) {
     orb.style.boxShadow = "0 0 50px rgba(239,68,68,.5),0 0 100px rgba(239,68,68,.3),inset 0 -8px 20px rgba(0,0,0,.3)";
     glow.style.background = "radial-gradient(circle,rgba(239,68,68,.3),transparent 70%)";
-  } else if (mult >= 3) {
+  } else if (m >= 3) {
     orb.style.boxShadow = "0 0 50px rgba(245,158,11,.4),0 0 90px rgba(245,158,11,.2),inset 0 -8px 20px rgba(0,0,0,.3)";
     glow.style.background = "radial-gradient(circle,rgba(245,158,11,.25),transparent 70%)";
   } else {
@@ -789,66 +1082,67 @@ const shop = document.getElementById("shop");
 function buildShop() {
   let html = "";
 
+  // Wheel button
+  const wheelReady = S.wheelCooldown <= 0;
+  const wheelText = wheelReady ? "SPIN NOW!" : Math.ceil(S.wheelCooldown) + "s";
+  html += `<div class="btn wheel-btn${wheelReady ? " ready" : ""}" data-action="wheel">
+    <div class="info"><div class="name">Lucky Wheel</div>
+    <div class="detail">${wheelReady ? "Free spin available!" : "Cooldown: " + wheelText}</div></div></div>`;
+
   // Tap upgrade
   const tCost = tapUpgradeCost();
-  const tDis = S.dust < tCost ? " disabled" : "";
-  html += `<div class="btn${tDis}" data-action="tap">
-    <div class="info"><div class="name">Tap Power Lv.${S.tapLevel + 1}</div>
-    <div class="detail">+${fmt(tapPower())} per tap (x${S.comboMultiplier} combo)</div></div>
+  html += `<div class="btn${S.dust<tCost?" disabled":""}" data-action="tap">
+    <div class="info"><div class="name">Tap Power Lv.${S.tapLevel+1}</div>
+    <div class="detail">+${fmt(tapPower())} per tap</div></div>
     <div class="cost">${fmt(tCost)}</div></div>`;
 
-  html += `<div class="section-title" style="margin-top:8px">GENERATORS</div>`;
-
+  html += `<div class="section-title" style="margin-top:6px">GENERATORS</div>`;
   for (let i = 0; i < S.gens.length; i++) {
-    const g = S.gens[i];
-    const cost = genCost(i);
-    const dis = S.dust < cost ? " disabled" : "";
-    html += `<div class="btn${dis}" data-action="gen" data-idx="${i}">
+    const g = S.gens[i]; const cost = genCost(i);
+    html += `<div class="btn${S.dust<cost?" disabled":""}" data-action="gen" data-idx="${i}">
       <div class="info"><div class="name">${g.name} <span style="color:#a89cdb">x${g.count}</span></div>
-      <div class="detail">+${fmt(g.baseRate * globalMult())}/s each</div></div>
+      <div class="detail">+${fmt(g.baseRate*globalMult())}/s each</div></div>
       <div class="cost">${fmt(cost)}</div></div>`;
   }
 
-  // Prestige
   const pg = prestigeGain();
   if (pg > 0) {
     html += `<div class="btn prestige" data-action="prestige">
       <div class="info"><div class="name">GO SUPERNOVA</div>
-      <div class="detail">Reset for +${fmt(pg)} Nova Crystal${pg > 1 ? "s" : ""} (+${fmt(pg * 10)}% all)</div></div></div>`;
+      <div class="detail">Reset for +${fmt(pg)} Crystal${pg>1?"s":""} (+${fmt(pg*10)}% all)</div></div></div>`;
   }
-
   shop.innerHTML = html;
+
+  // Wheel notif dot
+  document.getElementById("wheelNotif").style.display = wheelReady ? "block" : "none";
 }
 
 shop.addEventListener("pointerdown", e => {
   const btn = e.target.closest(".btn");
   if (!btn || btn.classList.contains("disabled")) return;
   const action = btn.dataset.action;
-
-  if (action === "tap") {
+  if (action === "wheel") {
+    document.getElementById("wheelOverlay").classList.add("show");
+    document.getElementById("wheelSpinBtn").disabled = S.wheelCooldown > 0;
+    document.getElementById("wheelResult").textContent = S.wheelCooldown > 0 ? "Cooldown: " + Math.ceil(S.wheelCooldown) + "s" : "";
+    drawWheel();
+  } else if (action === "tap") {
     const cost = tapUpgradeCost();
     if (S.dust >= cost) { S.dust -= cost; S.tapLevel++; SFX.buy(); }
   } else if (action === "gen") {
-    const i = parseInt(btn.dataset.idx);
-    const cost = genCost(i);
+    const i = parseInt(btn.dataset.idx); const cost = genCost(i);
     if (S.dust >= cost) { S.dust -= cost; S.gens[i].count++; SFX.buy(); }
   } else if (action === "prestige") {
-    const gain = prestigeGain();
-    if (gain <= 0) return;
-    if (!confirm("Go Supernova?\n\nReset progress for +" + fmt(gain) + " Nova Crystal(s).\nEach crystal = +10% to ALL production.")) return;
-    S.novaCrystals += gain;
-    S.prestigeCount++;
+    const gain = prestigeGain(); if (gain <= 0) return;
+    if (!confirm("Go Supernova?\n\nReset for +" + fmt(gain) + " Nova Crystal(s).\nEach = +10% ALL production.")) return;
+    S.novaCrystals += gain; S.prestigeCount++;
     S.dust = 0; S.lifetimeDust = 0; S.tapLevel = 0;
     S.gens.forEach(g => g.count = 0);
     S.comboCount = 0; S.comboTimer = 0; S.comboMultiplier = 1;
-    screenFlash("rgba(255, 200, 100, 0.5)");
-    screenShake();
-    SFX.prestige();
-    showToast("SUPERNOVA!", "+" + fmt(gain) + " Nova Crystals earned");
-    checkAchievements();
+    screenFlash("rgba(255,200,100,0.5)"); screenShake(); SFX.prestige();
+    showToast("SUPERNOVA!", "+" + fmt(gain) + " Nova Crystals"); checkAchievements();
   }
-  updateUI();
-  checkAchievements();
+  updateUI(); checkAchievements();
 });
 
 // =========================================================
@@ -861,42 +1155,57 @@ const novaInfo = document.getElementById("novaInfo");
 function updateUI() {
   dustVal.textContent = fmt(S.dust);
   rateVal.textContent = fmt(totalRate()) + "/s";
-  const nc = S.novaCrystals;
-  const ab = ((achievBonus() - 1) * 100).toFixed(0);
-  let infoText = "";
-  if (nc > 0) infoText += "Nova: " + fmt(nc) + " (+"+fmt(nc*10)+"%)";
-  if (parseInt(ab) > 0) infoText += (infoText ? " | " : "") + "Achievements: +" + ab + "%";
-  novaInfo.textContent = infoText;
+  const nc = S.novaCrystals; const ab = ((achievBonus()-1)*100).toFixed(0);
+  let info = "";
+  if (nc > 0) info += "Nova: " + fmt(nc) + " (+" + fmt(nc*10) + "%)";
+  if (parseInt(ab) > 0) info += (info ? " | " : "") + "Achiev: +" + ab + "%";
+  novaInfo.textContent = info;
   buildShop();
 }
 
 // =========================================================
 // GAME LOOP
 // =========================================================
-let lastTick = performance.now();
-let achievCheckTimer = 0;
+let lastTick = performance.now(), achievTimer = 0, autoTapAccum = 0;
 
 function tick(now) {
-  const dt = (now - lastTick) / 1000;
-  lastTick = now;
+  const dt = (now - lastTick) / 1000; lastTick = now;
 
   // Passive income
   const rate = totalRate();
-  if (rate > 0) {
-    S.dust += rate * dt;
-    S.lifetimeDust += rate * dt;
-    S.allTimeDust += rate * dt;
+  if (rate > 0) { S.dust += rate*dt; S.lifetimeDust += rate*dt; S.allTimeDust += rate*dt; }
+
+  // Auto-tap (skill)
+  const autoRate = getAutoTapRate();
+  if (autoRate > 0) {
+    autoTapAccum += dt;
+    const taps = Math.floor(autoTapAccum * autoRate);
+    if (taps > 0) {
+      autoTapAccum -= taps / autoRate;
+      const cx = orbArea.getBoundingClientRect();
+      for (let i = 0; i < taps; i++) doTap(cx.width/2 - 30 + Math.random()*20, cx.height/2 - 20, true);
+    }
   }
 
-  // Combo decay
+  // Auto-burst buff
+  const burst = S.buffs.find(b => b.type === "autoburst");
+  if (burst) {
+    autoTapAccum += dt; // already covered above, but burst adds more
+    const taps = Math.floor(dt * burst.value);
+    const cx = orbArea.getBoundingClientRect();
+    for (let i = 0; i < taps; i++) doTap(cx.width/2 - 30 + Math.random()*20, cx.height/2 - 20, true);
+  }
+
   updateCombo(dt);
+  updateBuffs(dt);
+  updateBoss(dt);
 
-  // Periodic achievement check
-  achievCheckTimer += dt;
-  if (achievCheckTimer >= 2) {
-    achievCheckTimer = 0;
-    checkAchievements();
-  }
+  // Wheel cooldown
+  if (S.wheelCooldown > 0) S.wheelCooldown = Math.max(0, S.wheelCooldown - dt);
+
+  // Periodic checks
+  achievTimer += dt;
+  if (achievTimer >= 2) { achievTimer = 0; checkAchievements(); }
 
   updateUI();
   requestAnimationFrame(tick);
@@ -907,12 +1216,14 @@ function tick(now) {
 // =========================================================
 const offlineSec = load();
 if (offlineSec > 0) applyOffline(offlineSec);
-updateUI();
-updateOrbVisuals();
+updateUI(); updateOrbVisuals();
 requestAnimationFrame(tick);
 scheduleMeteor();
+scheduleBoss();
 
-// Auto-save every 15s + on pause
+// Daily streak check (after a brief delay so UI is ready)
+setTimeout(() => checkDailyStreak(), 500);
+
 setInterval(save, 15000);
 document.addEventListener("visibilitychange", () => { if (document.hidden) save(); });
 </script>
