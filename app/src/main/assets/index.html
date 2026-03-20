@@ -1,0 +1,276 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
+<title>Tap Nova</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent;user-select:none}
+html,body{width:100%;height:100%;overflow:hidden;background:#0a0518;font-family:'Segoe UI',system-ui,sans-serif;color:#fff}
+#game{display:flex;flex-direction:column;height:100%;max-width:480px;margin:0 auto;padding:12px 16px env(safe-area-inset-bottom)}
+
+/* Top bar */
+.top-bar{text-align:center;padding:8px 0}
+.currency-name{font-size:11px;letter-spacing:3px;color:#a89cdb;text-transform:uppercase}
+.currency-value{font-size:42px;font-weight:700;color:#fff5d4;text-shadow:0 0 20px rgba(255,200,60,.3)}
+.rate{font-size:14px;color:#6dba6d;margin-top:2px}
+.nova-info{font-size:12px;color:#ff8866;margin-top:4px}
+
+/* Orb area */
+.orb-area{flex:2;display:flex;align-items:center;justify-content:center;position:relative}
+#orb{width:180px;height:180px;border-radius:50%;background:radial-gradient(circle at 35% 35%,#c084fc,#7c3aed 50%,#4c1d95);box-shadow:0 0 40px rgba(139,92,246,.4),0 0 80px rgba(139,92,246,.2),inset 0 -8px 20px rgba(0,0,0,.3);cursor:pointer;transition:transform .08s ease;position:relative;z-index:2}
+#orb:active{transform:scale(.88)}
+#orb .label{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-size:22px;font-weight:700;letter-spacing:2px;text-shadow:0 2px 8px rgba(0,0,0,.5)}
+.glow{position:absolute;width:260px;height:260px;border-radius:50%;background:radial-gradient(circle,rgba(139,92,246,.2),transparent 70%);animation:pulse 2s ease-in-out infinite;z-index:1}
+@keyframes pulse{0%,100%{transform:scale(1);opacity:.6}50%{transform:scale(1.12);opacity:1}}
+.floater{position:absolute;font-size:24px;font-weight:700;color:#fde68a;text-shadow:0 0 8px rgba(253,230,138,.5);pointer-events:none;z-index:10;animation:floatUp .8s ease-out forwards}
+@keyframes floatUp{0%{opacity:1;transform:translateY(0)}100%{opacity:0;transform:translateY(-100px)}}
+
+/* Panels */
+.sep{height:1px;background:linear-gradient(90deg,transparent,rgba(139,92,246,.3),transparent);margin:8px 0}
+.section-title{font-size:11px;letter-spacing:2px;color:#7c6cb5;text-align:center;margin:6px 0 4px}
+.shop{flex:3;overflow-y:auto;-webkit-overflow-scrolling:touch;padding-bottom:20px}
+.shop::-webkit-scrollbar{display:none}
+
+.btn{width:100%;padding:12px 16px;margin-bottom:6px;background:rgba(30,20,60,.8);border:1px solid rgba(100,80,180,.35);border-radius:12px;color:#fff;font-size:14px;text-align:left;cursor:pointer;transition:background .15s,border-color .15s;display:flex;justify-content:space-between;align-items:center}
+.btn:active{background:rgba(50,30,90,.9);border-color:rgba(120,100,200,.6)}
+.btn.disabled{opacity:.35;pointer-events:none}
+.btn .info{display:flex;flex-direction:column;gap:2px}
+.btn .name{font-weight:600;font-size:15px}
+.btn .detail{font-size:11px;color:#a89cdb}
+.btn .cost{font-size:14px;color:#fde68a;font-weight:600;white-space:nowrap}
+
+.btn.prestige{background:rgba(130,20,30,.7);border-color:rgba(255,100,80,.5);text-align:center;justify-content:center;margin-top:8px}
+.btn.prestige .name{color:#ffd4cc;font-size:16px}
+.btn.prestige .detail{color:#ff9988;font-size:12px}
+
+/* Offline banner */
+.offline-banner{position:fixed;top:0;left:0;right:0;background:rgba(20,10,40,.95);border-bottom:1px solid rgba(139,92,246,.4);padding:20px;text-align:center;z-index:100;animation:slideDown .4s ease}
+@keyframes slideDown{from{transform:translateY(-100%)}to{transform:translateY(0)}}
+.offline-banner h3{color:#c084fc;margin-bottom:6px}
+.offline-banner p{color:#fde68a;font-size:18px}
+.offline-banner button{margin-top:12px;padding:8px 32px;background:#7c3aed;border:none;border-radius:8px;color:#fff;font-size:16px;cursor:pointer}
+</style>
+</head>
+<body>
+<div id="game">
+  <div class="top-bar">
+    <div class="currency-name">Stardust</div>
+    <div class="currency-value" id="dustVal">0</div>
+    <div class="rate" id="rateVal">0/s</div>
+    <div class="nova-info" id="novaInfo">Nova Crystals: 0</div>
+  </div>
+  <div class="orb-area" id="orbArea">
+    <div class="glow"></div>
+    <div id="orb"><div class="label">TAP</div></div>
+  </div>
+  <div class="sep"></div>
+  <div class="section-title">UPGRADES</div>
+  <div class="shop" id="shop"></div>
+</div>
+
+<script>
+// === State ===
+const S = {
+  dust: 0, lifetimeDust: 0, novaCrystals: 0,
+  tapLevel: 0, prestigeCount: 0,
+  gens: [
+    {name:"Asteroid Miner",   count:0, baseCost:10,       baseRate:0.5},
+    {name:"Space Station",    count:0, baseCost:100,      baseRate:4},
+    {name:"Lunar Colony",     count:0, baseCost:1200,     baseRate:30},
+    {name:"Dyson Ring",       count:0, baseCost:15000,    baseRate:200},
+    {name:"Warp Conduit",     count:0, baseCost:200000,   baseRate:1500},
+    {name:"Galaxy Harvester", count:0, baseCost:3300000,  baseRate:12000},
+  ]
+};
+
+// === Helpers ===
+const SUFFIXES = ["","K","M","B","T","Qa","Qi","Sx","Sp","Oc","No","Dc"];
+function fmt(n) {
+  if (n < 1000) return Math.floor(n).toString();
+  const tier = Math.min(Math.floor(Math.log10(Math.abs(n)) / 3), SUFFIXES.length - 1);
+  const scaled = n / Math.pow(1000, tier);
+  return (scaled >= 100 ? Math.floor(scaled) : scaled >= 10 ? scaled.toFixed(1) : scaled.toFixed(2)) + SUFFIXES[tier];
+}
+
+function prestigeMult() { return 1 + S.novaCrystals * 0.1; }
+function tapPower() { return (1 + S.tapLevel * 0.5) * prestigeMult(); }
+function genCost(i) { return S.gens[i].baseCost * Math.pow(1.15, S.gens[i].count); }
+function genRate(i) { return S.gens[i].baseRate * S.gens[i].count * prestigeMult(); }
+function totalRate() { let r = 0; for (let i = 0; i < S.gens.length; i++) r += genRate(i); return r; }
+function tapUpgradeCost() { return 10 * Math.pow(1.8, S.tapLevel); }
+function prestigeGain() { return S.lifetimeDust < 1e6 ? 0 : Math.floor(Math.sqrt(S.lifetimeDust / 1e6)); }
+
+// === Save / Load ===
+const SAVE_KEY = "tapnova_save";
+function save() {
+  const d = {
+    dust: S.dust, lifetimeDust: S.lifetimeDust, novaCrystals: S.novaCrystals,
+    tapLevel: S.tapLevel, prestigeCount: S.prestigeCount,
+    gens: S.gens.map(g => g.count), ts: Date.now()
+  };
+  try { localStorage.setItem(SAVE_KEY, JSON.stringify(d)); } catch(e) {}
+}
+function load() {
+  try {
+    const raw = localStorage.getItem(SAVE_KEY);
+    if (!raw) return 0;
+    const d = JSON.parse(raw);
+    S.dust = d.dust || 0;
+    S.lifetimeDust = d.lifetimeDust || 0;
+    S.novaCrystals = d.novaCrystals || 0;
+    S.tapLevel = d.tapLevel || 0;
+    S.prestigeCount = d.prestigeCount || 0;
+    if (d.gens) d.gens.forEach((c, i) => { if (S.gens[i]) S.gens[i].count = c; });
+    return d.ts ? (Date.now() - d.ts) / 1000 : 0;
+  } catch(e) { return 0; }
+}
+
+// === Offline progress ===
+function applyOffline(elapsed) {
+  const cap = 7200; // 2 hours max
+  elapsed = Math.min(elapsed, cap);
+  const rate = totalRate();
+  if (rate <= 0 || elapsed < 60) return; // at least 1 min away
+  const earned = rate * elapsed;
+  S.dust += earned;
+  S.lifetimeDust += earned;
+  showOfflineBanner(earned, elapsed);
+}
+function showOfflineBanner(earned, elapsed) {
+  const div = document.createElement("div");
+  div.className = "offline-banner";
+  const mins = Math.floor(elapsed / 60);
+  div.innerHTML = `<h3>Welcome Back!</h3><p>+${fmt(earned)} Stardust</p><p style="font-size:13px;color:#a89cdb">${mins} min${mins !== 1 ? "s" : ""} away</p><button onclick="this.parentElement.remove()">Collect</button>`;
+  document.body.appendChild(div);
+}
+
+// === Tap ===
+const orbArea = document.getElementById("orbArea");
+const orb = document.getElementById("orb");
+
+orb.addEventListener("pointerdown", e => {
+  e.preventDefault();
+  const amount = tapPower();
+  S.dust += amount;
+  S.lifetimeDust += amount;
+
+  // Floating text
+  const f = document.createElement("div");
+  f.className = "floater";
+  f.textContent = "+" + fmt(amount);
+  const rect = orbArea.getBoundingClientRect();
+  f.style.left = (e.clientX - rect.left - 30 + (Math.random() * 40 - 20)) + "px";
+  f.style.top = (e.clientY - rect.top - 20) + "px";
+  orbArea.appendChild(f);
+  setTimeout(() => f.remove(), 800);
+
+  // Haptic
+  if (navigator.vibrate) navigator.vibrate(25);
+
+  updateUI();
+});
+
+// === Shop ===
+const shop = document.getElementById("shop");
+
+function buildShop() {
+  let html = "";
+
+  // Tap upgrade
+  const tCost = tapUpgradeCost();
+  const tDis = S.dust < tCost ? " disabled" : "";
+  html += `<div class="btn${tDis}" data-action="tap">
+    <div class="info"><div class="name">Tap Power Lv.${S.tapLevel + 1}</div>
+    <div class="detail">+${fmt(tapPower())} per tap</div></div>
+    <div class="cost">${fmt(tCost)}</div></div>`;
+
+  html += `<div class="section-title" style="margin-top:10px">GENERATORS</div>`;
+
+  // Generators
+  for (let i = 0; i < S.gens.length; i++) {
+    const g = S.gens[i];
+    const cost = genCost(i);
+    const dis = S.dust < cost ? " disabled" : "";
+    html += `<div class="btn${dis}" data-action="gen" data-idx="${i}">
+      <div class="info"><div class="name">${g.name} <span style="color:#a89cdb">x${g.count}</span></div>
+      <div class="detail">+${fmt(g.baseRate * prestigeMult())}/s each</div></div>
+      <div class="cost">${fmt(cost)}</div></div>`;
+  }
+
+  // Prestige
+  const pg = prestigeGain();
+  if (pg > 0) {
+    html += `<div class="btn prestige" data-action="prestige">
+      <div class="info"><div class="name">GO SUPERNOVA</div>
+      <div class="detail">Reset for +${fmt(pg)} Nova Crystal${pg > 1 ? "s" : ""} (+${fmt(pg * 10)}% all)</div></div></div>`;
+  }
+
+  shop.innerHTML = html;
+}
+
+shop.addEventListener("pointerdown", e => {
+  const btn = e.target.closest(".btn");
+  if (!btn || btn.classList.contains("disabled")) return;
+  const action = btn.dataset.action;
+
+  if (action === "tap") {
+    const cost = tapUpgradeCost();
+    if (S.dust >= cost) { S.dust -= cost; S.tapLevel++; }
+  } else if (action === "gen") {
+    const i = parseInt(btn.dataset.idx);
+    const cost = genCost(i);
+    if (S.dust >= cost) { S.dust -= cost; S.gens[i].count++; }
+  } else if (action === "prestige") {
+    const gain = prestigeGain();
+    if (gain <= 0) return;
+    if (!confirm(`Go Supernova?\n\nYou'll reset progress but gain ${fmt(gain)} Nova Crystal(s).\nEach crystal = +10% to ALL production.`)) return;
+    S.novaCrystals += gain;
+    S.prestigeCount++;
+    S.dust = 0;
+    S.lifetimeDust = 0;
+    S.tapLevel = 0;
+    S.gens.forEach(g => g.count = 0);
+  }
+  updateUI();
+});
+
+// === UI Update ===
+const dustVal = document.getElementById("dustVal");
+const rateVal = document.getElementById("rateVal");
+const novaInfo = document.getElementById("novaInfo");
+
+function updateUI() {
+  dustVal.textContent = fmt(S.dust);
+  rateVal.textContent = fmt(totalRate()) + "/s";
+  const nc = S.novaCrystals;
+  novaInfo.textContent = nc > 0 ? `Nova Crystals: ${fmt(nc)} (+${fmt(nc * 10)}% all)` : "";
+  buildShop();
+}
+
+// === Game Loop ===
+let lastTick = performance.now();
+function tick(now) {
+  const dt = (now - lastTick) / 1000;
+  lastTick = now;
+  const rate = totalRate();
+  if (rate > 0) {
+    S.dust += rate * dt;
+    S.lifetimeDust += rate * dt;
+  }
+  updateUI();
+  requestAnimationFrame(tick);
+}
+
+// === Init ===
+const offlineSec = load();
+if (offlineSec > 0) applyOffline(offlineSec);
+updateUI();
+requestAnimationFrame(tick);
+
+// Auto-save every 15s + on visibility change
+setInterval(save, 15000);
+document.addEventListener("visibilitychange", () => { if (document.hidden) save(); });
+</script>
+</body>
+</html>
