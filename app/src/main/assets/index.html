@@ -189,6 +189,46 @@ html,body{width:100%;height:100%;overflow:hidden;background:#0a0518;font-family:
 .weekly-progress{font-size:9px;color:#a89cdb;margin-top:2px}
 .weekly-bar{height:4px;background:rgba(255,255,255,.08);border-radius:2px;margin-top:3px;overflow:hidden}
 .weekly-bar-fill{height:100%;background:linear-gradient(90deg,#059669,#4ade80);border-radius:2px;transition:width .3s}
+
+/* Artifacts */
+.artifact{padding:6px 10px;margin-bottom:3px;border-radius:8px;display:flex;gap:8px;align-items:center;background:rgba(30,20,60,.6);border:1px solid rgba(100,80,180,.2)}
+.artifact.common{border-color:rgba(148,163,184,.4)}
+.artifact.rare{border-color:rgba(56,189,248,.5);background:rgba(20,40,60,.5)}
+.artifact.epic{border-color:rgba(168,85,247,.5);background:rgba(40,20,60,.5)}
+.artifact.legendary{border-color:rgba(245,158,11,.6);background:rgba(60,40,20,.5);box-shadow:0 0 8px rgba(245,158,11,.15)}
+.artifact-icon{font-size:20px;width:28px;text-align:center;flex-shrink:0}
+.artifact-info{flex:1}
+.artifact-name{font-size:11px;font-weight:600}
+.artifact-effect{font-size:9px;color:#a89cdb}
+.artifact-rarity{font-size:8px;font-weight:700;text-transform:uppercase}
+.artifact.common .artifact-rarity{color:#94a3b8}
+.artifact.rare .artifact-rarity{color:#38bdf8}
+.artifact.epic .artifact-rarity{color:#a855f7}
+.artifact.legendary .artifact-rarity{color:#f59e0b}
+
+/* Prestige challenges */
+.challenge{padding:6px 10px;margin-bottom:3px;background:rgba(30,20,60,.6);border:1px solid rgba(100,80,180,.2);border-radius:8px}
+.challenge.done{border-color:rgba(74,222,128,.4);background:rgba(20,60,30,.3)}
+.challenge-name{font-size:11px;font-weight:600}
+.challenge-desc{font-size:9px;color:#a89cdb;margin-top:1px}
+.challenge-reward{font-size:8px;color:#fbbf24}
+.challenge-bar{height:3px;background:rgba(255,255,255,.08);border-radius:2px;margin-top:3px;overflow:hidden}
+.challenge-bar-fill{height:100%;background:linear-gradient(90deg,#7c3aed,#4ade80);border-radius:2px;transition:width .3s}
+
+/* Music toggle */
+.music-toggle{position:fixed;top:6px;right:8px;z-index:90;background:rgba(30,20,60,.8);border:1px solid rgba(100,80,180,.3);border-radius:6px;padding:3px 8px;font-size:10px;color:#a89cdb;cursor:pointer}
+.music-toggle.on{color:#c084fc;border-color:rgba(192,132,252,.5)}
+
+/* Artifact drop toast */
+.drop-toast{position:fixed;bottom:80px;left:50%;transform:translateX(-50%) scale(0);background:rgba(20,12,40,.95);border:2px solid;border-radius:12px;padding:10px 20px;text-align:center;z-index:110;transition:transform .3s ease;pointer-events:none}
+.drop-toast.show{transform:translateX(-50%) scale(1)}
+.drop-toast.common{border-color:#94a3b8}
+.drop-toast.rare{border-color:#38bdf8}
+.drop-toast.epic{border-color:#a855f7;box-shadow:0 0 20px rgba(168,85,247,.3)}
+.drop-toast.legendary{border-color:#f59e0b;box-shadow:0 0 30px rgba(245,158,11,.4)}
+.drop-icon{font-size:28px}
+.drop-name{font-size:14px;font-weight:700;margin-top:4px}
+.drop-effect{font-size:10px;color:#a89cdb;margin-top:2px}
 </style>
 </head>
 <body>
@@ -205,6 +245,7 @@ html,body{width:100%;height:100%;overflow:hidden;background:#0a0518;font-family:
     <div class="combo-track"><div class="combo-fill" id="comboFill"></div></div>
   </div>
   <div class="orb-area" id="orbArea">
+    <canvas id="particleCanvas" style="position:absolute;inset:0;width:100%;height:100%;pointer-events:none;z-index:15"></canvas>
     <div class="glow" id="glow"></div>
     <div id="orb"><div class="label">TAP</div></div>
   </div>
@@ -220,7 +261,9 @@ html,body{width:100%;height:100%;overflow:hidden;background:#0a0518;font-family:
   <div class="tab-panel" data-panel="rivals"><div class="shop" id="rivalList"></div></div>
   <div class="tab-panel" data-panel="more"><div class="shop" id="moreList"></div></div>
 </div>
+<div class="music-toggle" id="musicToggle">MUSIC OFF</div>
 <div class="screen-flash" id="screenFlash"></div>
+<div class="drop-toast" id="dropToast"><div class="drop-icon" id="dropIcon"></div><div class="drop-name" id="dropName"></div><div class="drop-effect" id="dropEffect"></div></div>
 <div class="toast" id="toast"><div class="toast-title" id="toastTitle"></div><div class="toast-desc" id="toastDesc"></div></div>
 <div class="modal-overlay" id="wheelOverlay"><div class="wheel-modal"><div class="wheel-title">LUCKY WHEEL</div><div class="wheel-container"><div class="wheel-pointer"></div><canvas class="wheel-canvas" id="wheelCanvas" width="220" height="220"></canvas></div><div class="wheel-result" id="wheelResult"></div><button class="wheel-spin-btn" id="wheelSpinBtn">SPIN!</button><br><button class="wheel-close" id="wheelClose">Close</button></div></div>
 <div class="modal-overlay" id="streakOverlay"><div class="streak-modal"><div class="streak-title" id="streakTitle">Daily Reward!</div><div class="streak-subtitle" id="streakSubtitle"></div><div class="streak-days" id="streakDays"></div><button class="streak-claim" id="streakClaim">Claim Reward</button></div></div>
@@ -252,6 +295,12 @@ mgCooldown:0,mgPlayed:0,
 rivalSeed:0,weeklyTarget:0,weeklyProgress:0,weeklyWeek:"",
 // Orb stage
 orbStage:0,
+// Artifacts
+artifacts:[],artifactDrops:0,
+// Prestige challenges
+pChallenges:[],pChallengesDone:0,
+// Music
+musicOn:false,
 };
 
 // =============================================================================
@@ -347,8 +396,8 @@ const SKILLS=[
 ];
 function hs(id){return!!S.skills[id];}
 function getAutoTapRate(){return hs("autotap3")?8:hs("autotap2")?3:hs("autotap1")?1:0;}
-function getCritChance(){let b=.05;if(hs("crit1"))b=.1;if(hs("crit2"))b=.18;if(S.buffs.find(x=>x.type==="crit"))b+=.1;return b;}
-function getCritMult(){return hs("critdmg2")?50:hs("critdmg1")?20:10;}
+function getCritChance(){let b=.05;if(hs("crit1"))b=.1;if(hs("crit2"))b=.18;if(S.buffs.find(x=>x.type==="crit"))b+=.1;b+=artifactCritChance();return Math.min(b,.5);}
+function getCritMult(){return(hs("critdmg2")?50:hs("critdmg1")?20:10)*artifactCritDmg();}
 function getMeteorDelay(){let b=30+Math.random()*60;if(hs("meteor2"))b*=.3;else if(hs("meteor1"))b*=.6;return b;}
 function getWheelCD(){return hs("wheel1")?150:300;}
 function getSynergyBonus(){if(!hs("synergy"))return 1;let t=0;for(const g of S.gens)if(g.count>0)t++;return 1+t*.05;}
@@ -360,10 +409,10 @@ function achievBonus(){let b=0;for(const a of ACHIEVEMENTS)if(S.achieved[a.id])b
 function prestigeMult(){return 1+S.novaCrystals*.1;}
 function essenceMult(){return 1+S.cosmicEssence*.25;}
 function buffMult(){return S.buffs.find(b=>b.type==="2x")?2:1;}
-function globalMult(){return prestigeMult()*achievBonus()*getSynergyBonus()*buffMult()*essenceMult();}
-function tapPower(){return(1+S.tapLevel*.5)*globalMult();}
+function globalMult(){return prestigeMult()*achievBonus()*getSynergyBonus()*buffMult()*essenceMult()*artifactAllMult();}
+function tapPower(){return(1+S.tapLevel*.5)*globalMult()*artifactTapMult();}
 function genCost(i){return S.gens[i].baseCost*Math.pow(1.15,S.gens[i].count);}
-function genRate(i){return S.gens[i].baseRate*S.gens[i].count*globalMult();}
+function genRate(i){return S.gens[i].baseRate*S.gens[i].count*globalMult()*artifactGenMult();}
 function totalRate(){let r=0;for(let i=0;i<S.gens.length;i++)r+=genRate(i);return r;}
 function tapUpgradeCost(){return 10*Math.pow(1.8,S.tapLevel);}
 function prestigeGain(){return S.lifetimeDust<1e6?0:Math.floor(Math.sqrt(S.lifetimeDust/1e6));}
@@ -376,7 +425,7 @@ const COMBO_DECAY=1.2;
 const CT=[{t:0,m:1,l:"x1"},{t:5,m:1.5,l:"x1.5"},{t:15,m:2,l:"x2"},{t:30,m:3,l:"x3"},{t:50,m:5,l:"x5"},{t:80,m:8,l:"x8"},{t:120,m:12,l:"x12!"}];
 function gct(){let r=CT[0];for(const c of CT)if(S.comboCount>=c.t)r=c;return r;}
 function gnct(){for(const c of CT)if(S.comboCount<c.t)return c;return null;}
-function addCombo(){const p=gct();S.comboCount++;S.comboTimer=COMBO_DECAY;const t=gct();S.comboMultiplier=t.m;if(t.m>p.m)SFX.comboUp(CT.indexOf(t));}
+function addCombo(){const p=gct();S.comboCount++;S.comboTimer=COMBO_DECAY+artifactComboDecay();const t=gct();S.comboMultiplier=t.m;if(t.m>p.m)SFX.comboUp(CT.indexOf(t));}
 function updateCombo(dt){
 if(S.comboTimer>0){S.comboTimer-=dt;if(S.comboTimer<=0){S.comboCount=0;S.comboTimer=0;S.comboMultiplier=1;}}
 const w=document.getElementById("comboWrap"),l=document.getElementById("comboLabel"),f=document.getElementById("comboFill");
@@ -404,7 +453,7 @@ function updateBuffs(dt){S.buffs=S.buffs.filter(b=>{b.remaining-=dt;return b.rem
 let meteorEl=null,meteorTimeout=null,meteorExpire=null;
 function scheduleMeteor(){meteorTimeout=setTimeout(spawnMeteor,getMeteorDelay()*1e3);}
 function spawnMeteor(){if(S.meteorActive)return;S.meteorActive=true;const a=document.getElementById("orbArea"),r=a.getBoundingClientRect();meteorEl=document.createElement("div");meteorEl.className="meteor";meteorEl.style.left=(20+Math.random()*(r.width-80))+"px";meteorEl.style.top=(10+Math.random()*(r.height-80))+"px";const m=30+Math.floor(Math.random()*70);const lb=document.createElement("div");lb.className="meteor-label";lb.textContent="TAP!";meteorEl.appendChild(lb);const tm=document.createElement("div");tm.className="meteor-timer";tm.textContent="5s";meteorEl.appendChild(tm);meteorEl.addEventListener("pointerdown",e=>{e.stopPropagation();collectMeteor(m);});a.appendChild(meteorEl);SFX.meteorAppear();let left=5;const ci=setInterval(()=>{left--;if(tm)tm.textContent=left+"s";if(left<=0)clearInterval(ci);},1e3);meteorExpire=setTimeout(()=>{removeMeteor();scheduleMeteor();},5e3);}
-function collectMeteor(m){if(!S.meteorActive)return;const r=tapPower()*m;S.dust+=r;S.lifetimeDust+=r;S.allTimeDust+=r;S.meteorsCollected++;screenFlash("rgba(245,158,11,0.5)");screenShake();SFX.meteorCollect();if(navigator.vibrate)navigator.vibrate([50,30,50]);const f=document.createElement("div");f.className="floater crit";f.textContent="+"+fmt(r);f.style.color="#fbbf24";f.style.left="50%";f.style.top="40%";f.style.transform="translateX(-50%)";document.getElementById("orbArea").appendChild(f);setTimeout(()=>f.remove(),900);showToast("METEOR!","+"+fmt(r));clearTimeout(meteorExpire);removeMeteor();scheduleMeteor();checkAchievements();}
+function collectMeteor(m){if(!S.meteorActive)return;const r=tapPower()*m;S.dust+=r;S.lifetimeDust+=r;S.allTimeDust+=r;S.meteorsCollected++;runMeteors++;screenFlash("rgba(245,158,11,0.5)");screenShake();SFX.meteorCollect();if(navigator.vibrate)navigator.vibrate([50,30,50]);const f=document.createElement("div");f.className="floater crit";f.textContent="+"+fmt(r);f.style.color="#fbbf24";f.style.left="50%";f.style.top="40%";f.style.transform="translateX(-50%)";document.getElementById("orbArea").appendChild(f);setTimeout(()=>f.remove(),900);showToast("METEOR!","+"+fmt(r));clearTimeout(meteorExpire);removeMeteor();scheduleMeteor();checkAchievements();}
 function removeMeteor(){if(meteorEl){meteorEl.remove();meteorEl=null;}S.meteorActive=false;}
 
 // =============================================================================
@@ -415,7 +464,7 @@ let bossTimeout=null,bossBarEl=null;
 function scheduleBoss(){bossTimeout=setTimeout(spawnBoss,(180+Math.random()*120)*1e3);}
 function spawnBoss(){if(S.challengeActive)return;const b=BOSSES[Math.min(S.bossesDefeated,BOSSES.length-1)];S.challengeActive=true;S.challengeHP=b.hp;S.challengeMaxHP=b.hp;S.challengeTimer=b.time;S.challengeReward=tapPower()*b.mult;S.challengeName=b.name;SFX.bossAppear();if(navigator.vibrate)navigator.vibrate([60,40,60]);showToast("BOSS!","Tap "+b.hp+"x in "+b.time+"s!");const a=document.getElementById("orbArea");bossBarEl=document.createElement("div");bossBarEl.className="boss-bar";bossBarEl.innerHTML=`<div class="boss-name">${b.name}</div><div class="boss-hp-track"><div class="boss-hp-fill" id="bossHpFill" style="width:100%"></div></div><div class="boss-timer" id="bossTimerText">${b.time}s</div>`;a.appendChild(bossBarEl);}
 function hitBoss(){if(!S.challengeActive)return;S.challengeHP--;SFX.bossHit();const f=document.getElementById("bossHpFill");if(f)f.style.width=(S.challengeHP/S.challengeMaxHP*100)+"%";if(S.challengeHP<=0)defeatBoss();}
-function defeatBoss(){S.dust+=S.challengeReward;S.lifetimeDust+=S.challengeReward;S.allTimeDust+=S.challengeReward;S.bossesDefeated++;S.challengeActive=false;SFX.bossDefeat();screenFlash("rgba(74,222,128,0.4)");screenShake();showToast(S.challengeName+" SLAIN!","+"+fmt(S.challengeReward));if(bossBarEl){bossBarEl.remove();bossBarEl=null;}scheduleBoss();checkAchievements();}
+function defeatBoss(){S.dust+=S.challengeReward;S.lifetimeDust+=S.challengeReward;S.allTimeDust+=S.challengeReward;S.bossesDefeated++;runBosses++;tryArtifactDrop(.2);S.challengeActive=false;SFX.bossDefeat();screenFlash("rgba(74,222,128,0.4)");screenShake();showToast(S.challengeName+" SLAIN!","+"+fmt(S.challengeReward));if(bossBarEl){bossBarEl.remove();bossBarEl=null;}scheduleBoss();checkAchievements();}
 function failBoss(){S.challengeActive=false;showToast("BOSS ESCAPED!","");if(bossBarEl){bossBarEl.remove();bossBarEl=null;}scheduleBoss();}
 function updateBoss(dt){if(!S.challengeActive)return;S.challengeTimer-=dt;const t=document.getElementById("bossTimerText");if(t)t.textContent=Math.ceil(S.challengeTimer)+"s";if(S.challengeTimer<=0)failBoss();}
 
@@ -544,6 +593,192 @@ function patternFail(){
 document.getElementById("mgClose").addEventListener("click",()=>document.getElementById("mgOverlay").classList.remove("show"));
 
 // =============================================================================
+// PARTICLE SYSTEM
+// =============================================================================
+const pCanvas=document.getElementById("particleCanvas");
+const pCtx=pCanvas.getContext("2d");
+let particles=[];
+function resizeParticleCanvas(){const r=orbArea.getBoundingClientRect();pCanvas.width=r.width;pCanvas.height=r.height;}
+resizeParticleCanvas();window.addEventListener("resize",resizeParticleCanvas);
+
+function spawnParticles(x,y,count,color,speed,size){
+  for(let i=0;i<count;i++){
+    const angle=Math.random()*Math.PI*2;
+    const spd=speed*(.5+Math.random());
+    particles.push({x,y,vx:Math.cos(angle)*spd,vy:Math.sin(angle)*spd,life:1,decay:.02+Math.random()*.02,size:size*(.5+Math.random()),color});
+  }
+}
+function spawnRing(x,y,color){
+  particles.push({x,y,vx:0,vy:0,life:1,decay:.015,size:20,color,ring:true,ringSize:10});
+}
+function updateParticles(dt){
+  pCtx.clearRect(0,0,pCanvas.width,pCanvas.height);
+  particles=particles.filter(p=>{
+    p.life-=p.decay;if(p.life<=0)return false;
+    p.x+=p.vx;p.y+=p.vy;p.vy+=.3;// gravity
+    if(p.ring){
+      p.ringSize+=3;
+      pCtx.beginPath();pCtx.arc(p.x,p.y,p.ringSize,0,Math.PI*2);
+      pCtx.strokeStyle=p.color.replace(/[\d.]+\)$/,p.life*.6+")");
+      pCtx.lineWidth=2;pCtx.stroke();
+    }else{
+      pCtx.globalAlpha=p.life;
+      pCtx.fillStyle=p.color;
+      pCtx.beginPath();pCtx.arc(p.x,p.y,p.size*p.life,0,Math.PI*2);pCtx.fill();
+    }
+    pCtx.globalAlpha=1;
+    return true;
+  });
+}
+
+// =============================================================================
+// BACKGROUND MUSIC
+// =============================================================================
+let musicNodes=null;
+const musicToggle=document.getElementById("musicToggle");
+function startMusic(){
+  if(musicNodes)return;
+  const ctx=ac();
+  const master=ctx.createGain();master.gain.value=.08;master.connect(ctx.destination);
+  const chords=[
+    [[130.81,164.81,196],[110,138.59,164.81]],// C3,E3,G3 / A2,C#3,E3
+    [[146.83,185,220],[123.47,155.56,185]],// D3,F#3,A3 / B2,D#3,F#3
+    [[164.81,207.65,246.94],[138.59,174.61,207.65]],// E3,G#3,B3 / C#3,F3,G#3
+  ];
+  const stageChord=chords[Math.min(Math.floor(S.orbStage/3),chords.length-1)];
+  const oscs=[];
+  stageChord.forEach((chord,ci)=>{
+    chord.forEach(freq=>{
+      const o=ctx.createOscillator();const g=ctx.createGain();
+      o.type=ci===0?"sine":"triangle";
+      o.frequency.value=freq;
+      g.gain.value=.3;
+      // Slow LFO
+      const lfo=ctx.createOscillator();const lfoG=ctx.createGain();
+      lfo.frequency.value=.1+Math.random()*.15;lfoG.gain.value=freq*.02;
+      lfo.connect(lfoG);lfoG.connect(o.frequency);lfo.start();
+      o.connect(g);g.connect(master);o.start();
+      oscs.push({o,g,lfo});
+    });
+  });
+  // Slow chord transition
+  let chordIdx=0;
+  const chordInterval=setInterval(()=>{
+    chordIdx=(chordIdx+1)%stageChord.length;
+    const chord=stageChord[chordIdx];
+    oscs.forEach((n,i)=>{
+      const freq=chord[i%chord.length];
+      n.o.frequency.exponentialRampToValueAtTime(freq,ac().currentTime+4);
+    });
+  },8000);
+  musicNodes={oscs,master,chordInterval};
+}
+function stopMusic(){
+  if(!musicNodes)return;
+  clearInterval(musicNodes.chordInterval);
+  musicNodes.oscs.forEach(n=>{n.o.stop();n.lfo.stop();});
+  musicNodes.master.disconnect();
+  musicNodes=null;
+}
+musicToggle.addEventListener("click",()=>{
+  S.musicOn=!S.musicOn;
+  if(S.musicOn){startMusic();musicToggle.textContent="MUSIC ON";musicToggle.classList.add("on");}
+  else{stopMusic();musicToggle.textContent="MUSIC OFF";musicToggle.classList.remove("on");}
+});
+
+// =============================================================================
+// ARTIFACTS (GACHA)
+// =============================================================================
+const ARTIFACT_POOL=[
+  {name:"Star Fragment",icon:"\u2B50",effect:"tap",val:.1,desc:"+10% tap power"},
+  {name:"Nebula Shard",icon:"\uD83D\uDCAB",effect:"gen",val:.1,desc:"+10% gen rate"},
+  {name:"Crescent Relic",icon:"\uD83C\uDF19",effect:"crit_chance",val:.02,desc:"+2% crit chance"},
+  {name:"Pulse Crystal",icon:"\uD83D\uDC8E",effect:"combo",val:.3,desc:"+0.3s combo decay"},
+  {name:"Iron Meteor",icon:"\u2604\uFE0F",effect:"tap",val:.15,desc:"+15% tap power"},
+  {name:"Quantum Core",icon:"\u2699\uFE0F",effect:"gen",val:.2,desc:"+20% gen rate"},
+  {name:"Void Lens",icon:"\uD83D\uDD2E",effect:"crit_dmg",val:.25,desc:"+25% crit damage"},
+  {name:"Time Shard",icon:"\u231B",effect:"offline",val:.25,desc:"+25% offline earnings"},
+  {name:"Fusion Orb",icon:"\uD83C\uDF1F",effect:"tap",val:.3,desc:"+30% tap power"},
+  {name:"Dark Matter",icon:"\uD83C\uDF11",effect:"gen",val:.35,desc:"+35% gen rate"},
+  {name:"Singularity Gem",icon:"\uD83D\uDCA0",effect:"all",val:.15,desc:"+15% ALL production"},
+  {name:"Cosmic Crown",icon:"\uD83D\uDC51",effect:"crit_chance",val:.05,desc:"+5% crit chance"},
+  {name:"Eternity Flame",icon:"\uD83D\uDD25",effect:"tap",val:.5,desc:"+50% tap power"},
+  {name:"Galaxy Heart",icon:"\uD83D\uDC9C",effect:"all",val:.25,desc:"+25% ALL production"},
+  {name:"Omega Stone",icon:"\uD83D\uDCA5",effect:"crit_dmg",val:.5,desc:"+50% crit damage"},
+  {name:"Primordial Spark",icon:"\u2728",effect:"all",val:.4,desc:"+40% ALL production"},
+];
+const RARITY_TABLE=[
+  {name:"common",chance:.60,color:"#94a3b8",pool:[0,1,2,3]},
+  {name:"rare",chance:.25,color:"#38bdf8",pool:[4,5,6,7]},
+  {name:"epic",chance:.12,color:"#a855f7",pool:[8,9,10,11]},
+  {name:"legendary",chance:.03,color:"#f59e0b",pool:[12,13,14,15]},
+];
+function rollArtifact(){
+  const r=Math.random();let cum=0;
+  for(const tier of RARITY_TABLE){cum+=tier.chance;if(r<cum){const idx=tier.pool[Math.floor(Math.random()*tier.pool.length)];return{...ARTIFACT_POOL[idx],rarity:tier.name};}}
+  return{...ARTIFACT_POOL[0],rarity:"common"};
+}
+function tryArtifactDrop(chance){
+  if(Math.random()>chance)return;
+  const art=rollArtifact();
+  S.artifacts.push(art);S.artifactDrops++;
+  showArtifactDrop(art);checkAchievements();
+}
+function showArtifactDrop(art){
+  const el=document.getElementById("dropToast");
+  el.className="drop-toast "+art.rarity;
+  document.getElementById("dropIcon").textContent=art.icon;
+  document.getElementById("dropName").textContent=art.name;
+  document.getElementById("dropEffect").textContent=art.effect==="all"?art.desc:art.desc+" ("+art.rarity+")";
+  el.classList.add("show");
+  if(art.rarity==="legendary"){SFX.ascend();screenFlash("rgba(245,158,11,0.4)");screenShake();if(navigator.vibrate)navigator.vibrate([50,30,50,30,80]);}
+  else if(art.rarity==="epic"){SFX.achievement();screenFlash("rgba(168,85,247,0.3)");}
+  else SFX.wheelWin();
+  setTimeout(()=>el.classList.remove("show"),3000);
+}
+function getArtifactBonus(type){
+  let total=0;for(const a of S.artifacts)if(a.effect===type||a.effect==="all")total+=a.val;return total;
+}
+function artifactTapMult(){return 1+getArtifactBonus("tap");}
+function artifactGenMult(){return 1+getArtifactBonus("gen");}
+function artifactCritChance(){return getArtifactBonus("crit_chance");}
+function artifactCritDmg(){return 1+getArtifactBonus("crit_dmg");}
+function artifactOffline(){return 1+getArtifactBonus("offline");}
+function artifactComboDecay(){return getArtifactBonus("combo");}
+function artifactAllMult(){return 1+getArtifactBonus("all");}
+
+// =============================================================================
+// PRESTIGE CHALLENGES
+// =============================================================================
+const P_CHALLENGES=[
+  {id:"speed100k",name:"Speed Demon",desc:"Reach 100K dust in 2 min",check:()=>S.lifetimeDust>=1e5,timeLimit:120,reward:2},
+  {id:"speed1m",name:"Blitz Mode",desc:"Reach 1M dust in 3 min",check:()=>S.lifetimeDust>=1e6,timeLimit:180,reward:3},
+  {id:"crit5",name:"Lucky Run",desc:"Land 5 crits this run",check:()=>runCrits>=5,reward:1},
+  {id:"crit20",name:"Crit Frenzy",desc:"Land 20 crits this run",check:()=>runCrits>=20,reward:2},
+  {id:"combo8",name:"Combo King",desc:"Reach x8 combo",check:()=>S.comboMultiplier>=8,reward:1},
+  {id:"tap500",name:"Tap Storm",desc:"500 taps this run",check:()=>runTaps>=500,reward:1},
+  {id:"gen_all",name:"Diversify",desc:"Own every generator type",check:()=>S.gens.every(g=>g.count>0),reward:2},
+  {id:"no_tap_upg",name:"Raw Power",desc:"Reach 100K without tap upgrades",check:()=>S.lifetimeDust>=1e5&&S.tapLevel===0,reward:3},
+  {id:"boss1",name:"Boss Rush",desc:"Defeat a boss this run",check:()=>runBosses>=1,reward:2},
+  {id:"meteor3",name:"Meteor Shower",desc:"Catch 3 meteors this run",check:()=>runMeteors>=3,reward:2},
+];
+let runCrits=0,runTaps=0,runBosses=0,runMeteors=0,runTime=0;
+function resetRunStats(){runCrits=0;runTaps=0;runBosses=0;runMeteors=0;runTime=0;}
+function rollPrestigeChallenges(){
+  const pool=[...P_CHALLENGES];const picked=[];
+  for(let i=0;i<3&&pool.length>0;i++){const idx=Math.floor(Math.random()*pool.length);picked.push({...pool[idx],completed:false});pool.splice(idx,1);}
+  S.pChallenges=picked;
+}
+function checkPrestigeChallenges(){
+  for(const c of S.pChallenges){
+    if(c.completed)continue;
+    if(c.timeLimit&&runTime>c.timeLimit)continue;
+    const orig=P_CHALLENGES.find(p=>p.id===c.id);
+    if(orig&&orig.check()){c.completed=true;S.novaCrystals+=c.reward;S.pChallengesDone++;showToast("Challenge Done!",c.name+" +"+c.reward+" NC");SFX.achievement();screenFlash("rgba(74,222,128,0.3)");}
+  }
+}
+
+// =============================================================================
 // AI RIVALS
 // =============================================================================
 const RIVAL_NAMES=["xNova_Kingx","StarGrinder99","CosmicQueen","TapMaster_Z","DustLord420"];
@@ -591,8 +826,17 @@ function buildRivals(){
 // =============================================================================
 function buildMore(){
   const el=document.getElementById("moreList");let html="";
+  // Artifacts
+  html+=`<div class="section-title">ARTIFACTS (${S.artifacts.length})</div>`;
+  if(S.artifacts.length===0)html+=`<div style="text-align:center;font-size:10px;color:#7c6cb5;padding:8px">Tap to find artifacts! Bosses & prestige guarantee drops.</div>`;
+  const artCounts={};
+  for(const a of S.artifacts){const k=a.name+a.rarity;artCounts[k]=(artCounts[k]||{...a,count:0});artCounts[k].count++;}
+  Object.values(artCounts).sort((a,b)=>{const ro={legendary:0,epic:1,rare:2,common:3};return ro[a.rarity]-ro[b.rarity];}).forEach(a=>{
+    html+=`<div class="artifact ${a.rarity}"><div class="artifact-icon">${a.icon}</div><div class="artifact-info"><div class="artifact-name">${a.name}${a.count>1?" x"+a.count:""}</div><div class="artifact-effect">${a.desc}</div></div><div class="artifact-rarity">${a.rarity}</div></div>`;
+  });
+
   // Orb stages
-  html+=`<div class="section-title">ORB EVOLUTION</div>`;
+  html+=`<div class="section-title" style="margin-top:6px">ORB EVOLUTION</div>`;
   for(let i=0;i<ORB_STAGES.length;i++){
     const s=ORB_STAGES[i],unlocked=S.allTimeDust>=s.req,cur=i===S.orbStage;
     html+=`<div class="orb-stage${cur?" current":""}${!unlocked?" locked":""}">
@@ -696,28 +940,36 @@ document.querySelectorAll(".tab").forEach(tab=>{tab.addEventListener("pointerdow
 // =============================================================================
 // SAVE / LOAD
 // =============================================================================
-const SAVE_KEY="tapnova_save_v4";
-function save(){const d={dust:S.dust,lifetimeDust:S.lifetimeDust,allTimeDust:S.allTimeDust,novaCrystals:S.novaCrystals,cosmicEssence:S.cosmicEssence,tapLevel:S.tapLevel,prestigeCount:S.prestigeCount,ascensionCount:S.ascensionCount,totalTaps:S.totalTaps,critCount:S.critCount,meteorsCollected:S.meteorsCollected,gens:S.gens.map(g=>g.count),achieved:S.achieved,skills:S.skills,wheelCooldown:S.wheelCooldown,wheelSpins:S.wheelSpins,dailyStreak:S.dailyStreak,lastClaimDay:S.lastClaimDay,bossesDefeated:S.bossesDefeated,mgCooldown:S.mgCooldown,mgPlayed:S.mgPlayed,rivalSeed:S.rivalSeed,weeklyTarget:S.weeklyTarget,weeklyProgress:S.weeklyProgress,weeklyWeek:S.weeklyWeek,orbStage:S.orbStage,ts:Date.now()};try{localStorage.setItem(SAVE_KEY,JSON.stringify(d));}catch(e){}}
-function load(){try{let raw=localStorage.getItem(SAVE_KEY)||localStorage.getItem("tapnova_save_v3")||localStorage.getItem("tapnova_save_v2");if(!raw)return 0;const d=JSON.parse(raw);for(const k of["dust","lifetimeDust","allTimeDust","novaCrystals","cosmicEssence","tapLevel","prestigeCount","ascensionCount","totalTaps","critCount","meteorsCollected","wheelCooldown","wheelSpins","dailyStreak","bossesDefeated","mgCooldown","mgPlayed","rivalSeed","weeklyTarget","weeklyProgress","orbStage"])S[k]=d[k]||0;S.lastClaimDay=d.lastClaimDay||"";S.weeklyWeek=d.weeklyWeek||"";S.achieved=d.achieved||{};S.skills=d.skills||{};if(d.gens)d.gens.forEach((c,i)=>{if(S.gens[i])S.gens[i].count=c;});return d.ts?(Date.now()-d.ts)/1e3:0;}catch(e){return 0;}}
+const SAVE_KEY="tapnova_save_v5";
+function save(){const d={dust:S.dust,lifetimeDust:S.lifetimeDust,allTimeDust:S.allTimeDust,novaCrystals:S.novaCrystals,cosmicEssence:S.cosmicEssence,tapLevel:S.tapLevel,prestigeCount:S.prestigeCount,ascensionCount:S.ascensionCount,totalTaps:S.totalTaps,critCount:S.critCount,meteorsCollected:S.meteorsCollected,gens:S.gens.map(g=>g.count),achieved:S.achieved,skills:S.skills,wheelCooldown:S.wheelCooldown,wheelSpins:S.wheelSpins,dailyStreak:S.dailyStreak,lastClaimDay:S.lastClaimDay,bossesDefeated:S.bossesDefeated,mgCooldown:S.mgCooldown,mgPlayed:S.mgPlayed,rivalSeed:S.rivalSeed,weeklyTarget:S.weeklyTarget,weeklyProgress:S.weeklyProgress,weeklyWeek:S.weeklyWeek,orbStage:S.orbStage,artifacts:S.artifacts,artifactDrops:S.artifactDrops,pChallenges:S.pChallenges,pChallengesDone:S.pChallengesDone,musicOn:S.musicOn,ts:Date.now()};try{localStorage.setItem(SAVE_KEY,JSON.stringify(d));}catch(e){}}
+function load(){try{let raw=localStorage.getItem(SAVE_KEY)||localStorage.getItem("tapnova_save_v4")||localStorage.getItem("tapnova_save_v3")||localStorage.getItem("tapnova_save_v2");if(!raw)return 0;const d=JSON.parse(raw);for(const k of["dust","lifetimeDust","allTimeDust","novaCrystals","cosmicEssence","tapLevel","prestigeCount","ascensionCount","totalTaps","critCount","meteorsCollected","wheelCooldown","wheelSpins","dailyStreak","bossesDefeated","mgCooldown","mgPlayed","rivalSeed","weeklyTarget","weeklyProgress","orbStage"])S[k]=d[k]||0;S.lastClaimDay=d.lastClaimDay||"";S.weeklyWeek=d.weeklyWeek||"";S.achieved=d.achieved||{};S.skills=d.skills||{};S.artifacts=d.artifacts||[];S.artifactDrops=d.artifactDrops||0;S.pChallenges=d.pChallenges||[];S.pChallengesDone=d.pChallengesDone||0;S.musicOn=d.musicOn||false;if(d.gens)d.gens.forEach((c,i)=>{if(S.gens[i])S.gens[i].count=c;});return d.ts?(Date.now()-d.ts)/1e3:0;}catch(e){return 0;}}
 
 // =============================================================================
 // OFFLINE
 // =============================================================================
-function applyOffline(elapsed){const cap=7200;elapsed=Math.min(elapsed,cap);S.wheelCooldown=Math.max(0,S.wheelCooldown-elapsed);S.mgCooldown=Math.max(0,S.mgCooldown-elapsed);const rate=totalRate();if(rate<=0||elapsed<60)return;const earned=rate*elapsed;S.dust+=earned;S.lifetimeDust+=earned;S.allTimeDust+=earned;S.weeklyProgress+=earned;const div=document.createElement("div");div.className="offline-banner";const m=Math.floor(elapsed/60);div.innerHTML=`<h3>Welcome Back!</h3><p>+${fmt(earned)} Stardust</p><p style="font-size:12px;color:#a89cdb">${m} min${m!==1?"s":""} away</p><button onclick="this.parentElement.remove()">Collect</button>`;document.body.appendChild(div);}
+function applyOffline(elapsed){const cap=7200;elapsed=Math.min(elapsed,cap);S.wheelCooldown=Math.max(0,S.wheelCooldown-elapsed);S.mgCooldown=Math.max(0,S.mgCooldown-elapsed);const rate=totalRate();if(rate<=0||elapsed<60)return;const earned=rate*elapsed*artifactOffline();S.dust+=earned;S.lifetimeDust+=earned;S.allTimeDust+=earned;S.weeklyProgress+=earned;const div=document.createElement("div");div.className="offline-banner";const m=Math.floor(elapsed/60);div.innerHTML=`<h3>Welcome Back!</h3><p>+${fmt(earned)} Stardust</p><p style="font-size:12px;color:#a89cdb">${m} min${m!==1?"s":""} away</p><button onclick="this.parentElement.remove()">Collect</button>`;document.body.appendChild(div);}
 
 // =============================================================================
 // TAP HANDLING
 // =============================================================================
 const orbArea=document.getElementById("orbArea"),orb=document.getElementById("orb");
 function doTap(x,y,isAuto){
-  S.totalTaps++;if(!isAuto)addCombo();
+  S.totalTaps++;runTaps++;if(!isAuto)addCombo();
   const isMega=rollMega(),isCrit=isMega||rollCrit();
   let amount=tapPower()*(isAuto?1:S.comboMultiplier);
   if(isMega)amount*=500;else if(isCrit)amount*=getCritMult();
-  if(isCrit){S.critCount++;screenShake();screenFlash(isMega?"rgba(255,200,0,0.5)":"rgba(255,60,60,0.35)");SFX.crit();if(navigator.vibrate)navigator.vibrate(isMega?[60,30,60,30,60]:[40,20,60]);}
-  else if(!isAuto){SFX.tap();if(navigator.vibrate)navigator.vibrate(20);}
+  if(isCrit){S.critCount++;runCrits++;screenShake();screenFlash(isMega?"rgba(255,200,0,0.5)":"rgba(255,60,60,0.35)");SFX.crit();if(navigator.vibrate)navigator.vibrate(isMega?[60,30,60,30,60]:[40,20,60]);
+    // Crit particles
+    const pr=orbArea.getBoundingClientRect();spawnParticles(x+40,y+20,isMega?25:14,isMega?"rgba(255,200,0,0.9)":"rgba(255,80,80,0.8)",isMega?8:5,isMega?5:3);if(isMega)spawnRing(x+40,y+20,"rgba(255,200,0,0.6)");
+  }else if(!isAuto){SFX.tap();if(navigator.vibrate)navigator.vibrate(20);
+    // Tap particles
+    const cm=S.comboMultiplier;const pc=cm>=5?"rgba(239,68,68,0.7)":cm>=2?"rgba(245,158,11,0.7)":"rgba(192,132,252,0.6)";
+    spawnParticles(x+40,y+20,3+Math.floor(cm),pc,2+cm*.3,2);
+  }
   S.dust+=amount;S.lifetimeDust+=amount;S.allTimeDust+=amount;S.weeklyProgress+=amount;
   if(S.challengeActive&&!isAuto)hitBoss();
+  // Artifact drop chance: 0.15% per tap, higher at combo
+  if(!isAuto)tryArtifactDrop(.0015*(1+S.comboMultiplier*.05));
   if(!isAuto||Math.random()<.1){const f=document.createElement("div");f.className=isCrit?"floater crit":"floater";f.textContent=(isMega?"MEGA +":isCrit?"CRIT +":"+")+fmt(amount);if(isMega)f.style.color="#fef08a";f.style.left=(x+(Math.random()*40-20))+"px";f.style.top=(y-20)+"px";orbArea.appendChild(f);setTimeout(()=>f.remove(),isCrit?900:800);}
 }
 orb.addEventListener("pointerdown",e=>{e.preventDefault();const r=orbArea.getBoundingClientRect();doTap(e.clientX-r.left-30,e.clientY-r.top,false);updateUI();checkAchievements();});
@@ -751,6 +1003,13 @@ function buildShop(){
   // Ascension
   const ag=ascensionGain();
   if(ag>0)h+=`<div class="btn ascend" data-action="ascend"><div class="info"><div class="name">ASCEND</div><div class="detail">Reset ALL for +${fmt(ag)} Cosmic Essence (+${fmt(ag*25)}% all)</div></div></div>`;
+  // Prestige challenges
+  if(S.pChallenges.length>0){
+    h+=`<div class="section-title">RUN CHALLENGES</div>`;
+    for(const c of S.pChallenges){
+      h+=`<div class="challenge${c.completed?" done":""}"><div class="challenge-name">${c.completed?"\u2714 ":""}${c.name}</div><div class="challenge-desc">${c.desc}</div><div class="challenge-reward">${c.completed?"Completed!":"Reward: +"+c.reward+" NC"}</div></div>`;
+    }
+  }
   shop.innerHTML=h;
   document.getElementById("wheelNotif").style.display=wr?"block":"none";
 }
@@ -761,8 +1020,8 @@ shop.addEventListener("pointerdown",e=>{
   else if(a==="minigame"){if(S.mgCooldown>0)return;if(Math.random()<.5)startStarCatch();else startPatternMemory();}
   else if(a==="tap"){const c=tapUpgradeCost();if(S.dust>=c){S.dust-=c;S.tapLevel++;SFX.buy();}}
   else if(a==="gen"){const i=parseInt(btn.dataset.idx),c=genCost(i);if(S.dust>=c){S.dust-=c;S.gens[i].count++;SFX.buy();}}
-  else if(a==="prestige"){const g=prestigeGain();if(g<=0)return;if(!confirm("Supernova?\n+"+fmt(g)+" Nova Crystal(s)"))return;S.novaCrystals+=g;S.prestigeCount++;S.dust=0;S.lifetimeDust=0;S.tapLevel=0;S.gens.forEach(g=>g.count=0);S.comboCount=0;S.comboTimer=0;S.comboMultiplier=1;screenFlash("rgba(255,200,100,0.5)");screenShake();SFX.prestige();showToast("SUPERNOVA!","+"+fmt(g)+" Crystals");}
-  else if(a==="ascend"){const g=ascensionGain();if(g<=0)return;if(!confirm("ASCEND?\n\nResets EVERYTHING (dust, generators, nova crystals, skills).\nYou keep: Cosmic Essence, Achievements.\n\n+"+fmt(g)+" Cosmic Essence (+"+fmt(g*25)+"% permanent)"))return;S.cosmicEssence+=g;S.ascensionCount++;S.dust=0;S.lifetimeDust=0;S.allTimeDust=0;S.novaCrystals=0;S.tapLevel=0;S.prestigeCount=0;S.gens.forEach(g=>g.count=0);S.skills={};S.comboCount=0;S.comboTimer=0;S.comboMultiplier=1;screenFlash("rgba(56,189,248,0.5)");screenShake();SFX.ascend();showToast("ASCENSION!","+"+fmt(g)+" Cosmic Essence");}
+  else if(a==="prestige"){const g=prestigeGain();if(g<=0)return;if(!confirm("Supernova?\n+"+fmt(g)+" Nova Crystal(s)"))return;S.novaCrystals+=g;S.prestigeCount++;S.dust=0;S.lifetimeDust=0;S.tapLevel=0;S.gens.forEach(g=>g.count=0);S.comboCount=0;S.comboTimer=0;S.comboMultiplier=1;resetRunStats();rollPrestigeChallenges();tryArtifactDrop(1);screenFlash("rgba(255,200,100,0.5)");screenShake();SFX.prestige();showToast("SUPERNOVA!","+"+fmt(g)+" Crystals");}
+  else if(a==="ascend"){const g=ascensionGain();if(g<=0)return;if(!confirm("ASCEND?\n\nResets EVERYTHING (dust, generators, nova crystals, skills).\nYou keep: Cosmic Essence, Achievements.\n\n+"+fmt(g)+" Cosmic Essence (+"+fmt(g*25)+"% permanent)"))return;S.cosmicEssence+=g;S.ascensionCount++;S.dust=0;S.lifetimeDust=0;S.allTimeDust=0;S.novaCrystals=0;S.tapLevel=0;S.prestigeCount=0;S.gens.forEach(g=>g.count=0);S.skills={};S.comboCount=0;S.comboTimer=0;S.comboMultiplier=1;resetRunStats();rollPrestigeChallenges();tryArtifactDrop(1);screenFlash("rgba(56,189,248,0.5)");screenShake();SFX.ascend();showToast("ASCENSION!","+"+fmt(g)+" Cosmic Essence");}
   updateUI();checkAchievements();
 });
 
@@ -798,7 +1057,9 @@ function tick(now){
   if(S.mgCooldown>0)S.mgCooldown=Math.max(0,S.mgCooldown-dt);
   // Orb stage check
   orbStageTimer+=dt;if(orbStageTimer>=3){orbStageTimer=0;updateOrbStage();}
-  achievTimer+=dt;if(achievTimer>=2){achievTimer=0;checkAchievements();}
+  updateParticles(dt);
+  runTime+=dt;
+  achievTimer+=dt;if(achievTimer>=2){achievTimer=0;checkAchievements();checkPrestigeChallenges();}
   updateUI();requestAnimationFrame(tick);
 }
 
@@ -809,6 +1070,8 @@ const offlineSec=load();
 initRivals();initWeekly();
 if(offlineSec>0)applyOffline(offlineSec);
 updateOrbStage();applyOrbVisuals();updateUI();
+if(S.pChallenges.length===0)rollPrestigeChallenges();
+if(S.musicOn){startMusic();musicToggle.textContent="MUSIC ON";musicToggle.classList.add("on");}
 requestAnimationFrame(tick);
 scheduleMeteor();scheduleBoss();
 setTimeout(()=>checkDailyStreak(),500);
