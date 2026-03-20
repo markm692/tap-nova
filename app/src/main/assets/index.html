@@ -171,6 +171,169 @@ const S = {
 };
 
 // =========================================================
+// SOUND ENGINE (Web Audio API — no files needed)
+// =========================================================
+let audioCtx = null;
+function ensureAudio() {
+  if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+  if (audioCtx.state === "suspended") audioCtx.resume();
+  return audioCtx;
+}
+
+const SFX = {
+  // Satisfying pop — short sine burst with pitch variation
+  tap() {
+    const ctx = ensureAudio();
+    const o = ctx.createOscillator();
+    const g = ctx.createGain();
+    o.type = "sine";
+    o.frequency.value = 660 + Math.random() * 120;
+    o.frequency.exponentialRampToValueAtTime(400, ctx.currentTime + 0.06);
+    g.gain.setValueAtTime(0.18, ctx.currentTime);
+    g.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.08);
+    o.connect(g); g.connect(ctx.destination);
+    o.start(); o.stop(ctx.currentTime + 0.08);
+  },
+
+  // CRIT — bass thump + sparkle overtone
+  crit() {
+    const ctx = ensureAudio();
+    // Bass thump
+    const o1 = ctx.createOscillator();
+    const g1 = ctx.createGain();
+    o1.type = "sine";
+    o1.frequency.setValueAtTime(150, ctx.currentTime);
+    o1.frequency.exponentialRampToValueAtTime(50, ctx.currentTime + 0.15);
+    g1.gain.setValueAtTime(0.35, ctx.currentTime);
+    g1.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.2);
+    o1.connect(g1); g1.connect(ctx.destination);
+    o1.start(); o1.stop(ctx.currentTime + 0.2);
+    // High sparkle
+    const o2 = ctx.createOscillator();
+    const g2 = ctx.createGain();
+    o2.type = "triangle";
+    o2.frequency.setValueAtTime(1800, ctx.currentTime);
+    o2.frequency.exponentialRampToValueAtTime(2400, ctx.currentTime + 0.1);
+    g2.gain.setValueAtTime(0.12, ctx.currentTime);
+    g2.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.15);
+    o2.connect(g2); g2.connect(ctx.destination);
+    o2.start(); o2.stop(ctx.currentTime + 0.15);
+  },
+
+  // Combo tier up — ascending arpeggio
+  comboUp(tier) {
+    const ctx = ensureAudio();
+    const baseFreq = 500 + tier * 80;
+    [0, 0.06, 0.12].forEach((delay, i) => {
+      const o = ctx.createOscillator();
+      const g = ctx.createGain();
+      o.type = "square";
+      o.frequency.value = baseFreq + i * 150;
+      g.gain.setValueAtTime(0.08, ctx.currentTime + delay);
+      g.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + delay + 0.1);
+      o.connect(g); g.connect(ctx.destination);
+      o.start(ctx.currentTime + delay);
+      o.stop(ctx.currentTime + delay + 0.1);
+    });
+  },
+
+  // Buy — satisfying click-chime
+  buy() {
+    const ctx = ensureAudio();
+    const o = ctx.createOscillator();
+    const g = ctx.createGain();
+    o.type = "triangle";
+    o.frequency.setValueAtTime(880, ctx.currentTime);
+    o.frequency.exponentialRampToValueAtTime(1100, ctx.currentTime + 0.05);
+    o.frequency.exponentialRampToValueAtTime(880, ctx.currentTime + 0.1);
+    g.gain.setValueAtTime(0.15, ctx.currentTime);
+    g.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.12);
+    o.connect(g); g.connect(ctx.destination);
+    o.start(); o.stop(ctx.currentTime + 0.12);
+  },
+
+  // Meteor appear — shimmering alert
+  meteorAppear() {
+    const ctx = ensureAudio();
+    [0, 0.1, 0.2].forEach((delay, i) => {
+      const o = ctx.createOscillator();
+      const g = ctx.createGain();
+      o.type = "sine";
+      o.frequency.value = 600 + i * 200;
+      g.gain.setValueAtTime(0.1, ctx.currentTime + delay);
+      g.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + delay + 0.15);
+      o.connect(g); g.connect(ctx.destination);
+      o.start(ctx.currentTime + delay);
+      o.stop(ctx.currentTime + delay + 0.15);
+    });
+  },
+
+  // Meteor collect — coin cascade
+  meteorCollect() {
+    const ctx = ensureAudio();
+    [0, 0.05, 0.1, 0.15, 0.2, 0.28].forEach((delay, i) => {
+      const o = ctx.createOscillator();
+      const g = ctx.createGain();
+      o.type = "sine";
+      o.frequency.value = 800 + i * 200;
+      g.gain.setValueAtTime(0.12, ctx.currentTime + delay);
+      g.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + delay + 0.12);
+      o.connect(g); g.connect(ctx.destination);
+      o.start(ctx.currentTime + delay);
+      o.stop(ctx.currentTime + delay + 0.12);
+    });
+  },
+
+  // Achievement — triumphant fanfare
+  achievement() {
+    const ctx = ensureAudio();
+    const notes = [523, 659, 784, 1047]; // C5 E5 G5 C6
+    notes.forEach((freq, i) => {
+      const delay = i * 0.1;
+      const o = ctx.createOscillator();
+      const g = ctx.createGain();
+      o.type = "triangle";
+      o.frequency.value = freq;
+      g.gain.setValueAtTime(0.12, ctx.currentTime + delay);
+      g.gain.setValueAtTime(0.12, ctx.currentTime + delay + 0.08);
+      g.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + delay + 0.25);
+      o.connect(g); g.connect(ctx.destination);
+      o.start(ctx.currentTime + delay);
+      o.stop(ctx.currentTime + delay + 0.25);
+    });
+  },
+
+  // Prestige — epic whoosh + deep boom
+  prestige() {
+    const ctx = ensureAudio();
+    // Rising whoosh (noise-like via detuned oscillators)
+    for (let i = 0; i < 5; i++) {
+      const o = ctx.createOscillator();
+      const g = ctx.createGain();
+      o.type = "sawtooth";
+      o.frequency.setValueAtTime(100 + i * 50, ctx.currentTime);
+      o.frequency.exponentialRampToValueAtTime(2000 + i * 200, ctx.currentTime + 0.4);
+      g.gain.setValueAtTime(0.04, ctx.currentTime);
+      g.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.5);
+      o.connect(g); g.connect(ctx.destination);
+      o.start(); o.stop(ctx.currentTime + 0.5);
+    }
+    // Deep boom at end
+    setTimeout(() => {
+      const o = ctx.createOscillator();
+      const g = ctx.createGain();
+      o.type = "sine";
+      o.frequency.setValueAtTime(80, ctx.currentTime);
+      o.frequency.exponentialRampToValueAtTime(30, ctx.currentTime + 0.4);
+      g.gain.setValueAtTime(0.3, ctx.currentTime);
+      g.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.5);
+      o.connect(g); g.connect(ctx.destination);
+      o.start(); o.stop(ctx.currentTime + 0.5);
+    }, 350);
+  },
+};
+
+// =========================================================
 // NUMBER FORMATTING
 // =========================================================
 const SUFFIXES = ["","K","M","B","T","Qa","Qi","Sx","Sp","Oc","No","Dc"];
@@ -230,10 +393,12 @@ function getNextComboTier() {
 }
 
 function addCombo() {
+  const prevTier = getComboTier();
   S.comboCount++;
   S.comboTimer = COMBO_DECAY;
   const tier = getComboTier();
   S.comboMultiplier = tier.mult;
+  if (tier.mult > prevTier.mult) SFX.comboUp(COMBO_TIERS.indexOf(tier));
 }
 
 function updateCombo(dt) {
@@ -340,6 +505,7 @@ function spawnMeteor() {
   });
 
   area.appendChild(meteorEl);
+  SFX.meteorAppear();
 
   // Countdown
   let timeLeft = 5;
@@ -367,6 +533,7 @@ function collectMeteor(mult) {
   // Big flash
   screenFlash("rgba(245, 158, 11, 0.5)");
   screenShake();
+  SFX.meteorCollect();
   if (navigator.vibrate) navigator.vibrate([50, 30, 50]);
 
   // Floating text
@@ -426,6 +593,7 @@ function checkAchievements() {
       S.achieved[a.id] = true;
       showToast("Achievement: " + a.name, a.desc + " | +" + (a.bonus * 100) + "% all");
       screenFlash("rgba(245, 158, 11, 0.3)");
+      SFX.achievement();
       if (navigator.vibrate) navigator.vibrate([30, 20, 30, 20, 30]);
     }
   }
@@ -571,8 +739,10 @@ orb.addEventListener("pointerdown", e => {
     S.critCount++;
     screenShake();
     screenFlash("rgba(255, 60, 60, 0.35)");
+    SFX.crit();
     if (navigator.vibrate) navigator.vibrate([40, 20, 60]);
   } else {
+    SFX.tap();
     if (navigator.vibrate) navigator.vibrate(20);
   }
 
@@ -657,11 +827,11 @@ shop.addEventListener("pointerdown", e => {
 
   if (action === "tap") {
     const cost = tapUpgradeCost();
-    if (S.dust >= cost) { S.dust -= cost; S.tapLevel++; }
+    if (S.dust >= cost) { S.dust -= cost; S.tapLevel++; SFX.buy(); }
   } else if (action === "gen") {
     const i = parseInt(btn.dataset.idx);
     const cost = genCost(i);
-    if (S.dust >= cost) { S.dust -= cost; S.gens[i].count++; }
+    if (S.dust >= cost) { S.dust -= cost; S.gens[i].count++; SFX.buy(); }
   } else if (action === "prestige") {
     const gain = prestigeGain();
     if (gain <= 0) return;
@@ -673,6 +843,7 @@ shop.addEventListener("pointerdown", e => {
     S.comboCount = 0; S.comboTimer = 0; S.comboMultiplier = 1;
     screenFlash("rgba(255, 200, 100, 0.5)");
     screenShake();
+    SFX.prestige();
     showToast("SUPERNOVA!", "+" + fmt(gain) + " Nova Crystals earned");
     checkAchievements();
   }
