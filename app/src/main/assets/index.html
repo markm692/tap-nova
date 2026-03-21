@@ -515,6 +515,75 @@ function drawBuilding(ctx,sx,sy,w,h,colors,isNight){
   ctx.beginPath();ctx.moveTo(sx-hw,sy+TH/2);ctx.lineTo(sx-hw,sy+TH/2-h);ctx.lineTo(sx,sy-h);ctx.lineTo(sx+hw,sy+TH/2-h);ctx.lineTo(sx+hw,sy+TH/2);ctx.stroke();
 }
 
+// Small house: peaked roof, chimney, door
+function drawHouse(ctx,sx,sy,w,h,isNight){
+  const hw=w/2;
+  const wallH=h*.6, roofH=h*.5;
+  const wallTop=sy+TH-wallH;
+
+  // Left wall
+  ctx.beginPath();ctx.moveTo(sx-hw,sy+TH/2);ctx.lineTo(sx,sy+TH);ctx.lineTo(sx,wallTop);ctx.lineTo(sx-hw,sy+TH/2-wallH);ctx.closePath();
+  ctx.fillStyle="#c4a882";ctx.fill();
+  // Right wall
+  ctx.beginPath();ctx.moveTo(sx+hw,sy+TH/2);ctx.lineTo(sx,sy+TH);ctx.lineTo(sx,wallTop);ctx.lineTo(sx+hw,sy+TH/2-wallH);ctx.closePath();
+  ctx.fillStyle="#d4b896";ctx.fill();
+
+  // Door on right wall
+  const dw=w*.2,dh=wallH*.5;
+  const dx=sx+hw*.3,dy=sy+TH-dh;
+  const ds=TH/(2*hw);
+  ctx.fillStyle="#78350f";
+  ctx.beginPath();ctx.moveTo(dx,dy);ctx.lineTo(dx+dw,dy-dw*ds);ctx.lineTo(dx+dw,dy-dw*ds-dh);ctx.lineTo(dx,dy-dh);ctx.fill();
+
+  // Window on left wall
+  const wx=sx-hw*.4,wy=wallTop+wallH*.2;
+  ctx.fillStyle=isNight?"rgba(255,240,150,.8)":"rgba(160,210,240,.5)";
+  ctx.beginPath();ctx.moveTo(wx,wy);ctx.lineTo(wx-dw,wy+dw*ds);ctx.lineTo(wx-dw,wy+dw*ds+dw);ctx.lineTo(wx,wy+dw);ctx.fill();
+
+  // Peaked roof — ridge runs from left-back to right-front
+  const ridge=roofH;
+  const rlx=sx-hw,rly=sy+TH/2-wallH; // left base
+  const rrx=sx+hw,rry=sy+TH/2-wallH; // right base
+  const rfx=sx,rfy=wallTop;           // front base
+  const rbx=sx,rby=sy-wallH;          // back base
+  const peakL=rly-ridge, peakR=rry-ridge;
+
+  // Left roof face (darker)
+  ctx.beginPath();
+  ctx.moveTo(rbx,rby);ctx.lineTo(rlx,rly);ctx.lineTo(rfx,rfy);
+  ctx.lineTo(sx,rfy-ridge);
+  ctx.closePath();ctx.fillStyle="#991b1b";ctx.fill();
+
+  // Right roof face (brighter)
+  ctx.beginPath();
+  ctx.moveTo(rbx,rby);ctx.lineTo(rrx,rry);ctx.lineTo(rfx,rfy);
+  ctx.lineTo(sx,rfy-ridge);
+  ctx.closePath();ctx.fillStyle="#dc2626";ctx.fill();
+
+  // Roof front triangle (gable)
+  ctx.beginPath();
+  ctx.moveTo(rlx,rly);ctx.lineTo(rrx,rry);ctx.lineTo(sx,rfy-ridge);
+  ctx.closePath();ctx.fillStyle="#b91c1c";ctx.fill();
+
+  // Ridge line
+  ctx.strokeStyle="rgba(0,0,0,.2)";ctx.lineWidth=.5;
+  ctx.beginPath();ctx.moveTo(sx,rfy-ridge);ctx.lineTo(rfx,rfy);ctx.stroke();
+
+  // Chimney on back-right
+  const chimX=sx+hw*.25,chimBase=rfy-ridge*.6,chimH=ridge*.5+3;
+  ctx.fillStyle="#78716c";
+  ctx.fillRect(chimX,chimBase-chimH,3,chimH);
+  ctx.fillStyle="#a8a29e";
+  ctx.fillRect(chimX-1,chimBase-chimH-1,5,2);
+
+  // Outline
+  ctx.strokeStyle="rgba(0,0,0,.12)";ctx.lineWidth=.5;
+  ctx.beginPath();
+  ctx.moveTo(sx-hw,sy+TH/2);ctx.lineTo(sx-hw,sy+TH/2-wallH);
+  ctx.lineTo(sx,rfy-ridge);ctx.lineTo(sx+hw,sy+TH/2-wallH);ctx.lineTo(sx+hw,sy+TH/2);
+  ctx.stroke();
+}
+
 // Island shape: -1=water, 0=land, 9=beach
 // Deterministic noise for organic coastline
 function islandNoise(r,c){return((Math.sin(r*12.9898+c*78.233)*43758.5453)%1+1)%1;}
@@ -669,7 +738,11 @@ function renderCity(force){
         const bc=BLDG_COLORS[cell-1];
         const count=S.gens[cell-1].count;
         const hScale=.5+Math.min(count,20)/20*.5;
-        drawBuilding(ctx,p.x,p.y,TW*.8,Math.round(bc.h*hScale),bc,isNight);
+        if(cell===1){
+          drawHouse(ctx,p.x,p.y,TW*.8,Math.round(bc.h*hScale)+6,isNight);
+        }else{
+          drawBuilding(ctx,p.x,p.y,TW*.8,Math.round(bc.h*hScale),bc,isNight);
+        }
       }
     }
   }
