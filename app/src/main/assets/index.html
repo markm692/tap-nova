@@ -26,12 +26,12 @@ html,body{width:100%;height:100%;overflow:hidden;background:#0a1628;font-family:
 .orb-area:active .city{transform:scale(.97)}
 
 /* Sky — transitions driven by JS day/night cycle */
-.city-sky{position:absolute;inset:0;transition:background 3s ease;z-index:0}
-.city-stars-bg{position:absolute;inset:0;z-index:0;transition:opacity 3s ease}
+.city-sky{position:absolute;inset:0;z-index:0}
+.city-stars-bg{position:absolute;inset:0;z-index:0;transition:opacity .5s ease}
 .city-star-dot{position:absolute;width:2px;height:2px;background:#fff;border-radius:50%;opacity:.3;animation:twinkle 3s ease-in-out infinite}
 @keyframes twinkle{0%,100%{opacity:.15}50%{opacity:.5}}
 /* Sun/moon */
-.city-sun{position:absolute;border-radius:50%;z-index:0;transition:top 3s ease,left 3s ease,background 3s ease,box-shadow 3s ease,width 3s ease,height 3s ease}
+.city-sun{position:absolute;border-radius:50%;z-index:1;pointer-events:none}
 
 /* City skyline — absolute, anchored to bottom */
 .city{position:absolute;bottom:14px;left:0;right:0;z-index:3;display:flex;align-items:flex-end;justify-content:center;gap:2px;padding:0 6px;transition:transform .08s ease;pointer-events:none}
@@ -514,79 +514,112 @@ function flickerWindows(dt){
 }
 
 // =============================================================================
-// DAY/NIGHT CYCLE
+// DAY/NIGHT CYCLE — continuous sun arc
 // =============================================================================
-const DAY_CYCLE_DURATION=120; // full cycle in seconds (2 min)
+const DAY_CYCLE=120; // seconds per full cycle
 let dayTimer=0;
 let lastDayPhase="";
 
-// Phases: 0-0.2=dawn, 0.2-0.5=day, 0.5-0.7=dusk, 0.7-1.0=night
-function getDayProgress(){return(dayTimer%DAY_CYCLE_DURATION)/DAY_CYCLE_DURATION;}
+// p: 0→1 continuous. 0=sunrise, 0.25=noon, 0.5=sunset, 0.75=midnight
+function getDayProgress(){return(dayTimer%DAY_CYCLE)/DAY_CYCLE;}
 function getDayPhase(){
   const p=getDayProgress();
-  if(p<.2)return"dawn";if(p<.5)return"day";if(p<.7)return"dusk";return"night";
+  if(p<.15)return"dawn";if(p<.45)return"day";if(p<.6)return"dusk";return"night";
 }
 
-const SKY_THEMES={
-  dawn:{
-    sky:"linear-gradient(180deg,#1a1040 0%,#4a2060 20%,#d97706 50%,#fbbf24 80%,#fef3c7 100%)",
-    ground:"#2a2520",road:"#3a3025",
-    starOpacity:0.15,
-    sun:{show:true,x:"75%",y:"70%",size:30,bg:"#fbbf24",shadow:"0 0 30px rgba(251,191,36,.6),0 0 60px rgba(251,191,36,.2)"},
-  },
-  day:{
-    sky:"linear-gradient(180deg,#1e88e5 0%,#42a5f5 30%,#90caf9 60%,#bbdefb 85%,#e3f2fd 100%)",
-    ground:"#3a5a40",road:"#606060",
-    starOpacity:0,
-    sun:{show:true,x:"50%",y:"12%",size:28,bg:"#fff59d",shadow:"0 0 40px rgba(255,245,157,.8),0 0 80px rgba(255,245,157,.3)"},
-  },
-  dusk:{
-    sky:"linear-gradient(180deg,#1a1045 0%,#4a1a5a 20%,#c2185b 45%,#ef6c00 70%,#ff8f00 100%)",
-    ground:"#2a2025",road:"#352a20",
-    starOpacity:0.2,
-    sun:{show:true,x:"25%",y:"72%",size:32,bg:"#ef6c00",shadow:"0 0 30px rgba(239,108,0,.6),0 0 60px rgba(239,108,0,.2)"},
-  },
-  night:{
-    sky:"linear-gradient(180deg,#050a18 0%,#0a1628 30%,#0f2040 70%,#152a45 100%)",
-    ground:"#141e2e",road:"#222e3e",
-    starOpacity:1,
-    sun:{show:true,x:"70%",y:"18%",size:22,bg:"#e2e8f0",shadow:"0 0 20px rgba(226,232,240,.4),0 0 40px rgba(226,232,240,.15)"},
-  },
-};
+// Lerp between two hex colors
+function lerpColor(a,b,t){
+  const pa=parseInt(a.slice(1),16),pb=parseInt(b.slice(1),16);
+  const r1=(pa>>16)&255,g1=(pa>>8)&255,b1=pa&255;
+  const r2=(pb>>16)&255,g2=(pb>>8)&255,b2=pb&255;
+  const r=Math.round(r1+(r2-r1)*t),g=Math.round(g1+(g2-g1)*t),b3=Math.round(b1+(b2-b1)*t);
+  return`#${((1<<24)+(r<<16)+(g<<8)+b3).toString(16).slice(1)}`;
+}
+
+// Sky color stops at key points (p=0..1)
+const SKY_KEYS=[
+  {p:0,   top:"#1a1040",mid:"#d97706",bot:"#fef3c7",ground:"#2a2520",road:"#3a3025",stars:0.1},  // sunrise
+  {p:.15, top:"#1565c0",mid:"#42a5f5",bot:"#e3f2fd",ground:"#3a5a40",road:"#606060",stars:0},     // morning
+  {p:.3,  top:"#1e88e5",mid:"#90caf9",bot:"#e3f2fd",ground:"#3a5a40",road:"#606060",stars:0},     // noon
+  {p:.45, top:"#1565c0",mid:"#64b5f6",bot:"#bbdefb",ground:"#3a5a40",road:"#505050",stars:0},     // afternoon
+  {p:.55, top:"#4a1a5a",mid:"#c2185b",bot:"#ff8f00",ground:"#2a2025",road:"#352a20",stars:.15},   // sunset
+  {p:.65, top:"#1a1045",mid:"#4a1a5a",bot:"#ef6c00",ground:"#1a1820",road:"#2a2520",stars:.4},    // late dusk
+  {p:.75, top:"#050a18",mid:"#0a1628",bot:"#152a45",ground:"#141e2e",road:"#222e3e",stars:1},     // midnight
+  {p:.9,  top:"#050a18",mid:"#0f1830",bot:"#152a45",ground:"#141e2e",road:"#222e3e",stars:1},     // late night
+  {p:1,   top:"#1a1040",mid:"#d97706",bot:"#fef3c7",ground:"#2a2520",road:"#3a3025",stars:.1},    // wraps to sunrise
+];
+
+function interpSkyKey(p){
+  // Find surrounding keys
+  let a=SKY_KEYS[0],b=SKY_KEYS[1];
+  for(let i=0;i<SKY_KEYS.length-1;i++){
+    if(p>=SKY_KEYS[i].p&&p<=SKY_KEYS[i+1].p){a=SKY_KEYS[i];b=SKY_KEYS[i+1];break;}
+  }
+  const t=(p-a.p)/(b.p-a.p||1);
+  return{
+    top:lerpColor(a.top,b.top,t),
+    mid:lerpColor(a.mid,b.mid,t),
+    bot:lerpColor(a.bot,b.bot,t),
+    ground:lerpColor(a.ground,b.ground,t),
+    road:lerpColor(a.road,b.road,t),
+    stars:a.stars+(b.stars-a.stars)*t,
+  };
+}
 
 function updateDayNight(dt){
   dayTimer+=dt;
+  const p=getDayProgress();
   const phase=getDayPhase();
-  if(phase===lastDayPhase)return;
-  lastDayPhase=phase;
 
-  const theme=SKY_THEMES[phase];
-  const sky=document.getElementById("citySky");
-  const stars=document.getElementById("cityStarsBg");
+  // Sun/moon position: continuous arc
+  // Sun visible p=0..0.5 (rises left, arcs overhead, sets right)
+  // Moon visible p=0.5..1.0 (same arc pattern)
   const sun=document.getElementById("citySun");
+  if(sun){
+    const isSun=p<.55;
+    const arcP=isSun?p/.55:(p-.55)/.45; // 0→1 within sun/moon half
+    // Horizontal: 10%→90% left to right
+    const x=10+arcP*80;
+    // Vertical: parabolic arc, lowest at edges (horizon), highest at middle
+    const yArc=1-4*Math.pow(arcP-.5,2); // 0 at edges, 1 at peak
+    const y=80-yArc*70; // 80% at horizon, 10% at peak
+    // Only show when above horizon (y < 82)
+    if(y<82){
+      sun.style.display="block";
+      sun.style.left=x+"%";
+      sun.style.top=y+"%";
+      if(isSun){
+        // Sun color shifts: orange near horizon, yellow at peak
+        const warmth=1-yArc; // 1 at horizon, 0 at peak
+        const size=26+warmth*8;
+        sun.style.width=size+"px";sun.style.height=size+"px";
+        const r=255,g3=Math.round(245-warmth*100),b4=Math.round(157-warmth*120);
+        sun.style.background=`rgb(${r},${g3},${b4})`;
+        sun.style.boxShadow=`0 0 ${20+warmth*20}px rgba(${r},${g3},${b4},.6),0 0 ${40+warmth*30}px rgba(${r},${g3},${b4},.2)`;
+      }else{
+        // Moon: silvery white, smaller
+        sun.style.width="20px";sun.style.height="20px";
+        sun.style.background="#e2e8f0";
+        sun.style.boxShadow="0 0 15px rgba(226,232,240,.4),0 0 30px rgba(226,232,240,.15)";
+      }
+    }else{
+      sun.style.display="none";
+    }
+  }
+
+  // Sky, stars, ground: interpolate every frame
+  const sk=interpSkyKey(p);
+  const sky=document.getElementById("citySky");
+  if(sky)sky.style.background=`linear-gradient(180deg,${sk.top} 0%,${sk.mid} 55%,${sk.bot} 100%)`;
+  const stars=document.getElementById("cityStarsBg");
+  if(stars)stars.style.opacity=sk.stars;
   const ground=document.querySelector(".city-ground");
+  if(ground)ground.style.background=sk.ground;
   const road=document.querySelector(".city-road");
+  if(road)road.style.background=sk.road;
 
-  // Sky
-  if(sky)sky.style.background=theme.sky;
-  // Stars
-  if(stars)stars.style.opacity=theme.starOpacity;
-  // Ground & road
-  if(ground)ground.style.background=`linear-gradient(0deg,${theme.ground},${theme.ground})`;
-  if(road)road.style.background=theme.road;
-  // Sun/moon
-  if(sun&&theme.sun.show){
-    sun.style.width=theme.sun.size+"px";
-    sun.style.height=theme.sun.size+"px";
-    sun.style.left=theme.sun.x;
-    sun.style.top=theme.sun.y;
-    sun.style.background=theme.sun.bg;
-    sun.style.boxShadow=theme.sun.shadow;
-    sun.style.display="block";
-  }else if(sun){sun.style.display="none";}
-
-  // Force window re-light on phase change
-  lastCityHash="";
+  // Phase change: re-render buildings for window lighting
+  if(phase!==lastDayPhase){lastDayPhase=phase;lastCityHash="";}
 }
 
 // =============================================================================
