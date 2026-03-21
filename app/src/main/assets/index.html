@@ -461,29 +461,57 @@ function rebuildGrid(){
   });
 }
 
-function renderCity(){
+let cityNeedsRedraw=true;
+function renderCity(force){
   const hash=S.gens.map(g=>g.count).join(",")+getDayPhase();
-  if(hash===lastCityHash)return;
-  lastCityHash=hash;
+  if(!force&&hash===lastCityHash&&!cityNeedsRedraw)return;
+  lastCityHash=hash;cityNeedsRedraw=false;
   rebuildGrid();
-  const rect=cCanvas.parentElement.getBoundingClientRect();
-  cCanvas.width=rect.width;cCanvas.height=rect.height;
-  const ctx=cCtx;ctx.clearRect(0,0,cCanvas.width,cCanvas.height);
-  const ox=cCanvas.width/2,oy=cCanvas.height*.15;
+
+  // Size canvas to orbArea (not parent — parent may have 0 size)
+  const area=document.getElementById("orbArea");
+  if(!area)return;
+  const rect=area.getBoundingClientRect();
+  const w=Math.floor(rect.width),h=Math.floor(rect.height);
+  if(w<10||h<10)return; // not laid out yet
+  cCanvas.width=w;cCanvas.height=h;
+
+  const ctx=cCtx;
+  const ox=w/2,oy=h*.12;
   const phase=getDayPhase();
   const isNight=phase==="night"||phase==="dusk";
-  const gA=isNight?"#1a2a1a":"#2d5a2d",gB=isNight?"#1e3020":"#346334";
-  const rdC=isNight?"#2a2a2a":"#555",rdL=isNight?"rgba(251,191,36,.3)":"rgba(251,191,36,.5)";
-  for(let row=0;row<GRID;row++){for(let col=0;col<GRID;col++){
-    const p=isoToScreen(col,row,ox,oy);const cell=cityGrid[row][col];
-    if(cell===8){drawTile(ctx,p.x,p.y,rdC,"rgba(255,255,255,.06)");ctx.fillStyle=rdL;ctx.fillRect(p.x-2,p.y+TH/2-1,4,2);}
-    else{drawTile(ctx,p.x,p.y,(row+col)%2===0?gA:gB,"rgba(255,255,255,.03)");}
-    if(cell>=1&&cell<=7){
-      const bc=BLDG_COLORS[cell-1];const count=S.gens[cell-1].count;
-      const hScale=.5+Math.min(count,20)/20*.5;
-      drawBuilding(ctx,p.x,p.y,TW*.8,Math.round(bc.h*hScale),bc,isNight);
+
+  // Brighter ground colors so tiles are visible
+  const gA=isNight?"#1e3a1e":"#3a7a3a";
+  const gB=isNight?"#224022":"#448844";
+  const rdC=isNight?"#333":"#666";
+  const rdL=isNight?"rgba(251,191,36,.4)":"rgba(251,191,36,.6)";
+
+  // Draw all tiles back-to-front
+  for(let row=0;row<GRID;row++){
+    for(let col=0;col<GRID;col++){
+      const p=isoToScreen(col,row,ox,oy);
+      const cell=cityGrid[row][col];
+
+      // Ground tile
+      if(cell===8){
+        drawTile(ctx,p.x,p.y,rdC,"rgba(255,255,255,.1)");
+        // Road dashes
+        ctx.fillStyle=rdL;
+        ctx.fillRect(p.x-3,p.y+TH/2-1,6,2);
+      }else{
+        drawTile(ctx,p.x,p.y,(row+col)%2===0?gA:gB,"rgba(255,255,255,.06)");
+      }
+
+      // Building on this tile
+      if(cell>=1&&cell<=7){
+        const bc=BLDG_COLORS[cell-1];
+        const count=S.gens[cell-1].count;
+        const hScale=.5+Math.min(count,20)/20*.5;
+        drawBuilding(ctx,p.x,p.y,TW*.8,Math.round(bc.h*hScale),bc,isNight);
+      }
     }
-  }}
+  }
 }
 
 function initCityStars(){const bg=document.getElementById("cityStarsBg");if(!bg)return;let h="";for(let i=0;i<25;i++)h+='<div class="city-star-dot" style="left:'+Math.random()*100+'%;top:'+Math.random()*60+'%;animation-delay:'+Math.random()*3+'s"></div>';bg.innerHTML=h;}
@@ -1172,7 +1200,6 @@ function tick(now){
   // City + stage + day/night
   orbStageTimer+=dt;if(orbStageTimer>=3){orbStageTimer=0;updateOrbStage();}
   updateDayNight(dt);
-  updateCityLife(dt);
   renderCity();
   updateParticles(dt);
   flickerWindows(dt);
@@ -1187,7 +1214,9 @@ function tick(now){
 const offlineSec=load();
 initRivals();initWeekly();
 if(offlineSec>0)applyOffline(offlineSec);
-updateOrbStage();applyOrbVisuals();initCityStars();renderCity();spawnLampposts();updateUI();
+updateOrbStage();applyOrbVisuals();initCityStars();updateUI();
+// Force city render after layout is complete
+setTimeout(()=>{cityNeedsRedraw=true;renderCity(true);},100);
 if(S.pChallenges.length===0)rollPrestigeChallenges();
 if(S.musicOn){startMusic();musicToggle.textContent="MUSIC ON";musicToggle.classList.add("on");}
 requestAnimationFrame(tick);
