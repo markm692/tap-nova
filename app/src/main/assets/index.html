@@ -673,22 +673,32 @@ function renderCity(force){
         drawTile(ctx,p.x,p.y,isNight?"#2a2a2a":"#707070","rgba(255,255,255,.05)");
         ctx.fillStyle=isNight?"rgba(251,191,36,.25)":"rgba(251,191,36,.45)";
         ctx.fillRect(p.x-1,p.y+TH/2-1,2,2);
-        // Hot dog stand: small cart on the road
+        // Hot dog stand: isometric cart + umbrella
         if(cell===10){
-          const cw=TW*.4,ch=6;
-          // Cart body (red)
-          ctx.fillStyle="#dc2626";
-          ctx.fillRect(p.x-cw/2,p.y+TH/2-ch-1,cw,ch);
-          // Umbrella (yellow/orange stripe)
-          ctx.fillStyle="#f59e0b";
-          ctx.beginPath();
-          ctx.moveTo(p.x-cw/2-1,p.y+TH/2-ch-2);
-          ctx.lineTo(p.x+cw/2+1,p.y+TH/2-ch-2);
-          ctx.lineTo(p.x,p.y+TH/2-ch-6);
-          ctx.fill();
+          const cw=TW*.5,chw=cw/2,ch=4;
+          const cx=p.x,cy=p.y;
+          // Cart body — small isometric box
+          // Left face
+          ctx.beginPath();ctx.moveTo(cx-chw,cy+TH/2);ctx.lineTo(cx,cy+TH);ctx.lineTo(cx,cy+TH-ch);ctx.lineTo(cx-chw,cy+TH/2-ch);ctx.closePath();
+          ctx.fillStyle="#9b2c2c";ctx.fill();
+          // Right face
+          ctx.beginPath();ctx.moveTo(cx+chw,cy+TH/2);ctx.lineTo(cx,cy+TH);ctx.lineTo(cx,cy+TH-ch);ctx.lineTo(cx+chw,cy+TH/2-ch);ctx.closePath();
+          ctx.fillStyle="#dc2626";ctx.fill();
+          // Top face
+          ctx.beginPath();ctx.moveTo(cx,cy+TH-ch);ctx.lineTo(cx+chw,cy+TH/2-ch);ctx.lineTo(cx,cy-ch);ctx.lineTo(cx-chw,cy+TH/2-ch);ctx.closePath();
+          ctx.fillStyle="#ef4444";ctx.fill();
           // Pole
-          ctx.fillStyle="#78350f";
-          ctx.fillRect(p.x,p.y+TH/2-ch-1,1,ch+1);
+          ctx.strokeStyle="#78350f";ctx.lineWidth=1;
+          ctx.beginPath();ctx.moveTo(cx,cy+TH-ch);ctx.lineTo(cx,cy-ch-8);ctx.stroke();
+          // Umbrella — isometric diamond above
+          const uw=TW*.6,uhw=uw/2,uh=3,uy=cy-ch-8;
+          ctx.beginPath();ctx.moveTo(cx,uy);ctx.lineTo(cx+uhw,uy+TH*.3);ctx.lineTo(cx,uy+TH*.6);ctx.lineTo(cx-uhw,uy+TH*.3);ctx.closePath();
+          ctx.fillStyle="#f59e0b";ctx.fill();
+          // Umbrella underside (darker)
+          ctx.beginPath();ctx.moveTo(cx,uy+TH*.6);ctx.lineTo(cx+uhw,uy+TH*.3);ctx.lineTo(cx+uhw,uy+TH*.3+uh);ctx.lineTo(cx,uy+TH*.6+uh);ctx.closePath();
+          ctx.fillStyle="#d97706";ctx.fill();
+          ctx.beginPath();ctx.moveTo(cx,uy+TH*.6);ctx.lineTo(cx-uhw,uy+TH*.3);ctx.lineTo(cx-uhw,uy+TH*.3+uh);ctx.lineTo(cx,uy+TH*.6+uh);ctx.closePath();
+          ctx.fillStyle="#b45309";ctx.fill();
         }
         continue;
       }
