@@ -598,8 +598,8 @@ document.getElementById("mgClose").addEventListener("click",()=>document.getElem
 const pCanvas=document.getElementById("particleCanvas");
 const pCtx=pCanvas.getContext("2d");
 let particles=[];
-function resizeParticleCanvas(){const r=orbArea.getBoundingClientRect();pCanvas.width=r.width;pCanvas.height=r.height;}
-resizeParticleCanvas();window.addEventListener("resize",resizeParticleCanvas);
+function resizeParticleCanvas(){const r=document.getElementById("orbArea").getBoundingClientRect();pCanvas.width=r.width;pCanvas.height=r.height;}
+setTimeout(resizeParticleCanvas,0);window.addEventListener("resize",resizeParticleCanvas);
 
 function spawnParticles(x,y,count,color,speed,size){
   for(let i=0;i<count;i++){
