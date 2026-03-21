@@ -460,22 +460,20 @@ function applyOrbVisuals(){ /* legacy - city replaces orb visuals */ }
 // CITY RENDERER
 // =============================================================================
 const BLDG_STYLES=[
-  {w:16,maxH:18, color:"#dc2626",winColor:"#fef08a"},  // Hot Dog Stand
-  {w:20,maxH:28, color:"#92400e",winColor:"#fde68a"},  // Coffee Shop
-  {w:22,maxH:50, color:"#64748b",winColor:"#fef9c3"},  // Apartment Block
-  {w:28,maxH:35, color:"#475569",winColor:"#fef08a"},  // Shopping Mall
-  {w:20,maxH:65, color:"#0ea5e9",winColor:"#e0f2fe"},  // Tech Campus
-  {w:18,maxH:80, color:"#1e3a5f",winColor:"#fde68a"},  // Financial District
-  {w:22,maxH:100,color:"#334155",winColor:"#f0f9ff"},  // Mega Tower
+  {w:22,maxH:40,  color:"#dc2626",winColor:"#fef08a"},  // Hot Dog Stand
+  {w:26,maxH:60,  color:"#92400e",winColor:"#fde68a"},  // Coffee Shop
+  {w:28,maxH:100, color:"#64748b",winColor:"#fef9c3"},  // Apartment Block
+  {w:34,maxH:70,  color:"#475569",winColor:"#fef08a"},  // Shopping Mall
+  {w:24,maxH:130, color:"#0ea5e9",winColor:"#e0f2fe"},  // Tech Campus
+  {w:22,maxH:160, color:"#1e3a5f",winColor:"#fde68a"},  // Financial District
+  {w:28,maxH:190, color:"#334155",winColor:"#f0f9ff"},  // Mega Tower
 ];
-// 6 depth rows: far back → front. Each row: bottom% from area bottom, scale, z-index base, max buildings, horizontal shift
+// 4 depth rows: back → front
 const GRID_ROWS=[
-  {bottom:.62, scale:.28, zBase:5,  max:8, xShift:6},
-  {bottom:.52, scale:.38, zBase:8,  max:8, xShift:0},
-  {bottom:.42, scale:.50, zBase:12, max:7, xShift:8},
-  {bottom:.32, scale:.65, zBase:18, max:6, xShift:2},
-  {bottom:.22, scale:.82, zBase:25, max:6, xShift:6},
-  {bottom:.10, scale:1,   zBase:35, max:5, xShift:0},
+  {bottom:.48, scale:.45, zBase:5,  max:8, xShift:10},
+  {bottom:.34, scale:.60, zBase:12, max:7, xShift:0},
+  {bottom:.20, scale:.78, zBase:20, max:6, xShift:8},
+  {bottom:.08, scale:1,   zBase:30, max:6, xShift:2},
 ];
 let lastCityHash="";
 
@@ -506,22 +504,18 @@ function renderCity(){
     }
   });
 
-  // Distribute across 6 rows using round-robin with type preference
-  // Tall types start at back, short at front, then fill
-  const rows=Array.from({length:6},()=>[]);
+  // Distribute across 4 rows — tall buildings toward back
+  const numRows=GRID_ROWS.length;
+  const rows=Array.from({length:numRows},()=>[]);
   allBldgs.forEach(b=>{
-    // Preferred row: tall buildings toward back (row 0-1), short toward front (row 4-5)
     let pref;
-    if(b.gi>=5) pref=0;
-    else if(b.gi>=4) pref=1;
-    else if(b.gi>=3) pref=2;
-    else if(b.gi>=2) pref=3;
-    else if(b.gi>=1) pref=4;
-    else pref=5;
-    // Find nearest row with space
-    for(let offset=0;offset<6;offset++){
+    if(b.gi>=5) pref=0;      // Financial, Mega → back
+    else if(b.gi>=3) pref=1;  // Mall, Tech → second row
+    else if(b.gi>=1) pref=2;  // Coffee, Apt → third row
+    else pref=3;              // Hot Dog → front
+    for(let offset=0;offset<numRows;offset++){
       for(const try_r of [pref+offset,pref-offset]){
-        if(try_r>=0&&try_r<6&&rows[try_r].length<GRID_ROWS[try_r].max){
+        if(try_r>=0&&try_r<numRows&&rows[try_r].length<GRID_ROWS[try_r].max){
           rows[try_r].push(b);return;
         }
       }
@@ -534,13 +528,13 @@ function renderCity(){
   let html='';
 
   // Terrain row markers
-  for(let r=0;r<6;r++){
+  for(let r=0;r<numRows;r++){
     const gr=GRID_ROWS[r];
     html+=`<div class="terrain-row" style="bottom:${gr.bottom*100}%"></div>`;
   }
 
   // Render back to front (row 0 first)
-  for(let r=0;r<6;r++){
+  for(let r=0;r<numRows;r++){
     const gr=GRID_ROWS[r];
     const bldgs=rows[r];
     if(bldgs.length===0)continue;
