@@ -32,9 +32,8 @@ html,body{width:100%;height:100%;overflow:hidden;background:#0a1628;font-family:
 /* Sun/moon */
 .city-sun{position:absolute;border-radius:50%;z-index:1;pointer-events:none}
 
-/* Isometric city — rendered on canvas */
-.city-scene{position:absolute;inset:0;z-index:2;pointer-events:none}
-#cityCanvas{position:absolute;inset:0;width:100%;height:100%}
+/* Isometric city canvas */
+#cityCanvas{position:absolute;top:0;left:0;z-index:2;pointer-events:none}
 .bldg-windows{display:flex;flex-wrap:wrap;gap:2px;padding:3px 2px;justify-content:center;align-content:flex-start}
 .bldg-win{width:5px;height:6px;border-radius:1px}
 .bldg-win.lit{box-shadow:0 0 4px rgba(253,230,138,.5)}
@@ -274,9 +273,7 @@ html,body{width:100%;height:100%;overflow:hidden;background:#0a1628;font-family:
     <canvas id="particleCanvas" style="position:absolute;inset:0;width:100%;height:100%;pointer-events:none;z-index:15"></canvas>
     <div class="glow" id="glow"></div>
     <div id="orb"></div>
-    <div class="city-scene">
-      <canvas id="cityCanvas"></canvas>
-    </div>
+    <canvas id="cityCanvas"></canvas>
   </div>
   <div class="sep"></div>
   <div class="tab-bar">
@@ -468,15 +465,19 @@ function renderCity(force){
   lastCityHash=hash;cityNeedsRedraw=false;
   rebuildGrid();
 
-  // Size canvas to orbArea (not parent — parent may have 0 size)
+  // Size canvas buffer to match orbArea layout
   const area=document.getElementById("orbArea");
   if(!area)return;
   const rect=area.getBoundingClientRect();
-  const w=Math.floor(rect.width),h=Math.floor(rect.height);
-  if(w<10||h<10)return; // not laid out yet
-  cCanvas.width=w;cCanvas.height=h;
+  const w=Math.floor(rect.width)||300;
+  const h=Math.floor(rect.height)||400;
+  cCanvas.width=w;
+  cCanvas.height=h;
+  cCanvas.style.width=w+"px";
+  cCanvas.style.height=h+"px";
 
   const ctx=cCtx;
+  ctx.clearRect(0,0,w,h);
   const ox=w/2,oy=h*.12;
   const phase=getDayPhase();
   const isNight=phase==="night"||phase==="dusk";
