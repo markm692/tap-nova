@@ -34,20 +34,20 @@ html,body{width:100%;height:100%;overflow:hidden;background:#0a1628;font-family:
 .city-sun{position:absolute;border-radius:50%;z-index:1;pointer-events:none}
 
 /* Isometric scene wrapper */
-.city-scene{position:absolute;bottom:0;left:0;right:0;top:0;z-index:2;transform:rotateX(3deg);transform-origin:bottom center;transition:transform .08s ease}
+.city-scene{position:absolute;bottom:0;left:0;right:0;top:0;z-index:2;transition:transform .08s ease}
 
-/* City skyline */
-.city{position:absolute;bottom:18px;left:0;right:0;z-index:3;display:flex;align-items:flex-end;justify-content:center;gap:2px;padding:0 6px;pointer-events:none}
+/* City grid — isometric layout via absolute positioning */
+.city{position:absolute;inset:0;pointer-events:none;overflow:hidden}
 .city-ground{position:absolute;bottom:0;left:0;right:0;height:18px;background:linear-gradient(0deg,#141e2e,#1a2e40);z-index:2}
-.city-road{position:absolute;bottom:5px;left:0;right:0;height:6px;background:#222e3e;z-index:4}
+.city-road{position:absolute;bottom:5px;left:0;right:0;height:6px;background:#222e3e;z-index:50}
 .city-road::before{content:'';position:absolute;top:2px;left:0;right:0;height:2px;background:repeating-linear-gradient(90deg,#fbbf24 0,#fbbf24 10px,transparent 10px,transparent 20px);opacity:.3}
-.city-sidewalk{position:absolute;bottom:11px;left:0;right:0;height:4px;background:#2a3545;z-index:3}
+.city-sidewalk{position:absolute;bottom:11px;left:0;right:0;height:4px;background:#2a3545;z-index:49}
 
-/* Buildings — 3D-ish with side face */
-.bldg{flex-shrink:0;position:relative;transition:height .5s ease}
-.bldg-body{width:100%;height:100%;border-radius:2px 2px 0 0;position:relative;overflow:hidden}
-.bldg-side{position:absolute;top:2px;right:-4px;width:4px;height:calc(100% - 2px);opacity:.5;border-radius:0 2px 0 0}
-.bldg-top{position:absolute;top:-3px;left:2px;right:-2px;height:4px;opacity:.3;border-radius:2px 2px 0 0;background:#fff}
+/* Buildings — isometric 3D boxes */
+.bldg{position:absolute;bottom:0;transition:height .5s ease}
+.bldg-body{width:100%;height:100%;border-radius:1px 1px 0 0;position:relative;overflow:hidden}
+.bldg-side{position:absolute;top:0;right:-5px;width:5px;height:100%;opacity:.6;border-radius:0 1px 0 0}
+.bldg-top{position:absolute;top:-4px;left:0;right:-5px;height:5px;border-radius:1px;transform:skewX(-45deg);transform-origin:bottom left;opacity:.35;background:#fff}
 
 /* Vehicles */
 .vehicle{position:absolute;bottom:6px;height:4px;z-index:5;border-radius:1px;pointer-events:none}
@@ -455,85 +455,117 @@ function applyOrbVisuals(){ /* legacy - city replaces orb visuals */ }
 // CITY RENDERER
 // =============================================================================
 const BLDG_STYLES=[
-  {w:16,maxH:25, color:"#dc2626",winColor:"#fef08a",name:"cart"},      // Hot Dog Stand
-  {w:22,maxH:40, color:"#92400e",winColor:"#fde68a",name:"shop"},      // Coffee Shop
-  {w:28,maxH:70, color:"#64748b",winColor:"#fef9c3",name:"apt"},       // Apartment Block
-  {w:40,maxH:45, color:"#475569",winColor:"#fef08a",name:"mall"},      // Shopping Mall
-  {w:24,maxH:90, color:"#0ea5e9",winColor:"#e0f2fe",name:"tech"},      // Tech Campus
-  {w:20,maxH:110,color:"#1e3a5f",winColor:"#fde68a",name:"fin"},       // Financial District
-  {w:30,maxH:140,color:"#334155",winColor:"#f0f9ff",name:"mega"},      // Mega Tower
+  {w:14,maxH:20, color:"#dc2626",winColor:"#fef08a",name:"cart"},      // Hot Dog Stand
+  {w:18,maxH:32, color:"#92400e",winColor:"#fde68a",name:"shop"},      // Coffee Shop
+  {w:22,maxH:55, color:"#64748b",winColor:"#fef9c3",name:"apt"},       // Apartment Block
+  {w:30,maxH:38, color:"#475569",winColor:"#fef08a",name:"mall"},      // Shopping Mall
+  {w:20,maxH:75, color:"#0ea5e9",winColor:"#e0f2fe",name:"tech"},      // Tech Campus
+  {w:18,maxH:90, color:"#1e3a5f",winColor:"#fde68a",name:"fin"},       // Financial District
+  {w:24,maxH:110,color:"#334155",winColor:"#f0f9ff",name:"mega"},      // Mega Tower
+];
+// 3 rows: back (row 0), mid (row 1), front (row 2)
+// Back rows render first, positioned higher, scaled smaller
+const ROWS=[
+  {y:18, scale:.55, maxSlots:7, zBase:10, xOffset:8},  // back
+  {y:14, scale:.75, maxSlots:6, zBase:20, xOffset:0},  // mid
+  {y:11, scale:1,   maxSlots:6, zBase:30, xOffset:4},  // front
 ];
 let lastCityHash="";
 
 function renderCity(){
-  // Build a hash of generator counts to avoid unnecessary re-renders
-  const hash=S.gens.map(g=>g.count).join(",");
+  const hash=S.gens.map(g=>g.count).join(",")+getDayPhase();
   if(hash===lastCityHash)return;
   lastCityHash=hash;
 
   const cv=document.getElementById("cityView");
+  const area=cv.getBoundingClientRect();
+  const areaW=area.width||300;
+  const areaH=area.height||200;
   const totalCount=S.gens.reduce((s,g)=>s+g.count,0);
+
   if(totalCount===0){
-    cv.innerHTML='<div style="position:absolute;bottom:20px;left:50%;transform:translateX(-50%);color:rgba(255,255,255,.2);font-size:11px;white-space:nowrap">Tap to start building!</div>';
+    cv.innerHTML='<div style="position:absolute;bottom:30%;left:50%;transform:translateX(-50%);color:rgba(255,255,255,.15);font-size:11px;white-space:nowrap">Tap to start building!</div>';
     return;
   }
 
-  let buildings=[];
-  // Generate buildings based on generator counts
+  // Collect all buildings
+  let allBldgs=[];
   S.gens.forEach((gen,gi)=>{
     const style=BLDG_STYLES[gi];
-    // Each generator count adds buildings, but diminishing
-    const numBldgs=Math.min(gen.count,gi<2?Math.ceil(gen.count/2):Math.ceil(gen.count/3),8);
-    for(let b=0;b<numBldgs;b++){
+    const num=Math.min(gen.count,gi<2?Math.ceil(gen.count/2):Math.ceil(gen.count/3),6);
+    for(let b=0;b<num;b++){
       const hScale=.4+Math.min(gen.count,20)/20*.6;
-      const h=Math.floor(style.maxH*hScale*(0.7+Math.random()*.3));
-      const w=style.w+Math.floor(Math.random()*6-3);
-      // More windows for taller buildings
-      const winRows=Math.max(1,Math.floor(h/8));
-      const winCols=Math.max(1,Math.floor(w/7));
-      buildings.push({gi,w,h,style,winRows,winCols,isNew:gen.count<=2&&b===numBldgs-1,order:gi*100+b});
+      allBldgs.push({gi,style,hScale,isNew:gen.count<=2&&b===num-1,seed:gi*100+b});
     }
   });
 
-  // Sort for visual layout: tallest in center
-  buildings.sort((a,b)=>a.order-b.order);
-  // Rearrange: short-tall-short pattern
-  const sorted=[...buildings].sort((a,b)=>b.h-a.h);
-  const arranged=[];
-  let left=true;
-  sorted.forEach(b=>{if(left)arranged.unshift(b);else arranged.push(b);left=!left;});
+  // Distribute buildings across 3 rows
+  // Taller types toward back, shorter toward front
+  const rows=[[],[],[]];
+  allBldgs.forEach((b,i)=>{
+    if(b.gi>=4) rows[0].push(b);       // tall buildings → back
+    else if(b.gi>=2) rows[1].push(b);   // medium → middle
+    else rows[2].push(b);               // small → front
+  });
+  // Overflow: if a row is full, spill into adjacent
+  for(let r=0;r<3;r++){
+    while(rows[r].length>ROWS[r].maxSlots){
+      const spill=rows[r].pop();
+      rows[Math.min(r+1,2)===r?Math.max(r-1,0):r<2?r+1:r-1].push(spill);
+    }
+  }
 
+  const phase=getDayPhase();
+  const litRate=phase==="night"?.7:phase==="dusk"?.5:phase==="dawn"?.35:.12;
+  const offColor=phase==="day"?"rgba(140,170,200,.3)":"rgba(80,100,120,.3)";
   let html='';
-  arranged.forEach(b=>{
-    const hasAntenna=b.h>60&&b.gi>=4;
-    const hasCrane=b.isNew;
-    let wins='';
-    const phase=getDayPhase();
-    const litRate=phase==="night"?.7:phase==="dusk"?.5:phase==="dawn"?.35:.12;
-    const offColor=phase==="day"?"rgba(140,170,200,.3)":"rgba(80,100,120,.3)";
-    for(let r=0;r<b.winRows;r++){
-      for(let c=0;c<b.winCols;c++){
-        const lit=Math.random()<litRate;
-        const color=lit?b.style.winColor:offColor;
-        wins+=`<div class="bldg-win${lit?' lit':''}" style="background:${color}"></div>`;
+
+  // Render back to front
+  for(let r=0;r<3;r++){
+    const row=ROWS[r];
+    const bldgs=rows[r];
+    if(bldgs.length===0)continue;
+    const slotW=areaW/Math.max(bldgs.length,1);
+
+    bldgs.forEach((b,i)=>{
+      const style=b.style;
+      const w=Math.round(style.w*row.scale);
+      const h=Math.round(style.maxH*b.hScale*(0.7+((b.seed*7)%10)/10*.3)*row.scale);
+      const x=row.xOffset+i*slotW+(slotW-w)/2;
+      const bottomY=row.y;
+
+      // Windows
+      const winRows=Math.max(1,Math.floor(h/9));
+      const winCols=Math.max(1,Math.floor(w/7));
+      let wins='';
+      for(let wr=0;wr<winRows;wr++){
+        for(let wc=0;wc<winCols;wc++){
+          const lit=Math.random()<litRate;
+          wins+=`<div class="bldg-win${lit?' lit':''}" style="background:${lit?style.winColor:offColor}"></div>`;
+        }
       }
-    }
-    // Darker shade for side face
-    const sideColor=b.style.color.replace('#','');
-    const sr=Math.max(0,parseInt(sideColor.substr(0,2),16)-40);
-    const sg=Math.max(0,parseInt(sideColor.substr(2,2),16)-40);
-    const sb=Math.max(0,parseInt(sideColor.substr(4,2),16)-40);
-    const sideBg=`rgb(${sr},${sg},${sb})`;
-    html+=`<div class="bldg" style="width:${b.w}px;height:${b.h}px">
-      ${hasAntenna?'<div class="bldg-antenna"></div>':''}
-      ${hasCrane?'<div class="crane"></div>':''}
-      <div class="bldg-body" style="background:${b.style.color}">
-        <div class="bldg-windows">${wins}</div>
-      </div>
-      <div class="bldg-side" style="background:${sideBg}"></div>
-      ${b.h>20?'<div class="bldg-top"></div>':''}
-    </div>`;
-  });
+
+      // Side face color
+      const sc=style.color.replace('#','');
+      const sr=Math.max(0,parseInt(sc.substr(0,2),16)-50);
+      const sg=Math.max(0,parseInt(sc.substr(2,2),16)-50);
+      const sb=Math.max(0,parseInt(sc.substr(4,2),16)-50);
+
+      const hasAntenna=h>45&&b.gi>=4;
+      const hasCrane=b.isNew;
+      const zi=row.zBase+i;
+
+      html+=`<div class="bldg" style="width:${w}px;height:${h}px;left:${x}px;bottom:${bottomY}px;z-index:${zi}">
+        ${hasAntenna?'<div class="bldg-antenna"></div>':''}
+        ${hasCrane?'<div class="crane"></div>':''}
+        <div class="bldg-body" style="background:${style.color}">
+          <div class="bldg-windows">${wins}</div>
+        </div>
+        <div class="bldg-side" style="background:rgb(${sr},${sg},${sb})"></div>
+        ${h>15?'<div class="bldg-top"></div>':''}
+      </div>`;
+    });
+  }
   cv.innerHTML=html;
 }
 
