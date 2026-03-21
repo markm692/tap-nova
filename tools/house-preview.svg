@@ -1,0 +1,69 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="-50 -50 500 450" shape-rendering="crispEdges">
+  <rect x="-50" y="-50" width="500" height="450" fill="#a8dadc" />
+
+  <!-- Clouds -->
+  <g fill="#ffffff" opacity="0.9">
+    <polygon points="100,40 60,20 120,-10 160,10" />
+    <polygon points="120,50 80,30 140,0 180,20" />
+    <polygon points="360,60 310,35 350,15 400,40" />
+    <polygon points="380,50 340,30 390,5 430,25" />
+  </g>
+
+  <!-- Ground tile with depth -->
+  <polygon points="200,350 -20,240 200,130 420,240" fill="#52b788" />
+  <polygon points="200,370 -20,260 -20,240 200,350" fill="#2d6a4f" />
+  <polygon points="200,370 420,260 420,240 200,350" fill="#40916c" />
+
+  <!-- Sand path -->
+  <polygon points="80,290 40,270 120,230 160,250" fill="#e9c46a" />
+
+  <!-- Left wall (shadow side) -->
+  <polygon points="200,270 80,210 80,130 200,190" fill="#d4a373" />
+  <!-- Right wall (lit side) -->
+  <polygon points="200,270 320,210 320,130 200,190" fill="#faedcd" />
+
+  <!-- Door on left wall -->
+  <polygon points="160,250 120,230 120,170 160,190" fill="#5c3a21" />
+  <!-- Door handle -->
+  <polygon points="152,226 150,225 150,221 152,222" fill="#ffd166" />
+
+  <!-- Window on right wall (blue with white cross) -->
+  <polygon points="240,220 280,200 280,170 240,190" fill="#8ecae6" />
+  <line x1="260" y1="210" x2="260" y2="180" stroke="#ffffff" stroke-width="2" />
+  <line x1="245" y1="205" x2="275" y2="190" stroke="#ffffff" stroke-width="2" />
+
+  <!-- Bush (isometric box) -->
+  <!-- Top -->
+  <polygon points="60,220 20,200 60,180 100,200" fill="#74c69d" />
+  <!-- Left face -->
+  <polygon points="60,260 20,240 20,200 60,220" fill="#40916c" />
+  <!-- Right face -->
+  <polygon points="60,260 100,240 100,200 60,220" fill="#52b788" />
+
+  <!-- Roof layer 1 (widest) -->
+  <polygon points="200,210 40,130 40,110 200,190" fill="#9a031e" />
+  <polygon points="200,210 360,130 360,110 200,190" fill="#d90429" />
+  <polygon points="200,190 40,110 200,30 360,110" fill="#ef233c" />
+
+  <!-- Roof layer 2 -->
+  <polygon points="220,180 60,100 60,80 220,160" fill="#9a031e" />
+  <polygon points="220,180 340,120 340,100 220,160" fill="#d90429" />
+  <polygon points="220,160 60,80 180,20 340,100" fill="#ef233c" />
+
+  <!-- Chimney -->
+  <polygon points="260,100 220,80 220,0 260,20" fill="#a6533d" />
+  <polygon points="260,100 300,80 300,0 260,20" fill="#c1664d" />
+  <polygon points="260,20 220,0 260,-20 300,0" fill="#e07a5f" />
+  <!-- Chimney opening -->
+  <polygon points="260,15 230,0 260,-15 290,0" fill="#3d1e16" />
+
+  <!-- Roof layer 3 -->
+  <polygon points="240,150 80,70 80,50 240,130" fill="#9a031e" />
+  <polygon points="240,150 320,110 320,90 240,130" fill="#d90429" />
+  <polygon points="240,130 80,50 160,10 320,90" fill="#ef233c" />
+
+  <!-- Roof layer 4 (smallest, peak) -->
+  <polygon points="260,120 100,40 100,20 260,100" fill="#9a031e" />
+  <polygon points="260,120 300,100 300,80 260,100" fill="#d90429" />
+  <polygon points="260,100 100,20 140,0 300,80" fill="#ef233c" />
+</svg>

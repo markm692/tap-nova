@@ -1,0 +1,405 @@
+<!DOCTYPE html>
+<html><head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Isometric Model Viewer</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{background:#0a1628;color:#fff;font-family:system-ui;padding:10px}
+h2{font-size:14px;color:#60a5fa;margin:8px 0 4px;text-align:center}
+.controls{display:flex;flex-wrap:wrap;gap:8px;justify-content:center;margin:8px 0;align-items:center}
+.controls label{font-size:12px;color:#8badc9;display:flex;align-items:center;gap:4px}
+.controls input,.controls select{background:#1a2a40;border:1px solid #2a4a60;color:#fff;border-radius:4px;padding:4px 8px;font-size:12px}
+.controls input[type=range]{width:100px;height:20px}
+.val{color:#fbbf24;font-size:12px;min-width:24px}
+.controls button{background:#3b82f6;border:none;color:#fff;padding:5px 12px;border-radius:4px;font-size:12px;cursor:pointer}
+.controls button.active{background:#f59e0b}
+canvas{display:block;margin:8px auto;border:1px solid rgba(255,255,255,.1);border-radius:8px;background:#0f2040}
+.model-select{display:flex;gap:4px;justify-content:center;flex-wrap:wrap;margin:6px 0}
+.model-btn{background:rgba(30,50,80,.6);border:1px solid rgba(50,80,140,.3);border-radius:6px;padding:6px 10px;color:#8badc9;font-size:11px;cursor:pointer}
+.model-btn.active{border-color:#f59e0b;color:#fbbf24;background:rgba(60,40,20,.5)}
+</style>
+</head><body>
+
+<h2>ISOMETRIC MODEL VIEWER</h2>
+
+<div class="model-select" id="modelSelect"></div>
+
+<canvas id="bigCanvas" width="360" height="360"></canvas>
+
+<div class="controls">
+  <label>Scale:<input type="range" id="scaleSlider" min="1" max="6" step="0.5" value="3"><span class="val" id="scaleVal">3x</span></label>
+  <label>Height:<input type="range" id="hSlider" min="5" max="120" value="30"><span class="val" id="hVal">30</span></label>
+</div>
+<div class="controls">
+  <label>Tile W:<input type="range" id="twSlider" min="10" max="50" value="22"><span class="val" id="twVal">22</span></label>
+  <button id="nightBtn">DAY</button>
+  <button id="groundBtn">GROUND</button>
+</div>
+
+<h2>ALL MODELS</h2>
+<canvas id="allCanvas" width="360" height="200"></canvas>
+
+<script>
+let TW=22,TH=11;
+let selectedModel=0,isNight=false,showGround=true,scale=3;
+
+const BLDG_COLORS=[
+  {name:"Small House",front:"#d4a574",side:"#b8956a",roof:"#c53030",h:10},
+  {name:"Coffee Shop",front:"#92400e",side:"#78350f",roof:"#b45309",h:18},
+  {name:"Apartment Block",front:"#64748b",side:"#475569",roof:"#94a3b8",h:35},
+  {name:"Shopping Mall",front:"#4a5568",side:"#2d3748",roof:"#718096",h:22},
+  {name:"Tech Campus",front:"#0284c7",side:"#0369a1",roof:"#38bdf8",h:45},
+  {name:"Financial Dist.",front:"#1e3a5f",side:"#172554",roof:"#3b82f6",h:55},
+  {name:"Mega Tower",front:"#334155",side:"#1e293b",roof:"#64748b",h:70},
+];
+
+// --- Drawing functions (same as game) ---
+
+function drawTile(ctx,sx,sy,color,outline){
+  ctx.beginPath();ctx.moveTo(sx,sy);ctx.lineTo(sx+TW/2,sy+TH/2);ctx.lineTo(sx,sy+TH);ctx.lineTo(sx-TW/2,sy+TH/2);ctx.closePath();
+  ctx.fillStyle=color;ctx.fill();
+  if(outline){ctx.strokeStyle=outline;ctx.lineWidth=.5;ctx.stroke();}
+}
+
+function drawBuilding(ctx,sx,sy,w,h,colors,isNight){
+  const hw=w/2;
+  ctx.beginPath();ctx.moveTo(sx-hw,sy+TH/2);ctx.lineTo(sx,sy+TH);ctx.lineTo(sx,sy+TH-h);ctx.lineTo(sx-hw,sy+TH/2-h);ctx.closePath();
+  ctx.fillStyle=colors.side;ctx.fill();
+  ctx.beginPath();ctx.moveTo(sx+hw,sy+TH/2);ctx.lineTo(sx,sy+TH);ctx.lineTo(sx,sy+TH-h);ctx.lineTo(sx+hw,sy+TH/2-h);ctx.closePath();
+  ctx.fillStyle=colors.front;ctx.fill();
+  ctx.beginPath();ctx.moveTo(sx,sy+TH-h);ctx.lineTo(sx+hw,sy+TH/2-h);ctx.lineTo(sx,sy-h);ctx.lineTo(sx-hw,sy+TH/2-h);ctx.closePath();
+  ctx.fillStyle=colors.roof;ctx.fill();
+  const litC=isNight?.65:.12;
+  const winOn=isNight?"rgba(255,240,150,.8)":"rgba(180,220,255,.4)";
+  const winOff=isNight?"rgba(40,50,70,.6)":"rgba(100,130,160,.25)";
+  const roofClear=TH/2+3,winAreaH=Math.max(0,h-roofClear-3);
+  const ww=3,wh=3,wSpaceY=wh+3,wSpaceX=ww+3;
+  const wRows=Math.max(0,Math.floor(winAreaH/wSpaceY)),wCols=Math.max(1,Math.floor(hw/wSpaceX));
+  const seed=Math.floor(sx*7+sy*13),slopeR=TH/(2*hw);
+  for(let wr=0;wr<wRows;wr++){for(let wc=0;wc<wCols;wc++){
+    const wHash=((seed+wr*31+wc*17)&0xFFFF)/65536;
+    ctx.fillStyle=wHash<litC?winOn:winOff;
+    const wy=sy+TH-h+roofClear+wr*wSpaceY;
+    const rx=sx+3+wc*wSpaceX;
+    if(rx+ww<sx+hw){const ry=wy+(rx-sx)*slopeR;ctx.beginPath();ctx.moveTo(rx,ry);ctx.lineTo(rx+ww,ry-ww*slopeR);ctx.lineTo(rx+ww,ry-ww*slopeR+wh);ctx.lineTo(rx,ry+wh);ctx.fill();}
+    const lx=sx-3-wc*wSpaceX-ww;
+    if(lx>sx-hw){const ly=wy+(sx-lx-ww)*slopeR;ctx.beginPath();ctx.moveTo(lx,ly);ctx.lineTo(lx+ww,ly+ww*slopeR);ctx.lineTo(lx+ww,ly+ww*slopeR+wh);ctx.lineTo(lx,ly+wh);ctx.fill();}
+  }}
+  ctx.strokeStyle="rgba(0,0,0,.15)";ctx.lineWidth=.5;
+  ctx.beginPath();ctx.moveTo(sx-hw,sy+TH/2);ctx.lineTo(sx-hw,sy+TH/2-h);ctx.lineTo(sx,sy-h);ctx.lineTo(sx+hw,sy+TH/2-h);ctx.lineTo(sx+hw,sy+TH/2);ctx.stroke();
+}
+
+// House sprite
+const houseImg=new Image();
+houseImg.src="house-texture.png";
+let houseLoaded=false;
+houseImg.onload=()=>{houseLoaded=true;render();};
+
+function drawHouse(ctx,sx,sy,w,h,isNight){
+  if(houseLoaded){
+    // The sprite is a full isometric scene — draw it centered on the tile
+    // The house in the image occupies roughly the center 70% of the 1024x1024 image
+    // Ground diamond in image: roughly x:80-950, y:430-850
+    // We want the image's ground diamond to align with our tile
+    const imgW=1024,imgH=1024;
+    // Scale so the image's ground tile width matches our TW
+    // Image ground tile is about 870px wide (from left grass edge to right)
+    const tileImgW=870;
+    const drawScale=TW/tileImgW;
+    const drawW=imgW*drawScale;
+    const drawH=imgH*drawScale;
+    // Position: center of image ground tile is at roughly (512,640) in image coords
+    // That should map to (sx, sy+TH/2) which is our tile center
+    const drawX=sx-512*drawScale;
+    const drawY=sy+TH/2-640*drawScale;
+    ctx.drawImage(houseImg,drawX,drawY,drawW,drawH);
+    // Night overlay
+    if(isNight){
+      ctx.globalAlpha=.35;ctx.fillStyle="#0a1628";
+      ctx.fillRect(drawX,drawY,drawW,drawH);
+      ctx.globalAlpha=1;
+    }
+    return;
+  }
+  // Fallback: SVG polygon version
+  // SVG tile: center(200,130-top), spans 440w x 220h
+  // Map SVG coords to canvas: sx,sy = tile top vertex
+  const scx=TW/440, scy=TH/220;
+  function p(svgX,svgY){return[sx+(svgX-200)*scx, sy+(svgY-130)*scy];}
+  function poly(pts,color){ctx.beginPath();ctx.moveTo(...p(pts[0],pts[1]));for(let i=2;i<pts.length;i+=2)ctx.lineTo(...p(pts[i],pts[i+1]));ctx.closePath();ctx.fillStyle=color;ctx.fill();}
+  function ln(x1,y1,x2,y2,color,lw){ctx.strokeStyle=color;ctx.lineWidth=lw*scx;ctx.beginPath();ctx.moveTo(...p(x1,y1));ctx.lineTo(...p(x2,y2));ctx.stroke();}
+
+  // Sand path
+  poly([80,290, 40,270, 120,230, 160,250], isNight?"#6a5a3a":"#e9c46a");
+
+  // Left wall (shadow)
+  poly([200,270, 80,210, 80,130, 200,190], isNight?"#8a7058":"#d4a373");
+  // Right wall (lit)
+  poly([200,270, 320,210, 320,130, 200,190], isNight?"#c4b49a":"#faedcd");
+
+  // Door on left wall
+  poly([160,250, 120,230, 120,170, 160,190], isNight?"#3a2010":"#5c3a21");
+  // Door handle
+  poly([152,226, 150,225, 150,221, 152,222], "#ffd166");
+
+  // Window on right wall
+  poly([240,220, 280,200, 280,170, 240,190], isNight?"rgba(255,230,120,.85)":"#8ecae6");
+  // White cross
+  ln(260,210, 260,180, "#fff", 2);
+  ln(245,205, 275,190, "#fff", 2);
+
+  // Bush
+  poly([60,220, 20,200, 60,180, 100,200], isNight?"#3a6a3a":"#74c69d");
+  poly([60,260, 20,240, 20,200, 60,220], isNight?"#2a4a2a":"#40916c");
+  poly([60,260, 100,240, 100,200, 60,220], isNight?"#306830":"#52b788");
+
+  // Roof layer 1 (widest)
+  poly([200,210, 40,130, 40,110, 200,190], isNight?"#5a0210":"#9a031e");
+  poly([200,210, 360,130, 360,110, 200,190], isNight?"#7a0418":"#d90429");
+  poly([200,190, 40,110, 200,30, 360,110], isNight?"#8a0a1a":"#ef233c");
+
+  // Roof layer 2
+  poly([220,180, 60,100, 60,80, 220,160], isNight?"#5a0210":"#9a031e");
+  poly([220,180, 340,120, 340,100, 220,160], isNight?"#7a0418":"#d90429");
+  poly([220,160, 60,80, 180,20, 340,100], isNight?"#8a0a1a":"#ef233c");
+
+  // Chimney
+  poly([260,100, 220,80, 220,0, 260,20], isNight?"#6a3a28":"#a6533d");
+  poly([260,100, 300,80, 300,0, 260,20], isNight?"#7a4a38":"#c1664d");
+  poly([260,20, 220,0, 260,-20, 300,0], isNight?"#8a5a48":"#e07a5f");
+  poly([260,15, 230,0, 260,-15, 290,0], "#3d1e16");
+
+  // Roof layer 3
+  poly([240,150, 80,70, 80,50, 240,130], isNight?"#5a0210":"#9a031e");
+  poly([240,150, 320,110, 320,90, 240,130], isNight?"#7a0418":"#d90429");
+  poly([240,130, 80,50, 160,10, 320,90], isNight?"#8a0a1a":"#ef233c");
+
+  // Roof layer 4 (peak)
+  poly([260,120, 100,40, 100,20, 260,100], isNight?"#5a0210":"#9a031e");
+  poly([260,120, 300,100, 300,80, 260,100], isNight?"#7a0418":"#d90429");
+  poly([260,100, 100,20, 140,0, 300,80], isNight?"#8a0a1a":"#ef233c");
+  return; // skip old code below
+}
+
+// Texture-mapped coffee shop
+const coffeeImg=new Image();
+coffeeImg.src="coffee-texture.png";
+let coffeeLoaded=false;
+coffeeImg.onload=()=>{coffeeLoaded=true;render();};
+
+// Map a rectangular source region onto an isometric parallelogram face
+function textureFace(ctx,img,srcX,srcY,srcW,srcH, p0x,p0y, p1x,p1y, p2x,p2y){
+  // p0=top-left, p1=top-right, p2=bottom-left of the parallelogram
+  ctx.save();
+  ctx.beginPath();
+  ctx.moveTo(p0x,p0y);ctx.lineTo(p1x,p1y);
+  ctx.lineTo(p1x+(p2x-p0x),p1y+(p2y-p0y));ctx.lineTo(p2x,p2y);
+  ctx.closePath();ctx.clip();
+  // Affine transform: maps (0,0,srcW,srcH) to parallelogram
+  const a=(p1x-p0x)/srcW, b=(p1y-p0y)/srcW;
+  const c=(p2x-p0x)/srcH, d=(p2y-p0y)/srcH;
+  ctx.setTransform(a,b,c,d,p0x,p0y);
+  ctx.drawImage(img, srcX,srcY,srcW,srcH, 0,0,srcW,srcH);
+  ctx.restore();
+  ctx.setTransform(1,0,0,1,0,0); // reset
+}
+
+function drawCoffeeShop(ctx,sx,sy,w,h,isNight){
+  const hw=w/2;
+
+  if(coffeeLoaded){
+    // Texture-mapped version using sprite sheet
+    // Right face (front view from sprite): top-left quadrant
+    // Parallelogram: top-left, top-right, bottom-left
+    const rtl_x=sx, rtl_y=sy+TH-h;        // top of right face at center
+    const rtr_x=sx+hw, rtr_y=sy+TH/2-h;   // top-right
+    const rbl_x=sx, rbl_y=sy+TH;           // bottom-left (center bottom)
+    textureFace(ctx,coffeeImg, 30,20,620,350,
+      rtl_x,rtl_y, rtr_x,rtr_y, rbl_x,rbl_y);
+
+    // Left face (side/back view): bottom-left quadrant
+    const ltl_x=sx-hw, ltl_y=sy+TH/2-h;
+    const ltr_x=sx, ltr_y=sy+TH-h;
+    const lbl_x=sx-hw, lbl_y=sy+TH/2;
+    textureFace(ctx,coffeeImg, 30,400,620,350,
+      ltl_x,ltl_y, ltr_x,ltr_y, lbl_x,lbl_y);
+
+    // Roof (top-down view): top-middle area
+    const roofTL_x=sx-hw, roofTL_y=sy+TH/2-h;
+    const roofTR_x=sx, roofTR_y=sy-h;
+    const roofBL_x=sx, roofBL_y=sy+TH-h;
+    textureFace(ctx,coffeeImg, 720,20,350,340,
+      roofTL_x,roofTL_y, roofTR_x,roofTR_y, roofBL_x,roofBL_y);
+
+    // Night overlay
+    if(isNight){
+      ctx.globalAlpha=.4;
+      ctx.fillStyle="#0a1628";
+      ctx.beginPath();ctx.moveTo(sx-hw,sy+TH/2);ctx.lineTo(sx,sy+TH);ctx.lineTo(sx,sy+TH-h);ctx.lineTo(sx-hw,sy+TH/2-h);ctx.closePath();ctx.fill();
+      ctx.beginPath();ctx.moveTo(sx+hw,sy+TH/2);ctx.lineTo(sx,sy+TH);ctx.lineTo(sx,sy+TH-h);ctx.lineTo(sx+hw,sy+TH/2-h);ctx.closePath();ctx.fill();
+      ctx.globalAlpha=1;
+    }
+    return;
+  }
+
+  // Fallback: polygon version
+  const scx=TW/500, scy=TH/250;
+  function p(svgX,svgY){return[sx+(svgX-400)*scx, sy+(svgY-300)*scy];}
+  function poly(pts,color){ctx.beginPath();ctx.moveTo(...p(pts[0],pts[1]));for(let i=2;i<pts.length;i+=2)ctx.lineTo(...p(pts[i],pts[i+1]));ctx.closePath();ctx.fillStyle=color;ctx.fill();}
+  function polyS(pts,fill,stroke,lw){ctx.beginPath();ctx.moveTo(...p(pts[0],pts[1]));for(let i=2;i<pts.length;i+=2)ctx.lineTo(...p(pts[i],pts[i+1]));ctx.closePath();ctx.fillStyle=fill;ctx.fill();if(stroke){ctx.strokeStyle=stroke;ctx.lineWidth=lw*scx;ctx.stroke();}}
+  function ln(x1,y1,x2,y2,color,lw){ctx.strokeStyle=color;ctx.lineWidth=lw*scx;ctx.beginPath();ctx.moveTo(...p(x1,y1));ctx.lineTo(...p(x2,y2));ctx.stroke();}
+
+  // All coords shifted by translate(0,-50) from SVG
+
+  // Right wall (cream)
+  poly([400,400, 600,300, 600,130, 400,230], isNight?"#c4b498":"#fdfae5");
+  // Left wall (tan)
+  poly([400,400, 200,300, 200,130, 400,230], isNight?"#8a6a42":"#d3a26d");
+
+  // Roof
+  poly([400,230, 180,120, 400,10, 620,120], isNight?"#2a1a10":"#4e3b29");
+  poly([400,250, 180,140, 180,120, 400,230], isNight?"#1e1410":"#3c2d1f");
+  poly([400,250, 620,140, 620,120, 400,230], isNight?"#221810":"#463424");
+
+  // Awning stripes on left wall
+  poly([380,235, 180,135, 200,115, 400,215], isNight?"#ddd":"white");
+  poly([360,225, 180,135, 200,115, 380,205], isNight?"#8a1018":"#e31d2b");
+  poly([340,215, 180,135, 200,115, 360,195], isNight?"#ddd":"white");
+
+  // Right window (large storefront)
+  polyS([430,320, 570,250, 570,150, 430,220], isNight?"rgba(255,230,120,.8)":"#87ceeb", "#a06e3e", 3);
+
+  // Left window
+  polyS([230,220, 370,290, 370,190, 230,120], isNight?"rgba(255,230,120,.8)":"#87ceeb", "#a06e3e", 3);
+  ln(300,155, 300,255, "#a06e3e", 2);
+  ln(230,170, 370,240, "#a06e3e", 2);
+
+  // Door (center-left)
+  poly([380,370, 310,335, 310,200, 380,235], isNight?"#6a4a2a":"#a06e3e");
+  // Door window
+  const dp=p(340,240);
+  ctx.fillStyle=isNight?"rgba(255,230,120,.7)":"#87ceeb";
+  ctx.fillRect(dp[0],dp[1],12*scx,20*scy);
+  // Door handle
+  const dh=p(370,305);
+  ctx.fillStyle="#ccac00";
+  ctx.beginPath();ctx.arc(dh[0],dh[1],2*scx,0,Math.PI*2);ctx.fill();
+
+  // Chimney
+  const ch=p(450,100);
+  ctx.fillStyle=isNight?"#5a3a1a":"#8b5a2b";
+  ctx.fillRect(ch[0],ch[1],12*scx,35*scy);
+  const ct=p(455,80);
+  ctx.fillStyle="gray";
+  ctx.fillRect(ct[0],ct[1],8*scx,15*scy);
+  const cc=p(460,60);
+  ctx.fillStyle="#bbb";
+  ctx.fillRect(cc[0],cc[1],6*scx,10*scy);
+
+  // Menu board sign (on right wall)
+  const sb=p(520,120);
+  ctx.save();
+  ctx.translate(sb[0],sb[1]);
+  ctx.fillStyle=isNight?"#c4b498":"#fdfae5";
+  ctx.strokeStyle="#a06e3e";ctx.lineWidth=2*scx;
+  ctx.fillRect(0,0,50*scx,22*scy);ctx.strokeRect(0,0,50*scx,22*scy);
+  // "COFFEE" text dots
+  ctx.fillStyle="#4e3b29";
+  for(let i=0;i<5;i++)ctx.fillRect((5+i*9)*scx,6*scy,6*scx,3*scy);
+  for(let i=0;i<5;i++)ctx.fillRect((5+i*9)*scx,13*scy,6*scx,3*scy);
+  ctx.restore();
+
+  // Outdoor sign/board stand (front)
+  poly([450,430, 480,415, 480,375, 450,390], isNight?"#6a4a2a":"#a06e3e");
+  poly([460,420, 475,413, 475,383, 460,390], isNight?"#ddd":"white");
+
+  // Outdoor table (right side)
+  poly([580,350, 610,335, 640,350, 610,365], isNight?"#2a1a10":"#4e3b29");
+  const tl=p(610,355);
+  ctx.fillStyle=isNight?"#1e1410":"#3c2d1f";
+  ctx.fillRect(tl[0],tl[1],4*scx,18*scy);
+}
+
+function drawModel(ctx,idx,sx,sy,h){
+  if(showGround) drawTile(ctx,sx,sy,isNight?"#1e3a1e":"#3a7a3a","rgba(255,255,255,.06)");
+  if(idx===0){
+    drawHouse(ctx,sx,sy,TW*.8,h,isNight);
+  }else if(idx===1){
+    drawCoffeeShop(ctx,sx,sy,TW*.8,h,isNight);
+  }else{
+    drawBuilding(ctx,sx,sy,TW*.8,h,BLDG_COLORS[idx],isNight);
+  }
+}
+
+// --- Model selection buttons ---
+const selectRow=document.getElementById("modelSelect");
+BLDG_COLORS.forEach((b,i)=>{
+  const btn=document.createElement("div");
+  btn.className="model-btn"+(i===0?" active":"");
+  btn.textContent=b.name;
+  btn.addEventListener("click",()=>{
+    selectedModel=i;
+    document.querySelectorAll(".model-btn").forEach(b=>b.classList.remove("active"));
+    btn.classList.add("active");
+    render();
+  });
+  selectRow.appendChild(btn);
+});
+
+// --- Controls ---
+const nightBtn=document.getElementById("nightBtn");
+nightBtn.addEventListener("click",()=>{isNight=!isNight;nightBtn.textContent=isNight?"NIGHT":"DAY";nightBtn.classList.toggle("active");render();});
+const groundBtn=document.getElementById("groundBtn");
+groundBtn.addEventListener("click",()=>{showGround=!showGround;groundBtn.classList.toggle("active");render();});
+document.querySelectorAll("input[type=range]").forEach(el=>el.addEventListener("input",render));
+
+// --- Render ---
+const bigC=document.getElementById("bigCanvas");
+const bigCtx=bigC.getContext("2d");
+const allC=document.getElementById("allCanvas");
+const allCtx=allC.getContext("2d");
+
+function render(){
+  TW=parseInt(document.getElementById("twSlider").value);
+  TH=TW/2;
+  scale=parseFloat(document.getElementById("scaleSlider").value);
+  const customH=parseInt(document.getElementById("hSlider").value);
+  document.getElementById("scaleVal").textContent=scale+"x";
+  document.getElementById("hVal").textContent=customH;
+  document.getElementById("twVal").textContent=TW;
+
+  // Big model view — zoom centered on the model
+  const bw=bigC.width,bh=bigC.height;
+  bigCtx.clearRect(0,0,bw,bh);
+  // Model drawn at (mx, my), center zoom on that point
+  const mx=bw/2,my=bh*.6;
+  // Approximate model visual center (halfway up the building height)
+  const modelCenterY=my+TH/2-customH/2;
+  bigCtx.save();
+  bigCtx.translate(mx,bh/2);
+  bigCtx.scale(scale,scale);
+  bigCtx.translate(-mx,-modelCenterY);
+  drawModel(bigCtx,selectedModel,mx,my,customH);
+  // Label
+  bigCtx.restore();
+  bigCtx.fillStyle="#fbbf24";bigCtx.font="12px sans-serif";bigCtx.textAlign="center";
+  bigCtx.fillText(BLDG_COLORS[selectedModel].name+" (h="+customH+")",bw/2,bh-10);
+
+  // All models row
+  const aw=allC.width,ah=allC.height;
+  allCtx.clearRect(0,0,aw,ah);
+  const count=BLDG_COLORS.length;
+  const spacing=aw/(count+1);
+  BLDG_COLORS.forEach((b,i)=>{
+    const mx=spacing*(i+1),my=ah*.65;
+    drawModel(allCtx,i,mx,my,b.h);
+    allCtx.fillStyle=i===selectedModel?"#fbbf24":"#8badc9";
+    allCtx.font="9px sans-serif";allCtx.textAlign="center";
+    allCtx.fillText(b.name.split(" ")[0],mx,ah-6);
+  });
+}
+
+render();
+</script>
+</body></html>

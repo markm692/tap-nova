@@ -515,20 +515,36 @@ function drawBuilding(ctx,sx,sy,w,h,colors,isNight){
   ctx.beginPath();ctx.moveTo(sx-hw,sy+TH/2);ctx.lineTo(sx-hw,sy+TH/2-h);ctx.lineTo(sx,sy-h);ctx.lineTo(sx+hw,sy+TH/2-h);ctx.lineTo(sx+hw,sy+TH/2);ctx.stroke();
 }
 
-// Small house: peaked roof, chimney, door
+// House sprite
+const houseImg=new Image();
+houseImg.src="house-texture.png";
+let houseLoaded=false;
+houseImg.onload=()=>{houseLoaded=true;lastCityHash="";};
+
+// Small house
 function drawHouse(ctx,sx,sy,w,h,isNight){
+  if(houseLoaded){
+    const imgW=1024,imgH=1024;
+    const tileImgW=870;
+    const drawScale=TW/tileImgW;
+    const drawW=imgW*drawScale;
+    const drawH=imgH*drawScale;
+    const drawX=sx-512*drawScale;
+    const drawY=sy+TH/2-640*drawScale;
+    ctx.drawImage(houseImg,drawX,drawY,drawW,drawH);
+    if(isNight){ctx.globalAlpha=.35;ctx.fillStyle="#0a1628";ctx.fillRect(drawX,drawY,drawW,drawH);ctx.globalAlpha=1;}
+    return;
+  }
+  // Fallback polygon version
   const hw=w/2;
   const wallH=h*.6, roofH=h*.5;
   const wallTop=sy+TH-wallH;
 
-  // Left wall
   ctx.beginPath();ctx.moveTo(sx-hw,sy+TH/2);ctx.lineTo(sx,sy+TH);ctx.lineTo(sx,wallTop);ctx.lineTo(sx-hw,sy+TH/2-wallH);ctx.closePath();
   ctx.fillStyle="#c4a882";ctx.fill();
-  // Right wall
   ctx.beginPath();ctx.moveTo(sx+hw,sy+TH/2);ctx.lineTo(sx,sy+TH);ctx.lineTo(sx,wallTop);ctx.lineTo(sx+hw,sy+TH/2-wallH);ctx.closePath();
   ctx.fillStyle="#d4b896";ctx.fill();
 
-  // Door on right wall
   const dw=w*.2,dh=wallH*.5;
   const dx=sx+hw*.3,dy=sy+TH-dh;
   const ds=TH/(2*hw);
@@ -536,9 +552,9 @@ function drawHouse(ctx,sx,sy,w,h,isNight){
   ctx.beginPath();ctx.moveTo(dx,dy);ctx.lineTo(dx+dw,dy-dw*ds);ctx.lineTo(dx+dw,dy-dw*ds-dh);ctx.lineTo(dx,dy-dh);ctx.fill();
 
   // Window on left wall
-  const wx=sx-hw*.4,wy=wallTop+wallH*.2;
+  const wx=sx-hw*.25,wy=wallTop+wallH*.25;
   ctx.fillStyle=isNight?"rgba(255,240,150,.8)":"rgba(160,210,240,.5)";
-  ctx.beginPath();ctx.moveTo(wx,wy);ctx.lineTo(wx-dw,wy+dw*ds);ctx.lineTo(wx-dw,wy+dw*ds+dw);ctx.lineTo(wx,wy+dw);ctx.fill();
+  ctx.beginPath();ctx.moveTo(wx,wy);ctx.lineTo(wx-dw,wy-dw*ds);ctx.lineTo(wx-dw,wy-dw*ds+dw);ctx.lineTo(wx,wy+dw);ctx.fill();
 
   // Peaked roof — ridge runs from left-back to right-front
   const ridge=roofH;

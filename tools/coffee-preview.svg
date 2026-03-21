@@ -1,0 +1,95 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 600" shape-rendering="crispEdges">
+  <rect width="800" height="600" fill="#a3d8f4"/>
+
+  <g fill="white">
+    <rect x="600" y="100" width="60" height="20"/>
+    <rect x="620" y="80" width="60" height="20"/>
+    <rect x="640" y="120" width="40" height="20"/>
+
+    <rect x="150" y="150" width="50" height="15"/>
+    <rect x="170" y="135" width="50" height="15"/>
+  </g>
+
+  <g>
+    <polygon points="400,550 150,425 400,300 650,425" fill="#7ac143"/>
+    <polygon points="400,580 150,455 150,425 400,550" fill="#5a9131"/>
+    <polygon points="400,580 650,455 650,425 400,550" fill="#6ba53b"/>
+    <polygon points="400,600 150,475 150,455 400,580" fill="#8b5a2b"/>
+    <polygon points="400,600 650,475 650,455 400,580" fill="#a06e3e"/>
+  </g>
+
+  <g transform="translate(0, -50)">
+    <polygon points="400,450 600,350 600,180 400,280" fill="#fdfae5"/>
+    <polygon points="400,450 200,350 200,180 400,280" fill="#d3a26d"/>
+
+    <g fill="#4e3b29">
+      <polygon points="400,280 180,170 400,60 620,170"/>
+      <polygon points="400,300 180,190 180,170 400,280" fill="#3c2d1f"/>
+      <polygon points="400,300 620,190 620,170 400,280" fill="#463424"/>
+    </g>
+
+    <g>
+      <polygon points="430,370 570,300 570,200 430,270" fill="#87ceeb" stroke="#a06e3e" stroke-width="4"/>
+      <rect x="450" y="270" width="30" height="20" fill="#4e3b29" transform="skewY(-26.5)"/>
+      <rect x="500" y="245" width="40" height="30" fill="#222" transform="skewY(-26.5)"/>
+    </g>
+
+    <g>
+      <polygon points="230,270 370,340 370,240 230,170" fill="#87ceeb" stroke="#a06e3e" stroke-width="4"/>
+      <line x1="300" y1="205" x2="300" y2="305" stroke="#a06e3e" stroke-width="2"/>
+      <line x1="230" y1="220" x2="370" y2="290" stroke="#a06e3e" stroke-width="2"/>
+    </g>
+
+    <g>
+      <polygon points="380,285 180,185 200,165 400,265" fill="white"/>
+      <polygon points="360,275 180,185 200,165 380,255" fill="#e31d2b"/>
+      <polygon points="340,265 180,185 200,165 360,245" fill="white"/>
+
+      <rect x="180" y="185" width="20" height="20" fill="#c11722" transform="skewY(26.5)"/>
+      <rect x="200" y="195" width="20" height="20" fill="white" transform="skewY(26.5)"/>
+      <rect x="220" y="205" width="20" height="20" fill="#c11722" transform="skewY(26.5)"/>
+    </g>
+
+    <g>
+      <polygon points="380,420 310,385 310,250 380,285" fill="#a06e3e"/>
+      <rect x="325" y="275" width="40" height="50" fill="#87ceeb" transform="skewY(-26.5)"/>
+      <circle cx="370" cy="355" r="3" fill="#ccac00"/>
+    </g>
+
+    <g transform="translate(480, 150) rotate(-26.5)">
+      <rect x="0" y="0" width="120" height="50" fill="#fdfae5" stroke="#a06e3e" stroke-width="4"/>
+      <g fill="#4e3b29">
+        <rect x="10" y="10" width="15" height="5"/> <rect x="10" y="15" width="5" height="20"/> <rect x="10" y="35" width="15" height="5"/>
+        <rect x="30" y="10" width="15" height="30"/> <rect x="35" y="15" width="5" height="20" fill="#fdfae5"/>
+        <rect x="50" y="10" width="5" height="30"/> <rect x="55" y="10" width="10" height="5"/> <rect x="55" y="20" width="8" height="5"/>
+        <rect x="70" y="10" width="5" height="30"/> <rect x="75" y="10" width="10" height="5"/> <rect x="75" y="20" width="8" height="5"/>
+        <rect x="90" y="10" width="5" height="30"/> <rect x="95" y="10" width="10" height="5"/> <rect x="95" y="20" width="8" height="5"/> <rect x="95" y="35" width="10" height="5"/>
+      </g>
+    </g>
+
+    <g>
+      <rect x="450" y="150" width="20" height="50" fill="#8b5a2b"/>
+      <rect x="455" y="130" width="10" height="20" fill="gray"/>
+      <rect x="460" y="110" width="10" height="10" fill="#bbb"/>
+      <rect x="465" y="90" width="8" height="8" fill="#ddd"/>
+    </g>
+  </g>
+
+  <g transform="translate(0, -50)">
+    <g transform="translate(450, 480)">
+      <polygon points="0,0 30,15 30,55 0,40" fill="#a06e3e"/>
+      <polygon points="10,10 25,17 25,47 10,40" fill="white"/>
+      <rect x="12" y="18" width="10" height="2" fill="#222" transform="skewY(26.5)"/>
+      <rect x="12" y="22" width="10" height="2" fill="#222" transform="skewY(26.5)"/>
+    </g>
+
+    <g transform="translate(580, 400)">
+      <polygon points="0,0 30,-15 60,0 30,15" fill="#4e3b29"/>
+      <rect x="25" y="5" width="10" height="30" fill="#3c2d1f"/>
+
+      <rect x="-15" y="5" width="15" height="15" fill="#4e3b29"/>
+      <rect x="-15" y="-10" width="3" height="15" fill="#3c2d1f"/>
+    </g>
+  </g>
+
+</svg>
