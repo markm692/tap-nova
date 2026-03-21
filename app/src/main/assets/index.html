@@ -590,10 +590,11 @@ function renderCity(force){
   if(cityDrawCount<3){window._dbg&&window._dbg("renderCity: w="+w+" h="+h+" gens="+S.gens.map(g=>g.count).join(","),"#0ff");cityDrawCount++;}
   const ctx=cCtx;
   ctx.clearRect(0,0,w,h);
-  // Position grid at bottom: oy = total height minus grid height minus padding
-  // Grid spans GRID*TH/2 vertically from oy
-  const gridH=GRID*TH;
-  const ox=w/2,oy=h-gridH-20;
+  // Isometric grid bottom point: tile(GRID-1, GRID-1) bottom vertex
+  // is at oy + (GRID-1+GRID-1)*TH/2 + TH = oy + (GRID-1)*TH + TH
+  // We want that to align with canvas bottom
+  const gridBottomOffset=(GRID-1)*TH+TH;
+  const ox=w/2,oy=h-gridBottomOffset-5;
   const phase=getDayPhase();
   const isNight=phase==="night"||phase==="dusk";
 
