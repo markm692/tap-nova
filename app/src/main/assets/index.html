@@ -33,21 +33,26 @@ html,body{width:100%;height:100%;overflow:hidden;background:#0a1628;font-family:
 /* Sun/moon */
 .city-sun{position:absolute;border-radius:50%;z-index:1;pointer-events:none}
 
-/* Isometric scene wrapper */
+/* Isometric scene */
 .city-scene{position:absolute;bottom:0;left:0;right:0;top:0;z-index:2;transition:transform .08s ease}
 
-/* City grid — isometric layout via absolute positioning */
+/* City grid */
 .city{position:absolute;inset:0;pointer-events:none;overflow:hidden}
-.city-ground{position:absolute;bottom:0;left:0;right:0;height:18px;background:linear-gradient(0deg,#141e2e,#1a2e40);z-index:2}
-.city-road{position:absolute;bottom:5px;left:0;right:0;height:6px;background:#222e3e;z-index:50}
-.city-road::before{content:'';position:absolute;top:2px;left:0;right:0;height:2px;background:repeating-linear-gradient(90deg,#fbbf24 0,#fbbf24 10px,transparent 10px,transparent 20px);opacity:.3}
-.city-sidewalk{position:absolute;bottom:11px;left:0;right:0;height:4px;background:#2a3545;z-index:49}
 
-/* Buildings — isometric 3D boxes */
-.bldg{position:absolute;bottom:0;transition:height .5s ease}
+/* Terrain rows — visible ground between building rows */
+.terrain-row{position:absolute;left:0;right:0;height:1px;z-index:1;opacity:.15;border-top:1px solid rgba(255,255,255,.08)}
+
+/* Road at bottom */
+.city-ground{position:absolute;bottom:0;left:0;right:0;height:16px;z-index:2}
+.city-road{position:absolute;bottom:4px;left:0;right:0;height:5px;background:#222e3e;z-index:50}
+.city-road::before{content:'';position:absolute;top:2px;left:0;right:0;height:1px;background:repeating-linear-gradient(90deg,#fbbf24 0,#fbbf24 8px,transparent 8px,transparent 16px);opacity:.3}
+.city-sidewalk{position:absolute;bottom:9px;left:0;right:0;height:3px;background:#2a3545;z-index:49}
+
+/* Buildings — isometric 3D */
+.bldg{position:absolute;transition:height .4s ease}
 .bldg-body{width:100%;height:100%;border-radius:1px 1px 0 0;position:relative;overflow:hidden}
-.bldg-side{position:absolute;top:0;right:-5px;width:5px;height:100%;opacity:.6;border-radius:0 1px 0 0}
-.bldg-top{position:absolute;top:-4px;left:0;right:-5px;height:5px;border-radius:1px;transform:skewX(-45deg);transform-origin:bottom left;opacity:.35;background:#fff}
+.bldg-side{position:absolute;top:0;width:5px;height:100%;opacity:.55;border-radius:0 1px 0 0}
+.bldg-top{position:absolute;left:0;height:5px;border-radius:1px;transform:skewX(-45deg);transform-origin:bottom left;opacity:.3;background:#fff}
 
 /* Vehicles */
 .vehicle{position:absolute;bottom:6px;height:4px;z-index:5;border-radius:1px;pointer-events:none}
@@ -455,20 +460,22 @@ function applyOrbVisuals(){ /* legacy - city replaces orb visuals */ }
 // CITY RENDERER
 // =============================================================================
 const BLDG_STYLES=[
-  {w:14,maxH:20, color:"#dc2626",winColor:"#fef08a",name:"cart"},      // Hot Dog Stand
-  {w:18,maxH:32, color:"#92400e",winColor:"#fde68a",name:"shop"},      // Coffee Shop
-  {w:22,maxH:55, color:"#64748b",winColor:"#fef9c3",name:"apt"},       // Apartment Block
-  {w:30,maxH:38, color:"#475569",winColor:"#fef08a",name:"mall"},      // Shopping Mall
-  {w:20,maxH:75, color:"#0ea5e9",winColor:"#e0f2fe",name:"tech"},      // Tech Campus
-  {w:18,maxH:90, color:"#1e3a5f",winColor:"#fde68a",name:"fin"},       // Financial District
-  {w:24,maxH:110,color:"#334155",winColor:"#f0f9ff",name:"mega"},      // Mega Tower
+  {w:16,maxH:18, color:"#dc2626",winColor:"#fef08a"},  // Hot Dog Stand
+  {w:20,maxH:28, color:"#92400e",winColor:"#fde68a"},  // Coffee Shop
+  {w:22,maxH:50, color:"#64748b",winColor:"#fef9c3"},  // Apartment Block
+  {w:28,maxH:35, color:"#475569",winColor:"#fef08a"},  // Shopping Mall
+  {w:20,maxH:65, color:"#0ea5e9",winColor:"#e0f2fe"},  // Tech Campus
+  {w:18,maxH:80, color:"#1e3a5f",winColor:"#fde68a"},  // Financial District
+  {w:22,maxH:100,color:"#334155",winColor:"#f0f9ff"},  // Mega Tower
 ];
-// 3 rows: back (row 0), mid (row 1), front (row 2)
-// Back rows render first, positioned higher, scaled smaller
-const ROWS=[
-  {y:18, scale:.55, maxSlots:7, zBase:10, xOffset:8},  // back
-  {y:14, scale:.75, maxSlots:6, zBase:20, xOffset:0},  // mid
-  {y:11, scale:1,   maxSlots:6, zBase:30, xOffset:4},  // front
+// 6 depth rows: far back → front. Each row: bottom% from area bottom, scale, z-index base, max buildings, horizontal shift
+const GRID_ROWS=[
+  {bottom:.62, scale:.28, zBase:5,  max:8, xShift:6},
+  {bottom:.52, scale:.38, zBase:8,  max:8, xShift:0},
+  {bottom:.42, scale:.50, zBase:12, max:7, xShift:8},
+  {bottom:.32, scale:.65, zBase:18, max:6, xShift:2},
+  {bottom:.22, scale:.82, zBase:25, max:6, xShift:6},
+  {bottom:.10, scale:1,   zBase:35, max:5, xShift:0},
 ];
 let lastCityHash="";
 
@@ -484,85 +491,100 @@ function renderCity(){
   const totalCount=S.gens.reduce((s,g)=>s+g.count,0);
 
   if(totalCount===0){
-    cv.innerHTML='<div style="position:absolute;bottom:30%;left:50%;transform:translateX(-50%);color:rgba(255,255,255,.15);font-size:11px;white-space:nowrap">Tap to start building!</div>';
+    cv.innerHTML='<div style="position:absolute;top:45%;left:50%;transform:translate(-50%,-50%);color:rgba(255,255,255,.15);font-size:11px;white-space:nowrap">Tap to start building!</div>';
     return;
   }
 
-  // Collect all buildings
+  // Collect buildings from generators
   let allBldgs=[];
   S.gens.forEach((gen,gi)=>{
     const style=BLDG_STYLES[gi];
-    const num=Math.min(gen.count,gi<2?Math.ceil(gen.count/2):Math.ceil(gen.count/3),6);
+    const num=Math.min(gen.count, gi<2 ? Math.ceil(gen.count/2) : Math.ceil(gen.count/3), 7);
     for(let b=0;b<num;b++){
       const hScale=.4+Math.min(gen.count,20)/20*.6;
       allBldgs.push({gi,style,hScale,isNew:gen.count<=2&&b===num-1,seed:gi*100+b});
     }
   });
 
-  // Distribute buildings across 3 rows
-  // Taller types toward back, shorter toward front
-  const rows=[[],[],[]];
-  allBldgs.forEach((b,i)=>{
-    if(b.gi>=4) rows[0].push(b);       // tall buildings → back
-    else if(b.gi>=2) rows[1].push(b);   // medium → middle
-    else rows[2].push(b);               // small → front
-  });
-  // Overflow: if a row is full, spill into adjacent
-  for(let r=0;r<3;r++){
-    while(rows[r].length>ROWS[r].maxSlots){
-      const spill=rows[r].pop();
-      rows[Math.min(r+1,2)===r?Math.max(r-1,0):r<2?r+1:r-1].push(spill);
+  // Distribute across 6 rows using round-robin with type preference
+  // Tall types start at back, short at front, then fill
+  const rows=Array.from({length:6},()=>[]);
+  allBldgs.forEach(b=>{
+    // Preferred row: tall buildings toward back (row 0-1), short toward front (row 4-5)
+    let pref;
+    if(b.gi>=5) pref=0;
+    else if(b.gi>=4) pref=1;
+    else if(b.gi>=3) pref=2;
+    else if(b.gi>=2) pref=3;
+    else if(b.gi>=1) pref=4;
+    else pref=5;
+    // Find nearest row with space
+    for(let offset=0;offset<6;offset++){
+      for(const try_r of [pref+offset,pref-offset]){
+        if(try_r>=0&&try_r<6&&rows[try_r].length<GRID_ROWS[try_r].max){
+          rows[try_r].push(b);return;
+        }
+      }
     }
-  }
+  });
 
   const phase=getDayPhase();
-  const litRate=phase==="night"?.7:phase==="dusk"?.5:phase==="dawn"?.35:.12;
-  const offColor=phase==="day"?"rgba(140,170,200,.3)":"rgba(80,100,120,.3)";
+  const litRate=phase==="night"?.72:phase==="dusk"?.5:phase==="dawn"?.32:.1;
+  const offColor=phase==="day"?"rgba(150,175,200,.25)":"rgba(70,90,110,.3)";
   let html='';
 
-  // Render back to front
-  for(let r=0;r<3;r++){
-    const row=ROWS[r];
+  // Terrain row markers
+  for(let r=0;r<6;r++){
+    const gr=GRID_ROWS[r];
+    html+=`<div class="terrain-row" style="bottom:${gr.bottom*100}%"></div>`;
+  }
+
+  // Render back to front (row 0 first)
+  for(let r=0;r<6;r++){
+    const gr=GRID_ROWS[r];
     const bldgs=rows[r];
     if(bldgs.length===0)continue;
-    const slotW=areaW/Math.max(bldgs.length,1);
+
+    const slotW=Math.floor((areaW-gr.xShift*2)/Math.max(bldgs.length,1));
+    const sideW=Math.round(4*gr.scale);
+    const topH=Math.round(4*gr.scale);
 
     bldgs.forEach((b,i)=>{
-      const style=b.style;
-      const w=Math.round(style.w*row.scale);
-      const h=Math.round(style.maxH*b.hScale*(0.7+((b.seed*7)%10)/10*.3)*row.scale);
-      const x=row.xOffset+i*slotW+(slotW-w)/2;
-      const bottomY=row.y;
+      const w=Math.round(b.style.w*gr.scale);
+      const rawH=b.style.maxH*b.hScale*(0.65+((b.seed*7)%10)/10*.35);
+      const h=Math.max(6,Math.round(rawH*gr.scale));
+      const x=gr.xShift+i*slotW+Math.round((slotW-w)/2);
+      const bottomPx=Math.round(gr.bottom*areaH);
 
-      // Windows
-      const winRows=Math.max(1,Math.floor(h/9));
-      const winCols=Math.max(1,Math.floor(w/7));
+      // Windows — scale count with building size
+      const winR=Math.max(1,Math.floor(h/8));
+      const winC=Math.max(1,Math.floor(w/7));
       let wins='';
-      for(let wr=0;wr<winRows;wr++){
-        for(let wc=0;wc<winCols;wc++){
+      for(let wr=0;wr<winR;wr++){
+        for(let wc=0;wc<winC;wc++){
           const lit=Math.random()<litRate;
-          wins+=`<div class="bldg-win${lit?' lit':''}" style="background:${lit?style.winColor:offColor}"></div>`;
+          wins+=`<div class="bldg-win${lit?' lit':''}" style="background:${lit?b.style.winColor:offColor}"></div>`;
         }
       }
 
-      // Side face color
-      const sc=style.color.replace('#','');
-      const sr=Math.max(0,parseInt(sc.substr(0,2),16)-50);
-      const sg=Math.max(0,parseInt(sc.substr(2,2),16)-50);
-      const sb=Math.max(0,parseInt(sc.substr(4,2),16)-50);
+      // Side color (darker)
+      const sc=b.style.color.replace('#','');
+      const dr=Math.max(0,parseInt(sc.substr(0,2),16)-55);
+      const dg=Math.max(0,parseInt(sc.substr(2,2),16)-55);
+      const db=Math.max(0,parseInt(sc.substr(4,2),16)-55);
 
-      const hasAntenna=h>45&&b.gi>=4;
-      const hasCrane=b.isNew;
-      const zi=row.zBase+i;
+      const hasAntenna=h>35&&b.gi>=4;
+      const hasCrane=b.isNew&&gr.scale>.5;
+      const zi=gr.zBase+i;
 
-      html+=`<div class="bldg" style="width:${w}px;height:${h}px;left:${x}px;bottom:${bottomY}px;z-index:${zi}">
+      html+=`<div class="bldg" style="width:${w}px;height:${h}px;left:${x}px;bottom:${bottomPx}px;z-index:${zi}">
         ${hasAntenna?'<div class="bldg-antenna"></div>':''}
         ${hasCrane?'<div class="crane"></div>':''}
-        <div class="bldg-body" style="background:${style.color}">
+        <div class="bldg-body" style="background:${b.style.color}">
           <div class="bldg-windows">${wins}</div>
         </div>
-        <div class="bldg-side" style="background:rgb(${sr},${sg},${sb})"></div>
-        ${h>15?'<div class="bldg-top"></div>':''}
+        <div class="bldg-side" style="background:rgb(${dr},${dg},${db});right:-${sideW}px;width:${sideW}px"></div>
+        ${h>10?`<div class="bldg-top" style="top:-${topH}px;right:-${sideW}px;height:${topH}px"></div>`:''}
       </div>`;
     });
   }
