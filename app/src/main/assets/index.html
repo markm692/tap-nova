@@ -439,8 +439,14 @@ function applyOrbVisuals(){ /* legacy - city replaces orb visuals */ }
 // =============================================================================
 // City draws on particle canvas (shared) — city first, particles on top
 let cCanvas=null,cCtx=null; // set after pCanvas is created
-const TW=12,TH=6; // tile width/height (2:1 isometric)
+const TW=22,TH=11; // tile width/height (2:1 isometric)
 const GRID=30; // 30x30 grid
+
+// Camera: zoom + pan
+let camZoom=.45,camPanX=0,camPanY=0;
+let camMinZoom=.25,camMaxZoom=1.5;
+// Touch tracking for pinch-zoom and pan
+let touches={},lastPinchDist=0,isPanning=false,lastPanX=0,lastPanY=0;
 // Building configs per generator type
 const BLDG_COLORS=[
   {front:"#c53030",side:"#9b2c2c",roof:"#e53e3e",h:12},
@@ -616,12 +622,17 @@ function renderCity(force){
   const genHash=S.gens.map(g=>g.count).join(",");
   if(genHash!==lastCityHash||force){lastCityHash=genHash;rebuildGrid();}
 
-  if(cityDrawCount<3){window._dbg&&window._dbg("renderCity: w="+w+" h="+h+" gens="+S.gens.map(g=>g.count).join(","),"#0ff");cityDrawCount++;}
+  if(cityDrawCount<3){window._dbg&&window._dbg("renderCity: w="+w+" h="+h+" zoom="+camZoom.toFixed(2),"#0ff");cityDrawCount++;}
   const ctx=cCtx;
   ctx.clearRect(0,0,w,h);
-  // Isometric grid bottom point: tile(GRID-1, GRID-1) bottom vertex
-  // is at oy + (GRID-1+GRID-1)*TH/2 + TH = oy + (GRID-1)*TH + TH
-  // We want that to align with canvas bottom
+
+  // Apply camera: zoom + pan
+  ctx.save();
+  ctx.translate(w/2,h/2);
+  ctx.scale(camZoom,camZoom);
+  ctx.translate(-w/2+camPanX,-h/2+camPanY);
+
+  // Grid origin: center the grid, bottom at canvas bottom (before zoom)
   const gridBottomOffset=(GRID-1)*TH+TH;
   const ox=w/2,oy=h-gridBottomOffset-5;
   const phase=getDayPhase();
@@ -663,6 +674,7 @@ function renderCity(force){
       }
     }
   }
+  ctx.restore(); // end camera transform
 }
 
 function initCityStars(){const bg=document.getElementById("cityStarsBg");if(!bg)return;let h="";for(let i=0;i<25;i++)h+='<div class="city-star-dot" style="left:'+Math.random()*100+'%;top:'+Math.random()*60+'%;animation-delay:'+Math.random()*3+'s"></div>';bg.innerHTML=h;}
@@ -1271,7 +1283,62 @@ function doTap(x,y,isAuto){
   if(!isAuto||Math.random()<.1){const f=document.createElement("div");f.className=isCrit?"floater crit":"floater";f.textContent=(isMega?"MEGA +":isCrit?"CRIT +":"+")+fmt(amount);if(isMega)f.style.color="#fef08a";f.style.left=(x+(Math.random()*40-20))+"px";f.style.top=(y-20)+"px";orbArea.appendChild(f);setTimeout(()=>f.remove(),isCrit?900:800);}
 }
 // Tap on city area (replaces orb tap)
-orbArea.addEventListener("pointerdown",e=>{if(e.target.closest(".investor"))return;e.preventDefault();const r=orbArea.getBoundingClientRect();doTap(e.clientX-r.left-30,e.clientY-r.top,false);updateUI();checkAchievements();});
+// Tap (single finger, no drag)
+let tapStart=null,tapMoved=false;
+orbArea.addEventListener("pointerdown",e=>{
+  if(e.target.closest(".investor"))return;
+  e.preventDefault();
+  tapStart={x:e.clientX,y:e.clientY,t:Date.now()};tapMoved=false;
+});
+orbArea.addEventListener("pointermove",e=>{
+  if(!tapStart)return;
+  if(Math.abs(e.clientX-tapStart.x)>8||Math.abs(e.clientY-tapStart.y)>8)tapMoved=true;
+});
+orbArea.addEventListener("pointerup",e=>{
+  if(tapStart&&!tapMoved&&Date.now()-tapStart.t<300){
+    const r=orbArea.getBoundingClientRect();
+    doTap(e.clientX-r.left-30,e.clientY-r.top,false);updateUI();checkAchievements();
+  }
+  tapStart=null;
+});
+
+// Pinch-zoom and pan via touch events
+orbArea.addEventListener("touchstart",e=>{
+  if(e.touches.length===2){
+    e.preventDefault();
+    const dx=e.touches[0].clientX-e.touches[1].clientX;
+    const dy=e.touches[0].clientY-e.touches[1].clientY;
+    lastPinchDist=Math.sqrt(dx*dx+dy*dy);
+  }else if(e.touches.length===1){
+    isPanning=true;
+    lastPanX=e.touches[0].clientX;lastPanY=e.touches[0].clientY;
+  }
+},{passive:false});
+orbArea.addEventListener("touchmove",e=>{
+  if(e.touches.length===2){
+    e.preventDefault();
+    const dx=e.touches[0].clientX-e.touches[1].clientX;
+    const dy=e.touches[0].clientY-e.touches[1].clientY;
+    const dist=Math.sqrt(dx*dx+dy*dy);
+    if(lastPinchDist>0){
+      const scale=dist/lastPinchDist;
+      camZoom=Math.max(camMinZoom,Math.min(camMaxZoom,camZoom*scale));
+      lastCityHash=""; // force redraw
+    }
+    lastPinchDist=dist;
+    isPanning=false;
+  }else if(e.touches.length===1&&isPanning){
+    const dx=e.touches[0].clientX-lastPanX;
+    const dy=e.touches[0].clientY-lastPanY;
+    camPanX+=dx/camZoom;camPanY+=dy/camZoom;
+    lastPanX=e.touches[0].clientX;lastPanY=e.touches[0].clientY;
+    lastCityHash=""; // force redraw
+    tapMoved=true; // prevent tap
+  }
+},{passive:false});
+orbArea.addEventListener("touchend",e=>{
+  lastPinchDist=0;isPanning=false;
+},{passive:false});
 function updateOrbVisuals(){
   // Combo override: flash sky temporarily handled by screenFlash, not sky override
   // Day/night cycle handles sky via updateDayNight()
