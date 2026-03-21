@@ -317,7 +317,7 @@ comboCount:0,comboTimer:0,comboMultiplier:1,
 achieved:{},investorActive:false,critCount:0,investorsCollected:0,
 wheelCooldown:0,wheelSpins:0,buffs:[],
 dailyStreak:0,lastClaimDay:"",todayClaimed:false,
-skills:{},bossesHandleed:0,
+skills:{},bossesHandled:0,
 challengeActive:false,challengeHP:0,challengeMaxHP:0,challengeTimer:0,challengeReward:0,challengeName:"",
 mgCooldown:0,mgPlayed:0,
 // Rivals
@@ -576,9 +576,9 @@ function removeInvestor(){if(investorEl){investorEl.remove();investorEl=null;}S.
 const BOSSES=[{name:"Budget Crisis",hp:30,time:10,mult:200},{name:"Traffic Jam",hp:50,time:12,mult:400},{name:"Power Outage",hp:80,time:12,mult:800},{name:"Housing Shortage",hp:120,time:15,mult:1500},{name:"Economic Recession",hp:200,time:15,mult:3e3}];
 let bossTimeout=null,bossBarEl=null;
 function scheduleBoss(){bossTimeout=setTimeout(spawnBoss,(180+Math.random()*120)*1e3);}
-function spawnBoss(){if(S.challengeActive)return;const b=BOSSES[Math.min(S.bossesHandleed,BOSSES.length-1)];S.challengeActive=true;S.challengeHP=b.hp;S.challengeMaxHP=b.hp;S.challengeTimer=b.time;S.challengeReward=tapPower()*b.mult;S.challengeName=b.name;SFX.bossAppear();if(navigator.vibrate)navigator.vibrate([60,40,60]);showToast("CRISIS!","Tap "+b.hp+"x in "+b.time+"s!");const a=document.getElementById("orbArea");bossBarEl=document.createElement("div");bossBarEl.className="boss-bar";bossBarEl.innerHTML=`<div class="boss-name">${b.name}</div><div class="boss-hp-track"><div class="boss-hp-fill" id="bossHpFill" style="width:100%"></div></div><div class="boss-timer" id="bossTimerText">${b.time}s</div>`;a.appendChild(bossBarEl);}
+function spawnBoss(){if(S.challengeActive)return;const b=BOSSES[Math.min(S.bossesHandled,BOSSES.length-1)];S.challengeActive=true;S.challengeHP=b.hp;S.challengeMaxHP=b.hp;S.challengeTimer=b.time;S.challengeReward=tapPower()*b.mult;S.challengeName=b.name;SFX.bossAppear();if(navigator.vibrate)navigator.vibrate([60,40,60]);showToast("CRISIS!","Tap "+b.hp+"x in "+b.time+"s!");const a=document.getElementById("orbArea");bossBarEl=document.createElement("div");bossBarEl.className="boss-bar";bossBarEl.innerHTML=`<div class="boss-name">${b.name}</div><div class="boss-hp-track"><div class="boss-hp-fill" id="bossHpFill" style="width:100%"></div></div><div class="boss-timer" id="bossTimerText">${b.time}s</div>`;a.appendChild(bossBarEl);}
 function hitBoss(){if(!S.challengeActive)return;S.challengeHP--;SFX.bossHit();const f=document.getElementById("bossHpFill");if(f)f.style.width=(S.challengeHP/S.challengeMaxHP*100)+"%";if(S.challengeHP<=0)handleBoss();}
-function handleBoss(){S.dust+=S.challengeReward;S.lifetimeDust+=S.challengeReward;S.allTimeDust+=S.challengeReward;S.bossesHandleed++;runBosses++;tryArtifactDrop(.2);S.challengeActive=false;SFX.bossHandle();screenFlash("rgba(74,222,128,0.4)");screenShake();showToast(S.challengeName+" RESOLVED!","+"+fmt(S.challengeReward));if(bossBarEl){bossBarEl.remove();bossBarEl=null;}scheduleBoss();checkAchievements();}
+function handleBoss(){S.dust+=S.challengeReward;S.lifetimeDust+=S.challengeReward;S.allTimeDust+=S.challengeReward;S.bossesHandled++;runBosses++;tryArtifactDrop(.2);S.challengeActive=false;SFX.bossHandle();screenFlash("rgba(74,222,128,0.4)");screenShake();showToast(S.challengeName+" RESOLVED!","+"+fmt(S.challengeReward));if(bossBarEl){bossBarEl.remove();bossBarEl=null;}scheduleBoss();checkAchievements();}
 function failBoss(){S.challengeActive=false;showToast("CRISIS UNRESOLVED!","");if(bossBarEl){bossBarEl.remove();bossBarEl=null;}scheduleBoss();}
 function updateBoss(dt){if(!S.challengeActive)return;S.challengeTimer-=dt;const t=document.getElementById("bossTimerText");if(t)t.textContent=Math.ceil(S.challengeTimer)+"s";if(S.challengeTimer<=0)failBoss();}
 
@@ -971,7 +971,7 @@ function buildMore(){
       else if(a.id.startsWith("prestige"))p=S.prestigeCount/target;
       else if(a.id==="gen1")p=S.gens[0].count;else if(a.id==="gen50")p=totalGens()/50;
       else if(a.id.startsWith("combo"))p=S.comboMultiplier/(a.id==="combo5"?5:12);
-      else if(a.id.startsWith("boss"))p=S.bossesHandleed/target;
+      else if(a.id.startsWith("boss"))p=S.bossesHandled/target;
       else if(a.id==="spin10")p=S.wheelSpins/10;else if(a.id==="streak7")p=S.dailyStreak/7;
       else if(a.id==="new city1")p=S.ascensionCount;
       p=Math.min(p,1);
@@ -1004,8 +1004,8 @@ const ACHIEVEMENTS=[
 {id:"prestige5",name:"Serial Expander",desc:"Prestige 5 times",check:()=>S.prestigeCount>=5,bonus:.15,icon:"\uD83C\uDF1F"},
 {id:"combo5",name:"Momentum",desc:"Reach x5 combo",check:()=>S.comboMultiplier>=5,bonus:.05,icon:"\uD83D\uDD17"},
 {id:"combo12",name:"MAX MOMENTUM",desc:"Reach x12 combo",check:()=>S.comboMultiplier>=12,bonus:.15,icon:"\uD83C\uDF2A\uFE0F"},
-{id:"boss5",name:"Crisis Manager",desc:"Handle 5 bosses",check:()=>S.bossesHandleed>=5,bonus:.1,icon:"\u2694\uFE0F"},
-{id:"boss20",name:"Crisis Expert",desc:"Handle 20 bosses",check:()=>S.bossesHandleed>=20,bonus:.15,icon:"\uD83D\uDDE1\uFE0F"},
+{id:"boss5",name:"Crisis Manager",desc:"Handle 5 bosses",check:()=>S.bossesHandled>=5,bonus:.1,icon:"\u2694\uFE0F"},
+{id:"boss20",name:"Crisis Expert",desc:"Handle 20 bosses",check:()=>S.bossesHandled>=20,bonus:.15,icon:"\uD83D\uDDE1\uFE0F"},
 {id:"spin10",name:"Wheel Spinner",desc:"Spin wheel 10 times",check:()=>S.wheelSpins>=10,bonus:.05,icon:"\uD83C\uDFA1"},
 {id:"streak7",name:"Daily Grind",desc:"7-day streak",check:()=>S.dailyStreak>=7,bonus:.15,icon:"\uD83D\uDCC5"},
 {id:"new city1",name:"Global Reach",desc:"New City once",check:()=>S.ascensionCount>=1,bonus:.2,icon:"\uD83C\uDF00"},
@@ -1055,8 +1055,8 @@ document.querySelectorAll(".tab").forEach(tab=>{tab.addEventListener("pointerdow
 // SAVE / LOAD
 // =============================================================================
 const SAVE_KEY="tapnova_save_v5";
-function save(){const d={dust:S.dust,lifetimeDust:S.lifetimeDust,allTimeDust:S.allTimeDust,cityStars:S.cityStars,mayorPoints:S.mayorPoints,tapLevel:S.tapLevel,prestigeCount:S.prestigeCount,ascensionCount:S.ascensionCount,totalTaps:S.totalTaps,critCount:S.critCount,investorsCollected:S.investorsCollected,gens:S.gens.map(g=>g.count),achieved:S.achieved,skills:S.skills,wheelCooldown:S.wheelCooldown,wheelSpins:S.wheelSpins,dailyStreak:S.dailyStreak,lastClaimDay:S.lastClaimDay,bossesHandleed:S.bossesHandleed,mgCooldown:S.mgCooldown,mgPlayed:S.mgPlayed,rivalSeed:S.rivalSeed,weeklyTarget:S.weeklyTarget,weeklyProgress:S.weeklyProgress,weeklyWeek:S.weeklyWeek,orbStage:S.orbStage,artifacts:S.artifacts,artifactDrops:S.artifactDrops,pChallenges:S.pChallenges,pChallengesDone:S.pChallengesDone,musicOn:S.musicOn,ts:Date.now()};try{localStorage.setItem(SAVE_KEY,JSON.stringify(d));}catch(e){}}
-function load(){try{let raw=localStorage.getItem(SAVE_KEY)||localStorage.getItem("tapnova_save_v4")||localStorage.getItem("tapnova_save_v3")||localStorage.getItem("tapnova_save_v2");if(!raw)return 0;const d=JSON.parse(raw);for(const k of["dust","lifetimeDust","allTimeDust","cityStars","mayorPoints","tapLevel","prestigeCount","ascensionCount","totalTaps","critCount","investorsCollected","wheelCooldown","wheelSpins","dailyStreak","bossesHandleed","mgCooldown","mgPlayed","rivalSeed","weeklyTarget","weeklyProgress","orbStage"])S[k]=d[k]||0;S.lastClaimDay=d.lastClaimDay||"";S.weeklyWeek=d.weeklyWeek||"";S.achieved=d.achieved||{};S.skills=d.skills||{};S.artifacts=d.artifacts||[];S.artifactDrops=d.artifactDrops||0;S.pChallenges=d.pChallenges||[];S.pChallengesDone=d.pChallengesDone||0;S.musicOn=d.musicOn||false;if(d.gens)d.gens.forEach((c,i)=>{if(S.gens[i])S.gens[i].count=c;});return d.ts?(Date.now()-d.ts)/1e3:0;}catch(e){return 0;}}
+function save(){const d={dust:S.dust,lifetimeDust:S.lifetimeDust,allTimeDust:S.allTimeDust,cityStars:S.cityStars,mayorPoints:S.mayorPoints,tapLevel:S.tapLevel,prestigeCount:S.prestigeCount,ascensionCount:S.ascensionCount,totalTaps:S.totalTaps,critCount:S.critCount,investorsCollected:S.investorsCollected,gens:S.gens.map(g=>g.count),achieved:S.achieved,skills:S.skills,wheelCooldown:S.wheelCooldown,wheelSpins:S.wheelSpins,dailyStreak:S.dailyStreak,lastClaimDay:S.lastClaimDay,bossesHandled:S.bossesHandled,mgCooldown:S.mgCooldown,mgPlayed:S.mgPlayed,rivalSeed:S.rivalSeed,weeklyTarget:S.weeklyTarget,weeklyProgress:S.weeklyProgress,weeklyWeek:S.weeklyWeek,orbStage:S.orbStage,artifacts:S.artifacts,artifactDrops:S.artifactDrops,pChallenges:S.pChallenges,pChallengesDone:S.pChallengesDone,musicOn:S.musicOn,ts:Date.now()};try{localStorage.setItem(SAVE_KEY,JSON.stringify(d));}catch(e){}}
+function load(){try{let raw=localStorage.getItem(SAVE_KEY)||localStorage.getItem("tapnova_save_v4")||localStorage.getItem("tapnova_save_v3")||localStorage.getItem("tapnova_save_v2");if(!raw)return 0;const d=JSON.parse(raw);for(const k of["dust","lifetimeDust","allTimeDust","cityStars","mayorPoints","tapLevel","prestigeCount","ascensionCount","totalTaps","critCount","investorsCollected","wheelCooldown","wheelSpins","dailyStreak","bossesHandled","mgCooldown","mgPlayed","rivalSeed","weeklyTarget","weeklyProgress","orbStage"])S[k]=d[k]||0;S.lastClaimDay=d.lastClaimDay||"";S.weeklyWeek=d.weeklyWeek||"";S.achieved=d.achieved||{};S.skills=d.skills||{};S.artifacts=d.artifacts||[];S.artifactDrops=d.artifactDrops||0;S.pChallenges=d.pChallenges||[];S.pChallengesDone=d.pChallengesDone||0;S.musicOn=d.musicOn||false;if(d.gens)d.gens.forEach((c,i)=>{if(S.gens[i])S.gens[i].count=c;});return d.ts?(Date.now()-d.ts)/1e3:0;}catch(e){return 0;}}
 
 // =============================================================================
 // OFFLINE
@@ -1116,7 +1116,7 @@ function buildShop(){
   if(pg>0)h+=`<div class="btn prestige" data-action="prestige"><div class="info"><div class="name">GO SUPERSTAR</div><div class="detail">+${fmt(pg)} Crystal${pg>1?"s":""}</div></div></div>`;
   // New City
   const ag=ascensionGain();
-  if(ag>0)h+=`<div class="btn new city" data-action="new city"><div class="info"><div class="name">NEW CITY</div><div class="detail">Reset ALL for +${fmt(ag)} Mayor Points (+${fmt(ag*25)}% all)</div></div></div>`;
+  if(ag>0)h+=`<div class="btn ascend" data-action="newcity"><div class="info"><div class="name">NEW CITY</div><div class="detail">Reset ALL for +${fmt(ag)} Mayor Points (+${fmt(ag*25)}% all)</div></div></div>`;
   // Prestige challenges
   if(S.pChallenges.length>0){
     h+=`<div class="section-title">RUN CHALLENGES</div>`;
@@ -1135,7 +1135,7 @@ shop.addEventListener("pointerdown",e=>{
   else if(a==="tap"){const c=tapUpgradeCost();if(S.dust>=c){S.dust-=c;S.tapLevel++;SFX.buy();}}
   else if(a==="gen"){const i=parseInt(btn.dataset.idx),c=genCost(i);if(S.dust>=c){S.dust-=c;S.gens[i].count++;SFX.buy();}}
   else if(a==="prestige"){const g=prestigeGain();if(g<=0)return;if(!confirm("New District?\n+"+fmt(g)+" City Star(s)"))return;S.cityStars+=g;S.prestigeCount++;S.dust=0;S.lifetimeDust=0;S.tapLevel=0;S.gens.forEach(g=>g.count=0);S.comboCount=0;S.comboTimer=0;S.comboMultiplier=1;resetRunStats();rollPrestigeChallenges();tryArtifactDrop(1);screenFlash("rgba(255,200,100,0.5)");screenShake();SFX.prestige();showToast("NEW DISTRICT!","+"+fmt(g)+" Crystals");}
-  else if(a==="new city"){const g=ascensionGain();if(g<=0)return;if(!confirm("NEW CITY?\n\nResets EVERYTHING (dust, generators, city stars, skills).\nYou keep: Mayor Points, Achievements.\n\n+"+fmt(g)+" Mayor Points (+"+fmt(g*25)+"% permanent)"))return;S.mayorPoints+=g;S.ascensionCount++;S.dust=0;S.lifetimeDust=0;S.allTimeDust=0;S.cityStars=0;S.tapLevel=0;S.prestigeCount=0;S.gens.forEach(g=>g.count=0);S.skills={};S.comboCount=0;S.comboTimer=0;S.comboMultiplier=1;resetRunStats();rollPrestigeChallenges();tryArtifactDrop(1);screenFlash("rgba(56,189,248,0.5)");screenShake();SFX.ascend();showToast("NEW CITY!","+"+fmt(g)+" Mayor Points");}
+  else if(a==="newcity"){const g=ascensionGain();if(g<=0)return;if(!confirm("NEW CITY?\n\nResets EVERYTHING (dust, generators, city stars, skills).\nYou keep: Mayor Points, Achievements.\n\n+"+fmt(g)+" Mayor Points (+"+fmt(g*25)+"% permanent)"))return;S.mayorPoints+=g;S.ascensionCount++;S.dust=0;S.lifetimeDust=0;S.allTimeDust=0;S.cityStars=0;S.tapLevel=0;S.prestigeCount=0;S.gens.forEach(g=>g.count=0);S.skills={};S.comboCount=0;S.comboTimer=0;S.comboMultiplier=1;resetRunStats();rollPrestigeChallenges();tryArtifactDrop(1);screenFlash("rgba(56,189,248,0.5)");screenShake();SFX.ascend();showToast("NEW CITY!","+"+fmt(g)+" Mayor Points");}
   updateUI();checkAchievements();
 });
 
