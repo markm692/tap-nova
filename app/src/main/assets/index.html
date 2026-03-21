@@ -32,77 +32,9 @@ html,body{width:100%;height:100%;overflow:hidden;background:#0a1628;font-family:
 /* Sun/moon */
 .city-sun{position:absolute;border-radius:50%;z-index:1;pointer-events:none}
 
-/* Isometric scene — perspective tilt on entire ground plane */
-.city-scene{position:absolute;bottom:0;left:-10%;right:-10%;top:30%;z-index:2;
-  transform:perspective(300px) rotateX(35deg);transform-origin:bottom center;
-  transition:transform .08s ease}
-.orb-area:active .city-scene{transform:perspective(300px) rotateX(36deg) scale(.98)}
-
-/* Isometric ground plane */
-.city-ground-plane{position:absolute;inset:0;
-  background:
-    linear-gradient(0deg,#1a2a1a 0%,#1e3520 30%,#1a2e1a 60%,#162818 100%);
-  z-index:0}
-/* Grid lines on ground */
-.city-ground-plane::before{content:'';position:absolute;inset:0;
-  background:
-    repeating-linear-gradient(0deg,transparent,transparent 24px,rgba(255,255,255,.04) 24px,rgba(255,255,255,.04) 25px),
-    repeating-linear-gradient(90deg,transparent,transparent 24px,rgba(255,255,255,.04) 24px,rgba(255,255,255,.04) 25px);
-  z-index:1}
-
-/* City grid */
-.city{position:absolute;inset:0;pointer-events:none;overflow:visible}
-
-/* Road strip across ground */
-.city-road{position:absolute;bottom:8%;left:0;right:0;height:8%;background:#3a3a3a;z-index:40}
-.city-road::before{content:'';position:absolute;top:45%;left:0;right:0;height:10%;
-  background:repeating-linear-gradient(90deg,#fbbf24 0,#fbbf24 12px,transparent 12px,transparent 24px);opacity:.4}
-.city-road::after{content:'';position:absolute;top:0;left:0;right:0;height:2px;background:rgba(255,255,255,.08)}
-.city-sidewalk{position:absolute;bottom:16%;left:0;right:0;height:3%;background:#4a4a3a;z-index:39}
-.city-sidewalk-top{position:absolute;bottom:75%;left:0;right:0;height:2%;background:#3a3a30;z-index:5;opacity:.5}
-
-/* Terrain row separators — subtle block lines */
-.terrain-row{position:absolute;left:0;right:0;height:1px;z-index:1;border-top:1px solid rgba(255,255,255,.03)}
-
-/* Buildings — isometric 3D */
-.bldg{position:absolute;transition:height .4s ease}
-.bldg-body{width:100%;height:100%;border-radius:1px 1px 0 0;position:relative;overflow:hidden}
-.bldg-side{position:absolute;top:0;width:5px;height:100%;opacity:.55;border-radius:0 1px 0 0}
-.bldg-top{position:absolute;left:0;height:5px;border-radius:1px;transform:skewX(-45deg);transform-origin:bottom left;opacity:.3;background:#fff}
-
-/* Vehicles */
-.vehicle{position:absolute;bottom:6px;height:4px;z-index:5;border-radius:1px;pointer-events:none}
-.vehicle-l{animation:driveL linear forwards}
-.vehicle-r{animation:driveR linear forwards}
-@keyframes driveL{from{left:-20px}to{left:110%}}
-@keyframes driveR{from{right:-20px}to{right:110%}}
-.headlight{position:absolute;top:0;width:3px;height:3px;border-radius:50%;background:#fef08a;opacity:0}
-.headlight.on{opacity:.8;box-shadow:0 0 4px rgba(254,240,138,.6)}
-
-/* Smoke */
-.smoke{position:absolute;z-index:6;pointer-events:none;border-radius:50%;background:rgba(200,200,210,.25);animation:smokeRise 3s ease-out forwards}
-@keyframes smokeRise{0%{opacity:.4;transform:translateY(0) scale(.5)}50%{opacity:.2;transform:translateY(-20px) scale(1)}100%{opacity:0;transform:translateY(-40px) scale(1.5)}}
-
-/* Flying elements */
-.plane{position:absolute;z-index:6;pointer-events:none;font-size:8px;animation:flyAcross linear forwards}
-@keyframes flyAcross{from{left:-30px}to{left:110%}}
-.bird{position:absolute;z-index:6;pointer-events:none;width:6px;height:2px;border-top:1px solid rgba(80,60,40,.6);border-left:2px solid transparent;border-right:2px solid transparent;animation:flyBird linear forwards}
-@keyframes flyBird{from{left:-10px}to{left:110%}}
-.heli{position:absolute;z-index:6;pointer-events:none;font-size:7px;animation:heliHover 2s ease-in-out infinite}
-@keyframes heliHover{0%,100%{transform:translateY(0)}50%{transform:translateY(-4px)}}
-
-/* People */
-.person{position:absolute;bottom:12px;width:2px;height:5px;z-index:5;border-radius:1px 1px 0 0;pointer-events:none}
-.person-l{animation:walkL linear forwards}
-.person-r{animation:walkR linear forwards}
-@keyframes walkL{from{left:-5px}to{left:110%}}
-@keyframes walkR{from{right:-5px}to{right:110%}}
-
-/* Light poles */
-.lamppost{position:absolute;bottom:11px;width:1px;height:14px;background:#475569;z-index:5;pointer-events:none}
-.lamppost::after{content:'';position:absolute;top:-1px;left:-3px;width:7px;height:3px;border-radius:2px;background:#64748b}
-.lamppost-glow{position:absolute;top:-6px;left:-5px;width:11px;height:10px;border-radius:50%;background:radial-gradient(circle,rgba(254,240,138,.3),transparent 70%);opacity:0}
-.lamppost-glow.on{opacity:1}
+/* Isometric city — rendered on canvas */
+.city-scene{position:absolute;inset:0;z-index:2;pointer-events:none}
+#cityCanvas{position:absolute;inset:0;width:100%;height:100%}
 .bldg-windows{display:flex;flex-wrap:wrap;gap:2px;padding:3px 2px;justify-content:center;align-content:flex-start}
 .bldg-win{width:5px;height:6px;border-radius:1px}
 .bldg-win.lit{box-shadow:0 0 4px rgba(253,230,138,.5)}
@@ -342,15 +274,9 @@ html,body{width:100%;height:100%;overflow:hidden;background:#0a1628;font-family:
     <canvas id="particleCanvas" style="position:absolute;inset:0;width:100%;height:100%;pointer-events:none;z-index:15"></canvas>
     <div class="glow" id="glow"></div>
     <div id="orb"></div>
-    <div class="city-scene" id="cityScene">
-      <div class="city-ground-plane"></div>
-      <div class="city-sidewalk-top"></div>
-      <div class="city" id="cityView"></div>
-      <div class="city-sidewalk"></div>
-      <div class="city-road"></div>
-      <div id="cityLife"></div>
+    <div class="city-scene">
+      <canvas id="cityCanvas"></canvas>
     </div>
-    <div class="tap-hint">TAP TO EARN</div>
   </div>
   <div class="sep"></div>
   <div class="tab-bar">
@@ -474,389 +400,96 @@ function updateOrbStage(){
 function applyOrbVisuals(){ /* legacy - city replaces orb visuals */ }
 
 // =============================================================================
-// CITY RENDERER
+// ISOMETRIC CANVAS CITY RENDERER
 // =============================================================================
-const BLDG_STYLES=[
-  {w:22,maxH:40,  color:"#dc2626",winColor:"#fef08a"},  // Hot Dog Stand
-  {w:26,maxH:60,  color:"#92400e",winColor:"#fde68a"},  // Coffee Shop
-  {w:28,maxH:100, color:"#64748b",winColor:"#fef9c3"},  // Apartment Block
-  {w:34,maxH:70,  color:"#475569",winColor:"#fef08a"},  // Shopping Mall
-  {w:24,maxH:130, color:"#0ea5e9",winColor:"#e0f2fe"},  // Tech Campus
-  {w:22,maxH:160, color:"#1e3a5f",winColor:"#fde68a"},  // Financial District
-  {w:28,maxH:190, color:"#334155",winColor:"#f0f9ff"},  // Mega Tower
-];
-// 4 depth rows on isometric ground plane (% positions within tilted scene)
-const GRID_ROWS=[
-  {bottom:.72, scale:.50, zBase:5,  max:8, xShift:10},  // far back
-  {bottom:.52, scale:.65, zBase:12, max:7, xShift:0},
-  {bottom:.34, scale:.82, zBase:20, max:6, xShift:8},
-  {bottom:.18, scale:1,   zBase:30, max:6, xShift:2},   // front
+const cCanvas=document.getElementById("cityCanvas");
+const cCtx=cCanvas.getContext("2d");
+const TW=30,TH=15; // tile width/height (2:1 isometric)
+const GRID=8; // 8x8 grid
+// Building configs per generator type
+const BLDG_COLORS=[
+  {front:"#c53030",side:"#9b2c2c",roof:"#e53e3e",h:12},
+  {front:"#92400e",side:"#78350f",roof:"#b45309",h:18},
+  {front:"#64748b",side:"#475569",roof:"#94a3b8",h:35},
+  {front:"#4a5568",side:"#2d3748",roof:"#718096",h:22},
+  {front:"#0284c7",side:"#0369a1",roof:"#38bdf8",h:45},
+  {front:"#1e3a5f",side:"#172554",roof:"#3b82f6",h:55},
+  {front:"#334155",side:"#1e293b",roof:"#64748b",h:70},
 ];
 let lastCityHash="";
+let cityGrid=Array.from({length:GRID},()=>Array(GRID).fill(0));
+
+function isoToScreen(col,row,ox,oy){return{x:ox+(col-row)*TW/2,y:oy+(col+row)*TH/2};}
+
+function drawTile(ctx,sx,sy,color,outline){
+  ctx.beginPath();ctx.moveTo(sx,sy);ctx.lineTo(sx+TW/2,sy+TH/2);ctx.lineTo(sx,sy+TH);ctx.lineTo(sx-TW/2,sy+TH/2);ctx.closePath();
+  ctx.fillStyle=color;ctx.fill();
+  if(outline){ctx.strokeStyle=outline;ctx.lineWidth=.5;ctx.stroke();}
+}
+
+function drawBuilding(ctx,sx,sy,w,h,colors,isNight){
+  const hw=w/2;
+  ctx.beginPath();ctx.moveTo(sx-hw,sy+TH/2);ctx.lineTo(sx,sy+TH);ctx.lineTo(sx,sy+TH-h);ctx.lineTo(sx-hw,sy+TH/2-h);ctx.closePath();
+  ctx.fillStyle=colors.side;ctx.fill();
+  ctx.beginPath();ctx.moveTo(sx+hw,sy+TH/2);ctx.lineTo(sx,sy+TH);ctx.lineTo(sx,sy+TH-h);ctx.lineTo(sx+hw,sy+TH/2-h);ctx.closePath();
+  ctx.fillStyle=colors.front;ctx.fill();
+  ctx.beginPath();ctx.moveTo(sx,sy+TH-h);ctx.lineTo(sx+hw,sy+TH/2-h);ctx.lineTo(sx,sy-h);ctx.lineTo(sx-hw,sy+TH/2-h);ctx.closePath();
+  ctx.fillStyle=colors.roof;ctx.fill();
+  const litC=isNight?.65:.12;
+  const winOn=isNight?"rgba(255,240,150,.8)":"rgba(180,220,255,.4)";
+  const winOff=isNight?"rgba(40,50,70,.6)":"rgba(100,130,160,.25)";
+  const rows=Math.max(1,Math.floor(h/8)),cols=Math.max(1,Math.floor(w/8));
+  for(let wr=0;wr<rows;wr++){for(let wc=0;wc<cols;wc++){
+    const wy=sy+TH-h+4+wr*7;
+    const rwx=sx+2+wc*6;if(rwx<sx+hw-2){ctx.fillStyle=Math.random()<litC?winOn:winOff;ctx.fillRect(rwx,wy,3,4);}
+    const lwx=sx-4-wc*6;if(lwx>sx-hw+1){ctx.fillStyle=Math.random()<litC?winOn:winOff;ctx.fillRect(lwx,wy,3,4);}
+  }}
+  ctx.strokeStyle="rgba(0,0,0,.15)";ctx.lineWidth=.5;
+  ctx.beginPath();ctx.moveTo(sx-hw,sy+TH/2);ctx.lineTo(sx-hw,sy+TH/2-h);ctx.lineTo(sx,sy-h);ctx.lineTo(sx+hw,sy+TH/2-h);ctx.lineTo(sx+hw,sy+TH/2);ctx.stroke();
+}
+
+function rebuildGrid(){
+  cityGrid=Array.from({length:GRID},()=>Array(GRID).fill(0));
+  for(let c=0;c<GRID;c++)cityGrid[6][c]=8;
+  let slots=[];
+  for(let r=0;r<GRID;r++)for(let c=0;c<GRID;c++)if(cityGrid[r][c]===0)slots.push({r,c});
+  slots.sort((a,b)=>(Math.abs(a.r-3)+Math.abs(a.c-3))-(Math.abs(b.r-3)+Math.abs(b.c-3)));
+  let si=0;
+  S.gens.forEach((gen,gi)=>{
+    const num=Math.min(gen.count,gi<2?Math.ceil(gen.count/2):Math.ceil(gen.count/3),7);
+    for(let b=0;b<num&&si<slots.length;b++){cityGrid[slots[si].r][slots[si].c]=gi+1;si++;}
+  });
+}
 
 function renderCity(){
   const hash=S.gens.map(g=>g.count).join(",")+getDayPhase();
   if(hash===lastCityHash)return;
   lastCityHash=hash;
-
-  const cv=document.getElementById("cityView");
-  const area=cv.getBoundingClientRect();
-  const areaW=area.width||300;
-  const areaH=area.height||200;
-  const totalCount=S.gens.reduce((s,g)=>s+g.count,0);
-
-  if(totalCount===0){
-    cv.innerHTML='<div style="position:absolute;top:45%;left:50%;transform:translate(-50%,-50%);color:rgba(255,255,255,.15);font-size:11px;white-space:nowrap">Tap to start building!</div>';
-    return;
-  }
-
-  // Collect buildings from generators
-  let allBldgs=[];
-  S.gens.forEach((gen,gi)=>{
-    const style=BLDG_STYLES[gi];
-    const num=Math.min(gen.count, gi<2 ? Math.ceil(gen.count/2) : Math.ceil(gen.count/3), 7);
-    for(let b=0;b<num;b++){
-      const hScale=.4+Math.min(gen.count,20)/20*.6;
-      allBldgs.push({gi,style,hScale,isNew:gen.count<=2&&b===num-1,seed:gi*100+b});
-    }
-  });
-
-  // Distribute across 4 rows — tall buildings toward back
-  const numRows=GRID_ROWS.length;
-  const rows=Array.from({length:numRows},()=>[]);
-  allBldgs.forEach(b=>{
-    let pref;
-    if(b.gi>=5) pref=0;      // Financial, Mega → back
-    else if(b.gi>=3) pref=1;  // Mall, Tech → second row
-    else if(b.gi>=1) pref=2;  // Coffee, Apt → third row
-    else pref=3;              // Hot Dog → front
-    for(let offset=0;offset<numRows;offset++){
-      for(const try_r of [pref+offset,pref-offset]){
-        if(try_r>=0&&try_r<numRows&&rows[try_r].length<GRID_ROWS[try_r].max){
-          rows[try_r].push(b);return;
-        }
-      }
-    }
-  });
-
-  const phase=getDayPhase();
-  const litRate=phase==="night"?.72:phase==="dusk"?.5:phase==="dawn"?.32:.1;
-  const offColor=phase==="day"?"rgba(150,175,200,.25)":"rgba(70,90,110,.3)";
-  let html='';
-
-  // Terrain row markers
-  for(let r=0;r<numRows;r++){
-    const gr=GRID_ROWS[r];
-    html+=`<div class="terrain-row" style="bottom:${gr.bottom*100}%"></div>`;
-  }
-
-  // Render back to front (row 0 first)
-  for(let r=0;r<numRows;r++){
-    const gr=GRID_ROWS[r];
-    const bldgs=rows[r];
-    if(bldgs.length===0)continue;
-
-    const slotW=Math.floor((areaW-gr.xShift*2)/Math.max(bldgs.length,1));
-    const sideW=Math.round(4*gr.scale);
-    const topH=Math.round(4*gr.scale);
-
-    bldgs.forEach((b,i)=>{
-      const w=Math.round(b.style.w*gr.scale);
-      const rawH=b.style.maxH*b.hScale*(0.65+((b.seed*7)%10)/10*.35);
-      const h=Math.max(6,Math.round(rawH*gr.scale));
-      const x=gr.xShift+i*slotW+Math.round((slotW-w)/2);
-      const bottomPx=Math.round(gr.bottom*areaH);
-
-      // Windows — scale count with building size
-      const winR=Math.max(1,Math.floor(h/8));
-      const winC=Math.max(1,Math.floor(w/7));
-      let wins='';
-      for(let wr=0;wr<winR;wr++){
-        for(let wc=0;wc<winC;wc++){
-          const lit=Math.random()<litRate;
-          wins+=`<div class="bldg-win${lit?' lit':''}" style="background:${lit?b.style.winColor:offColor}"></div>`;
-        }
-      }
-
-      // Side color (darker)
-      const sc=b.style.color.replace('#','');
-      const dr=Math.max(0,parseInt(sc.substr(0,2),16)-55);
-      const dg=Math.max(0,parseInt(sc.substr(2,2),16)-55);
-      const db=Math.max(0,parseInt(sc.substr(4,2),16)-55);
-
-      const hasAntenna=h>35&&b.gi>=4;
-      const hasCrane=b.isNew&&gr.scale>.5;
-      const zi=gr.zBase+i;
-
-      html+=`<div class="bldg" style="width:${w}px;height:${h}px;left:${x}px;bottom:${bottomPx}px;z-index:${zi}">
-        ${hasAntenna?'<div class="bldg-antenna"></div>':''}
-        ${hasCrane?'<div class="crane"></div>':''}
-        <div class="bldg-body" style="background:${b.style.color}">
-          <div class="bldg-windows">${wins}</div>
-        </div>
-        <div class="bldg-side" style="background:rgb(${dr},${dg},${db});right:-${sideW}px;width:${sideW}px"></div>
-        ${h>10?`<div class="bldg-top" style="top:-${topH}px;right:-${sideW}px;height:${topH}px"></div>`:''}
-      </div>`;
-    });
-  }
-  cv.innerHTML=html;
-}
-
-// Seed background stars
-function initCityStars(){
-  const bg=document.getElementById("cityStarsBg");
-  let html='';
-  for(let i=0;i<25;i++){
-    html+=`<div class="city-star-dot" style="left:${Math.random()*100}%;top:${Math.random()*60}%;animation-delay:${Math.random()*3}s"></div>`;
-  }
-  bg.innerHTML=html;
-}
-
-// Animate window lights (call occasionally)
-let windowFlickerTimer=0;
-function flickerWindows(dt){
-  windowFlickerTimer+=dt;
-  if(windowFlickerTimer<2)return;
-  windowFlickerTimer=0;
-  const wins=document.querySelectorAll(".bldg-win");
-  const phase=getDayPhase();
-  const litChance=phase==="night"?.7:phase==="dusk"?.5:phase==="dawn"?.4:.15;
-  wins.forEach(w=>{
-    if(Math.random()<.08){
-      const wasLit=w.classList.contains("lit");
-      if(wasLit&&Math.random()>litChance){w.classList.remove("lit");w.style.background=phase==="day"?"rgba(140,160,180,.25)":"rgba(100,120,140,.3)";}
-      else if(!wasLit&&Math.random()<litChance){w.classList.add("lit");w.style.background="#fef08a";}
-    }
-  });
-}
-
-// =============================================================================
-// DAY/NIGHT CYCLE — continuous sun arc
-// =============================================================================
-const DAY_CYCLE=120; // seconds per full cycle
-let dayTimer=0;
-let lastDayPhase="";
-
-// p: 0→1 continuous. 0=sunrise, 0.25=noon, 0.5=sunset, 0.75=midnight
-function getDayProgress(){return(dayTimer%DAY_CYCLE)/DAY_CYCLE;}
-function getDayPhase(){
-  const p=getDayProgress();
-  if(p<.15)return"dawn";if(p<.45)return"day";if(p<.6)return"dusk";return"night";
-}
-
-// Lerp between two hex colors
-function lerpColor(a,b,t){
-  const pa=parseInt(a.slice(1),16),pb=parseInt(b.slice(1),16);
-  const r1=(pa>>16)&255,g1=(pa>>8)&255,b1=pa&255;
-  const r2=(pb>>16)&255,g2=(pb>>8)&255,b2=pb&255;
-  const r=Math.round(r1+(r2-r1)*t),g=Math.round(g1+(g2-g1)*t),b3=Math.round(b1+(b2-b1)*t);
-  return`#${((1<<24)+(r<<16)+(g<<8)+b3).toString(16).slice(1)}`;
-}
-
-// Sky color stops at key points (p=0..1)
-const SKY_KEYS=[
-  {p:0,   top:"#1a1040",mid:"#d97706",bot:"#fef3c7",ground:"#2a2520",road:"#3a3025",stars:0.1},  // sunrise
-  {p:.15, top:"#1565c0",mid:"#42a5f5",bot:"#e3f2fd",ground:"#3a5a40",road:"#606060",stars:0},     // morning
-  {p:.3,  top:"#1e88e5",mid:"#90caf9",bot:"#e3f2fd",ground:"#3a5a40",road:"#606060",stars:0},     // noon
-  {p:.45, top:"#1565c0",mid:"#64b5f6",bot:"#bbdefb",ground:"#3a5a40",road:"#505050",stars:0},     // afternoon
-  {p:.55, top:"#4a1a5a",mid:"#c2185b",bot:"#ff8f00",ground:"#2a2025",road:"#352a20",stars:.15},   // sunset
-  {p:.65, top:"#1a1045",mid:"#4a1a5a",bot:"#ef6c00",ground:"#1a1820",road:"#2a2520",stars:.4},    // late dusk
-  {p:.75, top:"#050a18",mid:"#0a1628",bot:"#152a45",ground:"#141e2e",road:"#222e3e",stars:1},     // midnight
-  {p:.9,  top:"#050a18",mid:"#0f1830",bot:"#152a45",ground:"#141e2e",road:"#222e3e",stars:1},     // late night
-  {p:1,   top:"#1a1040",mid:"#d97706",bot:"#fef3c7",ground:"#2a2520",road:"#3a3025",stars:.1},    // wraps to sunrise
-];
-
-function interpSkyKey(p){
-  // Find surrounding keys
-  let a=SKY_KEYS[0],b=SKY_KEYS[1];
-  for(let i=0;i<SKY_KEYS.length-1;i++){
-    if(p>=SKY_KEYS[i].p&&p<=SKY_KEYS[i+1].p){a=SKY_KEYS[i];b=SKY_KEYS[i+1];break;}
-  }
-  const t=(p-a.p)/(b.p-a.p||1);
-  return{
-    top:lerpColor(a.top,b.top,t),
-    mid:lerpColor(a.mid,b.mid,t),
-    bot:lerpColor(a.bot,b.bot,t),
-    ground:lerpColor(a.ground,b.ground,t),
-    road:lerpColor(a.road,b.road,t),
-    stars:a.stars+(b.stars-a.stars)*t,
-  };
-}
-
-function updateDayNight(dt){
-  dayTimer+=dt;
-  const p=getDayProgress();
-  const phase=getDayPhase();
-
-  // Sun/moon position: continuous arc
-  // Sun visible p=0..0.5 (rises left, arcs overhead, sets right)
-  // Moon visible p=0.5..1.0 (same arc pattern)
-  const sun=document.getElementById("citySun");
-  if(sun){
-    const isSun=p<.55;
-    const arcP=isSun?p/.55:(p-.55)/.45; // 0→1 within sun/moon half
-    // Horizontal: 10%→90% left to right
-    const x=10+arcP*80;
-    // Vertical: parabolic arc, lowest at edges (horizon), highest at middle
-    const yArc=1-4*Math.pow(arcP-.5,2); // 0 at edges, 1 at peak
-    const y=80-yArc*70; // 80% at horizon, 10% at peak
-    // Only show when above horizon (y < 82)
-    if(y<82){
-      sun.style.display="block";
-      sun.style.left=x+"%";
-      sun.style.top=y+"%";
-      if(isSun){
-        // Sun color shifts: orange near horizon, yellow at peak
-        const warmth=1-yArc; // 1 at horizon, 0 at peak
-        const size=26+warmth*8;
-        sun.style.width=size+"px";sun.style.height=size+"px";
-        const r=255,g3=Math.round(245-warmth*100),b4=Math.round(157-warmth*120);
-        sun.style.background=`rgb(${r},${g3},${b4})`;
-        sun.style.boxShadow=`0 0 ${20+warmth*20}px rgba(${r},${g3},${b4},.6),0 0 ${40+warmth*30}px rgba(${r},${g3},${b4},.2)`;
-      }else{
-        // Moon: silvery white, smaller
-        sun.style.width="20px";sun.style.height="20px";
-        sun.style.background="#e2e8f0";
-        sun.style.boxShadow="0 0 15px rgba(226,232,240,.4),0 0 30px rgba(226,232,240,.15)";
-      }
-    }else{
-      sun.style.display="none";
-    }
-  }
-
-  // Sky, stars, ground: interpolate every frame
-  const sk=interpSkyKey(p);
-  const sky=document.getElementById("citySky");
-  if(sky)sky.style.background=`linear-gradient(180deg,${sk.top} 0%,${sk.mid} 55%,${sk.bot} 100%)`;
-  const stars=document.getElementById("cityStarsBg");
-  if(stars)stars.style.opacity=sk.stars;
-  const ground=document.querySelector(".city-ground");
-  if(ground)ground.style.background=sk.ground;
-  const road=document.querySelector(".city-road");
-  if(road)road.style.background=sk.road;
-
-  // Phase change: re-render buildings for window lighting
-  if(phase!==lastDayPhase){lastDayPhase=phase;lastCityHash="";spawnLampposts();}
-}
-
-// =============================================================================
-// CITY LIFE — vehicles, smoke, planes, people, lampposts
-// =============================================================================
-const cityLifeEl=document.getElementById("cityLife");
-let lifeTimer=0;
-
-function updateCityLife(dt){
-  lifeTimer+=dt;
-  if(lifeTimer<1.5)return; // spawn check every 1.5s
-  lifeTimer=0;
-  const pop=S.gens.reduce((s,g)=>s+g.count,0);
-  if(pop===0)return;
+  rebuildGrid();
+  const rect=cCanvas.parentElement.getBoundingClientRect();
+  cCanvas.width=rect.width;cCanvas.height=rect.height;
+  const ctx=cCtx;ctx.clearRect(0,0,cCanvas.width,cCanvas.height);
+  const ox=cCanvas.width/2,oy=cCanvas.height*.15;
   const phase=getDayPhase();
   const isNight=phase==="night"||phase==="dusk";
-
-  // Vehicles — more as city grows
-  if(Math.random()<Math.min(.4,.05+pop*.02)){
-    const car=document.createElement("div");
-    const goRight=Math.random()<.5;
-    const colors=["#ef4444","#3b82f6","#fbbf24","#fff","#94a3b8","#22c55e"];
-    car.className="vehicle "+(goRight?"vehicle-l":"vehicle-r");
-    car.style.width=(8+Math.random()*6)+"px";
-    car.style.background=colors[Math.floor(Math.random()*colors.length)];
-    const dur=4+Math.random()*4;
-    car.style.animationDuration=dur+"s";
-    // Headlights at night
-    if(isNight){
-      const hl=document.createElement("div");
-      hl.className="headlight on";
-      hl.style[goRight?"right":"left"]="-2px";
-      car.appendChild(hl);
+  const gA=isNight?"#1a2a1a":"#2d5a2d",gB=isNight?"#1e3020":"#346334";
+  const rdC=isNight?"#2a2a2a":"#555",rdL=isNight?"rgba(251,191,36,.3)":"rgba(251,191,36,.5)";
+  for(let row=0;row<GRID;row++){for(let col=0;col<GRID;col++){
+    const p=isoToScreen(col,row,ox,oy);const cell=cityGrid[row][col];
+    if(cell===8){drawTile(ctx,p.x,p.y,rdC,"rgba(255,255,255,.06)");ctx.fillStyle=rdL;ctx.fillRect(p.x-2,p.y+TH/2-1,4,2);}
+    else{drawTile(ctx,p.x,p.y,(row+col)%2===0?gA:gB,"rgba(255,255,255,.03)");}
+    if(cell>=1&&cell<=7){
+      const bc=BLDG_COLORS[cell-1];const count=S.gens[cell-1].count;
+      const hScale=.5+Math.min(count,20)/20*.5;
+      drawBuilding(ctx,p.x,p.y,TW*.8,Math.round(bc.h*hScale),bc,isNight);
     }
-    cityLifeEl.appendChild(car);
-    setTimeout(()=>car.remove(),(dur+.5)*1e3);
-  }
-
-  // People — walk on sidewalk
-  if(Math.random()<Math.min(.3,.03+pop*.015)){
-    const p=document.createElement("div");
-    const goRight=Math.random()<.5;
-    p.className="person "+(goRight?"person-l":"person-r");
-    const pColors=["#f59e0b","#3b82f6","#ef4444","#8b5cf6","#64748b","#ec4899"];
-    p.style.background=pColors[Math.floor(Math.random()*pColors.length)];
-    const dur=6+Math.random()*6;
-    p.style.animationDuration=dur+"s";
-    cityLifeEl.appendChild(p);
-    setTimeout(()=>p.remove(),(dur+.5)*1e3);
-  }
-
-  // Smoke — from taller buildings
-  if(pop>5&&Math.random()<.2){
-    const sm=document.createElement("div");
-    sm.className="smoke";
-    sm.style.width=(4+Math.random()*4)+"px";
-    sm.style.height=sm.style.width;
-    sm.style.left=(15+Math.random()*70)+"%";
-    sm.style.bottom=(40+Math.random()*30)+"%";
-    cityLifeEl.appendChild(sm);
-    setTimeout(()=>sm.remove(),3200);
-  }
-
-  // Flying elements
-  if(pop>10&&Math.random()<.08){
-    const type=Math.random();
-    if(type<.4){
-      // Plane
-      const pl=document.createElement("div");
-      pl.className="plane";
-      pl.textContent=Math.random()<.5?"\u2708":"\u2708";
-      pl.style.top=(5+Math.random()*25)+"%";
-      pl.style.color=isNight?"rgba(255,255,255,.4)":"rgba(60,60,80,.5)";
-      const dur=8+Math.random()*6;
-      pl.style.animationDuration=dur+"s";
-      cityLifeEl.appendChild(pl);
-      setTimeout(()=>pl.remove(),(dur+1)*1e3);
-    }else if(type<.7&&!isNight){
-      // Birds (daytime only) — group of 3-5
-      for(let i=0;i<3+Math.floor(Math.random()*3);i++){
-        const bd=document.createElement("div");
-        bd.className="bird";
-        bd.style.top=(8+Math.random()*20+i*2)+"%";
-        const dur=5+Math.random()*4;
-        bd.style.animationDuration=dur+"s";
-        bd.style.animationDelay=(i*.3)+"s";
-        cityLifeEl.appendChild(bd);
-        setTimeout(()=>bd.remove(),(dur+2)*1e3);
-      }
-    }else if(pop>20){
-      // Helicopter near tall buildings
-      const h=document.createElement("div");
-      h.className="heli";
-      h.textContent="\uD83D\uDE81";
-      h.style.left=(30+Math.random()*40)+"%";
-      h.style.top=(10+Math.random()*20)+"%";
-      cityLifeEl.appendChild(h);
-      setTimeout(()=>h.remove(),8e3);
-    }
-  }
+  }}
 }
 
-// Lampposts — placed once per phase change, along sidewalk
-function spawnLampposts(){
-  document.querySelectorAll(".lamppost").forEach(l=>l.remove());
-  const pop=S.gens.reduce((s,g)=>s+g.count,0);
-  if(pop<3)return;
-  const phase=getDayPhase();
-  const isNight=phase==="night"||phase==="dusk";
-  const count=Math.min(Math.floor(pop/3),8);
-  for(let i=0;i<count;i++){
-    const lp=document.createElement("div");
-    lp.className="lamppost";
-    lp.style.left=(8+i*(84/count))+"%";
-    const glow=document.createElement("div");
-    glow.className="lamppost-glow"+(isNight?" on":"");
-    lp.appendChild(glow);
-    cityLifeEl.appendChild(lp);
-  }
-}
+function initCityStars(){const bg=document.getElementById("cityStarsBg");if(!bg)return;let h="";for(let i=0;i<25;i++)h+='<div class="city-star-dot" style="left:'+Math.random()*100+'%;top:'+Math.random()*60+'%;animation-delay:'+Math.random()*3+'s"></div>';bg.innerHTML=h;}
+function flickerWindows(dt){}
+function spawnLampposts(){}
+function updateCityLife(dt){}
 
 // =============================================================================
 // SKILLS
