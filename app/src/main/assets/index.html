@@ -22,8 +22,7 @@ html,body{width:100%;height:100%;overflow:hidden;background:#0a1628;font-family:
 .combo-fill{height:100%;width:0%;background:linear-gradient(90deg,#f59e0b,#ef4444);border-radius:2px;transition:width .15s}
 .combo-bar-wrap.hidden{opacity:0}
 
-.orb-area{flex:2;position:relative;min-height:0;overflow:hidden;cursor:pointer;perspective:600px}
-.orb-area:active .city-scene{transform:rotateX(4deg) scale(.97)}
+.orb-area{flex:2;position:relative;min-height:0;overflow:hidden;cursor:pointer}
 
 /* Sky — transitions driven by JS day/night cycle */
 .city-sky{position:absolute;inset:0;z-index:0}
@@ -33,20 +32,37 @@ html,body{width:100%;height:100%;overflow:hidden;background:#0a1628;font-family:
 /* Sun/moon */
 .city-sun{position:absolute;border-radius:50%;z-index:1;pointer-events:none}
 
-/* Isometric scene */
-.city-scene{position:absolute;bottom:0;left:0;right:0;top:0;z-index:2;transition:transform .08s ease}
+/* Isometric scene — perspective tilt on entire ground plane */
+.city-scene{position:absolute;bottom:0;left:-10%;right:-10%;top:30%;z-index:2;
+  transform:perspective(300px) rotateX(35deg);transform-origin:bottom center;
+  transition:transform .08s ease}
+.orb-area:active .city-scene{transform:perspective(300px) rotateX(36deg) scale(.98)}
+
+/* Isometric ground plane */
+.city-ground-plane{position:absolute;inset:0;
+  background:
+    linear-gradient(0deg,#1a2a1a 0%,#1e3520 30%,#1a2e1a 60%,#162818 100%);
+  z-index:0}
+/* Grid lines on ground */
+.city-ground-plane::before{content:'';position:absolute;inset:0;
+  background:
+    repeating-linear-gradient(0deg,transparent,transparent 24px,rgba(255,255,255,.04) 24px,rgba(255,255,255,.04) 25px),
+    repeating-linear-gradient(90deg,transparent,transparent 24px,rgba(255,255,255,.04) 24px,rgba(255,255,255,.04) 25px);
+  z-index:1}
 
 /* City grid */
-.city{position:absolute;inset:0;pointer-events:none;overflow:hidden}
+.city{position:absolute;inset:0;pointer-events:none;overflow:visible}
 
-/* Terrain rows — visible ground between building rows */
-.terrain-row{position:absolute;left:0;right:0;height:1px;z-index:1;opacity:.15;border-top:1px solid rgba(255,255,255,.08)}
+/* Road strip across ground */
+.city-road{position:absolute;bottom:8%;left:0;right:0;height:8%;background:#3a3a3a;z-index:40}
+.city-road::before{content:'';position:absolute;top:45%;left:0;right:0;height:10%;
+  background:repeating-linear-gradient(90deg,#fbbf24 0,#fbbf24 12px,transparent 12px,transparent 24px);opacity:.4}
+.city-road::after{content:'';position:absolute;top:0;left:0;right:0;height:2px;background:rgba(255,255,255,.08)}
+.city-sidewalk{position:absolute;bottom:16%;left:0;right:0;height:3%;background:#4a4a3a;z-index:39}
+.city-sidewalk-top{position:absolute;bottom:75%;left:0;right:0;height:2%;background:#3a3a30;z-index:5;opacity:.5}
 
-/* Road at bottom */
-.city-ground{position:absolute;bottom:0;left:0;right:0;height:16px;z-index:2}
-.city-road{position:absolute;bottom:4px;left:0;right:0;height:5px;background:#222e3e;z-index:50}
-.city-road::before{content:'';position:absolute;top:2px;left:0;right:0;height:1px;background:repeating-linear-gradient(90deg,#fbbf24 0,#fbbf24 8px,transparent 8px,transparent 16px);opacity:.3}
-.city-sidewalk{position:absolute;bottom:9px;left:0;right:0;height:3px;background:#2a3545;z-index:49}
+/* Terrain row separators — subtle block lines */
+.terrain-row{position:absolute;left:0;right:0;height:1px;z-index:1;border-top:1px solid rgba(255,255,255,.03)}
 
 /* Buildings — isometric 3D */
 .bldg{position:absolute;transition:height .4s ease}
@@ -327,9 +343,10 @@ html,body{width:100%;height:100%;overflow:hidden;background:#0a1628;font-family:
     <div class="glow" id="glow"></div>
     <div id="orb"></div>
     <div class="city-scene" id="cityScene">
+      <div class="city-ground-plane"></div>
+      <div class="city-sidewalk-top"></div>
       <div class="city" id="cityView"></div>
       <div class="city-sidewalk"></div>
-      <div class="city-ground"></div>
       <div class="city-road"></div>
       <div id="cityLife"></div>
     </div>
@@ -468,12 +485,12 @@ const BLDG_STYLES=[
   {w:22,maxH:160, color:"#1e3a5f",winColor:"#fde68a"},  // Financial District
   {w:28,maxH:190, color:"#334155",winColor:"#f0f9ff"},  // Mega Tower
 ];
-// 4 depth rows: back → front
+// 4 depth rows on isometric ground plane (% positions within tilted scene)
 const GRID_ROWS=[
-  {bottom:.48, scale:.45, zBase:5,  max:8, xShift:10},
-  {bottom:.34, scale:.60, zBase:12, max:7, xShift:0},
-  {bottom:.20, scale:.78, zBase:20, max:6, xShift:8},
-  {bottom:.08, scale:1,   zBase:30, max:6, xShift:2},
+  {bottom:.72, scale:.50, zBase:5,  max:8, xShift:10},  // far back
+  {bottom:.52, scale:.65, zBase:12, max:7, xShift:0},
+  {bottom:.34, scale:.82, zBase:20, max:6, xShift:8},
+  {bottom:.18, scale:1,   zBase:30, max:6, xShift:2},   // front
 ];
 let lastCityHash="";
 
