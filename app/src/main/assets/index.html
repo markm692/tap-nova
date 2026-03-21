@@ -32,8 +32,7 @@ html,body{width:100%;height:100%;overflow:hidden;background:#0a1628;font-family:
 /* Sun/moon */
 .city-sun{position:absolute;border-radius:50%;z-index:1;pointer-events:none}
 
-/* Isometric city canvas */
-#cityCanvas{position:absolute;top:0;left:0;z-index:2;pointer-events:none}
+/* City drawn on particle canvas — no separate element needed */
 .bldg-windows{display:flex;flex-wrap:wrap;gap:2px;padding:3px 2px;justify-content:center;align-content:flex-start}
 .bldg-win{width:5px;height:6px;border-radius:1px}
 .bldg-win.lit{box-shadow:0 0 4px rgba(253,230,138,.5)}
@@ -273,7 +272,7 @@ html,body{width:100%;height:100%;overflow:hidden;background:#0a1628;font-family:
     <canvas id="particleCanvas" style="position:absolute;inset:0;width:100%;height:100%;pointer-events:none;z-index:15"></canvas>
     <div class="glow" id="glow"></div>
     <div id="orb"></div>
-    <canvas id="cityCanvas"></canvas>
+    <!-- city draws on particleCanvas -->
   </div>
   <div class="sep"></div>
   <div class="tab-bar">
@@ -399,8 +398,8 @@ function applyOrbVisuals(){ /* legacy - city replaces orb visuals */ }
 // =============================================================================
 // ISOMETRIC CANVAS CITY RENDERER
 // =============================================================================
-const cCanvas=document.getElementById("cityCanvas");
-const cCtx=cCanvas.getContext("2d");
+// City draws on particle canvas (shared) — city first, particles on top
+let cCanvas=null,cCtx=null; // set after pCanvas is created
 const TW=30,TH=15; // tile width/height (2:1 isometric)
 const GRID=8; // 8x8 grid
 // Building configs per generator type
@@ -459,23 +458,17 @@ function rebuildGrid(){
 }
 
 let cityNeedsRedraw=true;
+let cityGridCache=null; // cached grid to avoid rebuilding every frame
 function renderCity(force){
-  const hash=S.gens.map(g=>g.count).join(",")+getDayPhase();
-  if(!force&&hash===lastCityHash&&!cityNeedsRedraw)return;
-  lastCityHash=hash;cityNeedsRedraw=false;
-  rebuildGrid();
+  if(!cCanvas||!cCtx)return;
+  const w=cCanvas.width,h=cCanvas.height;
+  if(w<10||h<10)return;
 
-  // Size canvas buffer to match orbArea layout
-  const area=document.getElementById("orbArea");
-  if(!area)return;
-  const rect=area.getBoundingClientRect();
-  const w=Math.floor(rect.width)||300;
-  const h=Math.floor(rect.height)||400;
-  cCanvas.width=w;
-  cCanvas.height=h;
-  cCanvas.style.width=w+"px";
-  cCanvas.style.height=h+"px";
+  // Rebuild grid only when generators change
+  const genHash=S.gens.map(g=>g.count).join(",");
+  if(genHash!==lastCityHash||force){lastCityHash=genHash;rebuildGrid();}
 
+  // Always redraw (shares canvas with particles which need clearing)
   const ctx=cCtx;
   ctx.clearRect(0,0,w,h);
   const ox=w/2,oy=h*.12;
@@ -740,8 +733,10 @@ document.getElementById("mgClose").addEventListener("click",()=>document.getElem
 // =============================================================================
 const pCanvas=document.getElementById("particleCanvas");
 const pCtx=pCanvas.getContext("2d");
+// Share canvas for city drawing
+cCanvas=pCanvas;cCtx=pCtx;
 let particles=[];
-function resizeParticleCanvas(){const r=document.getElementById("orbArea").getBoundingClientRect();pCanvas.width=r.width;pCanvas.height=r.height;}
+function resizeParticleCanvas(){const r=document.getElementById("orbArea").getBoundingClientRect();pCanvas.width=r.width;pCanvas.height=r.height;cityNeedsRedraw=true;}
 setTimeout(resizeParticleCanvas,0);window.addEventListener("resize",resizeParticleCanvas);
 
 function spawnParticles(x,y,count,color,speed,size){
@@ -755,7 +750,7 @@ function spawnRing(x,y,color){
   particles.push({x,y,vx:0,vy:0,life:1,decay:.015,size:20,color,ring:true,ringSize:10});
 }
 function updateParticles(dt){
-  pCtx.clearRect(0,0,pCanvas.width,pCanvas.height);
+  // Don't clear — city is already drawn on this canvas. Just draw particles on top.
   particles=particles.filter(p=>{
     p.life-=p.decay;if(p.life<=0)return false;
     p.x+=p.vx;p.y+=p.vy;p.vy+=.3;// gravity
