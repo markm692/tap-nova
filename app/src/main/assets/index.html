@@ -22,8 +22,8 @@ html,body{width:100%;height:100%;overflow:hidden;background:#0a1628;font-family:
 .combo-fill{height:100%;width:0%;background:linear-gradient(90deg,#f59e0b,#ef4444);border-radius:2px;transition:width .15s}
 .combo-bar-wrap.hidden{opacity:0}
 
-.orb-area{flex:2;position:relative;min-height:0;overflow:hidden;cursor:pointer}
-.orb-area:active .city{transform:scale(.97)}
+.orb-area{flex:2;position:relative;min-height:0;overflow:hidden;cursor:pointer;perspective:600px}
+.orb-area:active .city-scene{transform:rotateX(4deg) scale(.97)}
 
 /* Sky — transitions driven by JS day/night cycle */
 .city-sky{position:absolute;inset:0;z-index:0}
@@ -33,15 +33,55 @@ html,body{width:100%;height:100%;overflow:hidden;background:#0a1628;font-family:
 /* Sun/moon */
 .city-sun{position:absolute;border-radius:50%;z-index:1;pointer-events:none}
 
-/* City skyline — absolute, anchored to bottom */
-.city{position:absolute;bottom:14px;left:0;right:0;z-index:3;display:flex;align-items:flex-end;justify-content:center;gap:2px;padding:0 6px;transition:transform .08s ease;pointer-events:none}
-.city-ground{position:absolute;bottom:0;left:0;right:0;height:14px;background:linear-gradient(0deg,#141e2e,#1a2e40);z-index:2}
-.city-road{position:absolute;bottom:4px;left:0;right:0;height:4px;background:#222e3e;z-index:2}
-.city-road::before{content:'';position:absolute;top:1px;left:0;right:0;height:2px;background:repeating-linear-gradient(90deg,#fbbf24 0,#fbbf24 10px,transparent 10px,transparent 20px);opacity:.35}
+/* Isometric scene wrapper */
+.city-scene{position:absolute;bottom:0;left:0;right:0;top:0;z-index:2;transform:rotateX(3deg);transform-origin:bottom center;transition:transform .08s ease}
 
-/* Buildings */
+/* City skyline */
+.city{position:absolute;bottom:18px;left:0;right:0;z-index:3;display:flex;align-items:flex-end;justify-content:center;gap:2px;padding:0 6px;pointer-events:none}
+.city-ground{position:absolute;bottom:0;left:0;right:0;height:18px;background:linear-gradient(0deg,#141e2e,#1a2e40);z-index:2}
+.city-road{position:absolute;bottom:5px;left:0;right:0;height:6px;background:#222e3e;z-index:4}
+.city-road::before{content:'';position:absolute;top:2px;left:0;right:0;height:2px;background:repeating-linear-gradient(90deg,#fbbf24 0,#fbbf24 10px,transparent 10px,transparent 20px);opacity:.3}
+.city-sidewalk{position:absolute;bottom:11px;left:0;right:0;height:4px;background:#2a3545;z-index:3}
+
+/* Buildings — 3D-ish with side face */
 .bldg{flex-shrink:0;position:relative;transition:height .5s ease}
 .bldg-body{width:100%;height:100%;border-radius:2px 2px 0 0;position:relative;overflow:hidden}
+.bldg-side{position:absolute;top:2px;right:-4px;width:4px;height:calc(100% - 2px);opacity:.5;border-radius:0 2px 0 0}
+.bldg-top{position:absolute;top:-3px;left:2px;right:-2px;height:4px;opacity:.3;border-radius:2px 2px 0 0;background:#fff}
+
+/* Vehicles */
+.vehicle{position:absolute;bottom:6px;height:4px;z-index:5;border-radius:1px;pointer-events:none}
+.vehicle-l{animation:driveL linear forwards}
+.vehicle-r{animation:driveR linear forwards}
+@keyframes driveL{from{left:-20px}to{left:110%}}
+@keyframes driveR{from{right:-20px}to{right:110%}}
+.headlight{position:absolute;top:0;width:3px;height:3px;border-radius:50%;background:#fef08a;opacity:0}
+.headlight.on{opacity:.8;box-shadow:0 0 4px rgba(254,240,138,.6)}
+
+/* Smoke */
+.smoke{position:absolute;z-index:6;pointer-events:none;border-radius:50%;background:rgba(200,200,210,.25);animation:smokeRise 3s ease-out forwards}
+@keyframes smokeRise{0%{opacity:.4;transform:translateY(0) scale(.5)}50%{opacity:.2;transform:translateY(-20px) scale(1)}100%{opacity:0;transform:translateY(-40px) scale(1.5)}}
+
+/* Flying elements */
+.plane{position:absolute;z-index:6;pointer-events:none;font-size:8px;animation:flyAcross linear forwards}
+@keyframes flyAcross{from{left:-30px}to{left:110%}}
+.bird{position:absolute;z-index:6;pointer-events:none;width:6px;height:2px;border-top:1px solid rgba(80,60,40,.6);border-left:2px solid transparent;border-right:2px solid transparent;animation:flyBird linear forwards}
+@keyframes flyBird{from{left:-10px}to{left:110%}}
+.heli{position:absolute;z-index:6;pointer-events:none;font-size:7px;animation:heliHover 2s ease-in-out infinite}
+@keyframes heliHover{0%,100%{transform:translateY(0)}50%{transform:translateY(-4px)}}
+
+/* People */
+.person{position:absolute;bottom:12px;width:2px;height:5px;z-index:5;border-radius:1px 1px 0 0;pointer-events:none}
+.person-l{animation:walkL linear forwards}
+.person-r{animation:walkR linear forwards}
+@keyframes walkL{from{left:-5px}to{left:110%}}
+@keyframes walkR{from{right:-5px}to{right:110%}}
+
+/* Light poles */
+.lamppost{position:absolute;bottom:11px;width:1px;height:14px;background:#475569;z-index:5;pointer-events:none}
+.lamppost::after{content:'';position:absolute;top:-1px;left:-3px;width:7px;height:3px;border-radius:2px;background:#64748b}
+.lamppost-glow{position:absolute;top:-6px;left:-5px;width:11px;height:10px;border-radius:50%;background:radial-gradient(circle,rgba(254,240,138,.3),transparent 70%);opacity:0}
+.lamppost-glow.on{opacity:1}
 .bldg-windows{display:flex;flex-wrap:wrap;gap:2px;padding:3px 2px;justify-content:center;align-content:flex-start}
 .bldg-win{width:5px;height:6px;border-radius:1px}
 .bldg-win.lit{box-shadow:0 0 4px rgba(253,230,138,.5)}
@@ -281,9 +321,13 @@ html,body{width:100%;height:100%;overflow:hidden;background:#0a1628;font-family:
     <canvas id="particleCanvas" style="position:absolute;inset:0;width:100%;height:100%;pointer-events:none;z-index:15"></canvas>
     <div class="glow" id="glow"></div>
     <div id="orb"></div>
-    <div class="city" id="cityView"></div>
-    <div class="city-ground"></div>
-    <div class="city-road"></div>
+    <div class="city-scene" id="cityScene">
+      <div class="city" id="cityView"></div>
+      <div class="city-sidewalk"></div>
+      <div class="city-ground"></div>
+      <div class="city-road"></div>
+      <div id="cityLife"></div>
+    </div>
     <div class="tap-hint">TAP TO EARN</div>
   </div>
   <div class="sep"></div>
@@ -474,12 +518,20 @@ function renderCity(){
         wins+=`<div class="bldg-win${lit?' lit':''}" style="background:${color}"></div>`;
       }
     }
+    // Darker shade for side face
+    const sideColor=b.style.color.replace('#','');
+    const sr=Math.max(0,parseInt(sideColor.substr(0,2),16)-40);
+    const sg=Math.max(0,parseInt(sideColor.substr(2,2),16)-40);
+    const sb=Math.max(0,parseInt(sideColor.substr(4,2),16)-40);
+    const sideBg=`rgb(${sr},${sg},${sb})`;
     html+=`<div class="bldg" style="width:${b.w}px;height:${b.h}px">
       ${hasAntenna?'<div class="bldg-antenna"></div>':''}
       ${hasCrane?'<div class="crane"></div>':''}
       <div class="bldg-body" style="background:${b.style.color}">
         <div class="bldg-windows">${wins}</div>
       </div>
+      <div class="bldg-side" style="background:${sideBg}"></div>
+      ${b.h>20?'<div class="bldg-top"></div>':''}
     </div>`;
   });
   cv.innerHTML=html;
@@ -619,7 +671,126 @@ function updateDayNight(dt){
   if(road)road.style.background=sk.road;
 
   // Phase change: re-render buildings for window lighting
-  if(phase!==lastDayPhase){lastDayPhase=phase;lastCityHash="";}
+  if(phase!==lastDayPhase){lastDayPhase=phase;lastCityHash="";spawnLampposts();}
+}
+
+// =============================================================================
+// CITY LIFE — vehicles, smoke, planes, people, lampposts
+// =============================================================================
+const cityLifeEl=document.getElementById("cityLife");
+let lifeTimer=0;
+
+function updateCityLife(dt){
+  lifeTimer+=dt;
+  if(lifeTimer<1.5)return; // spawn check every 1.5s
+  lifeTimer=0;
+  const pop=S.gens.reduce((s,g)=>s+g.count,0);
+  if(pop===0)return;
+  const phase=getDayPhase();
+  const isNight=phase==="night"||phase==="dusk";
+
+  // Vehicles — more as city grows
+  if(Math.random()<Math.min(.4,.05+pop*.02)){
+    const car=document.createElement("div");
+    const goRight=Math.random()<.5;
+    const colors=["#ef4444","#3b82f6","#fbbf24","#fff","#94a3b8","#22c55e"];
+    car.className="vehicle "+(goRight?"vehicle-l":"vehicle-r");
+    car.style.width=(8+Math.random()*6)+"px";
+    car.style.background=colors[Math.floor(Math.random()*colors.length)];
+    const dur=4+Math.random()*4;
+    car.style.animationDuration=dur+"s";
+    // Headlights at night
+    if(isNight){
+      const hl=document.createElement("div");
+      hl.className="headlight on";
+      hl.style[goRight?"right":"left"]="-2px";
+      car.appendChild(hl);
+    }
+    cityLifeEl.appendChild(car);
+    setTimeout(()=>car.remove(),(dur+.5)*1e3);
+  }
+
+  // People — walk on sidewalk
+  if(Math.random()<Math.min(.3,.03+pop*.015)){
+    const p=document.createElement("div");
+    const goRight=Math.random()<.5;
+    p.className="person "+(goRight?"person-l":"person-r");
+    const pColors=["#f59e0b","#3b82f6","#ef4444","#8b5cf6","#64748b","#ec4899"];
+    p.style.background=pColors[Math.floor(Math.random()*pColors.length)];
+    const dur=6+Math.random()*6;
+    p.style.animationDuration=dur+"s";
+    cityLifeEl.appendChild(p);
+    setTimeout(()=>p.remove(),(dur+.5)*1e3);
+  }
+
+  // Smoke — from taller buildings
+  if(pop>5&&Math.random()<.2){
+    const sm=document.createElement("div");
+    sm.className="smoke";
+    sm.style.width=(4+Math.random()*4)+"px";
+    sm.style.height=sm.style.width;
+    sm.style.left=(15+Math.random()*70)+"%";
+    sm.style.bottom=(40+Math.random()*30)+"%";
+    cityLifeEl.appendChild(sm);
+    setTimeout(()=>sm.remove(),3200);
+  }
+
+  // Flying elements
+  if(pop>10&&Math.random()<.08){
+    const type=Math.random();
+    if(type<.4){
+      // Plane
+      const pl=document.createElement("div");
+      pl.className="plane";
+      pl.textContent=Math.random()<.5?"\u2708":"\u2708";
+      pl.style.top=(5+Math.random()*25)+"%";
+      pl.style.color=isNight?"rgba(255,255,255,.4)":"rgba(60,60,80,.5)";
+      const dur=8+Math.random()*6;
+      pl.style.animationDuration=dur+"s";
+      cityLifeEl.appendChild(pl);
+      setTimeout(()=>pl.remove(),(dur+1)*1e3);
+    }else if(type<.7&&!isNight){
+      // Birds (daytime only) — group of 3-5
+      for(let i=0;i<3+Math.floor(Math.random()*3);i++){
+        const bd=document.createElement("div");
+        bd.className="bird";
+        bd.style.top=(8+Math.random()*20+i*2)+"%";
+        const dur=5+Math.random()*4;
+        bd.style.animationDuration=dur+"s";
+        bd.style.animationDelay=(i*.3)+"s";
+        cityLifeEl.appendChild(bd);
+        setTimeout(()=>bd.remove(),(dur+2)*1e3);
+      }
+    }else if(pop>20){
+      // Helicopter near tall buildings
+      const h=document.createElement("div");
+      h.className="heli";
+      h.textContent="\uD83D\uDE81";
+      h.style.left=(30+Math.random()*40)+"%";
+      h.style.top=(10+Math.random()*20)+"%";
+      cityLifeEl.appendChild(h);
+      setTimeout(()=>h.remove(),8e3);
+    }
+  }
+}
+
+// Lampposts — placed once per phase change, along sidewalk
+function spawnLampposts(){
+  document.querySelectorAll(".lamppost").forEach(l=>l.remove());
+  const pop=S.gens.reduce((s,g)=>s+g.count,0);
+  if(pop<3)return;
+  const phase=getDayPhase();
+  const isNight=phase==="night"||phase==="dusk";
+  const count=Math.min(Math.floor(pop/3),8);
+  for(let i=0;i<count;i++){
+    const lp=document.createElement("div");
+    lp.className="lamppost";
+    lp.style.left=(8+i*(84/count))+"%";
+    const glow=document.createElement("div");
+    glow.className="lamppost-glow"+(isNight?" on":"");
+    lp.appendChild(glow);
+    cityLifeEl.appendChild(lp);
+  }
 }
 
 // =============================================================================
@@ -1303,6 +1474,7 @@ function tick(now){
   // City + stage + day/night
   orbStageTimer+=dt;if(orbStageTimer>=3){orbStageTimer=0;updateOrbStage();}
   updateDayNight(dt);
+  updateCityLife(dt);
   renderCity();
   updateParticles(dt);
   flickerWindows(dt);
@@ -1317,7 +1489,7 @@ function tick(now){
 const offlineSec=load();
 initRivals();initWeekly();
 if(offlineSec>0)applyOffline(offlineSec);
-updateOrbStage();applyOrbVisuals();initCityStars();renderCity();updateUI();
+updateOrbStage();applyOrbVisuals();initCityStars();renderCity();spawnLampposts();updateUI();
 if(S.pChallenges.length===0)rollPrestigeChallenges();
 if(S.musicOn){startMusic();musicToggle.textContent="MUSIC ON";musicToggle.classList.add("on");}
 requestAnimationFrame(tick);
