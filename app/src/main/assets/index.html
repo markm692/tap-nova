@@ -470,14 +470,32 @@ function drawBuilding(ctx,sx,sy,w,h,colors,isNight){
   const litC=isNight?.65:.12;
   const winOn=isNight?"rgba(255,240,150,.8)":"rgba(180,220,255,.4)";
   const winOff=isNight?"rgba(40,50,70,.6)":"rgba(100,130,160,.25)";
-  const rows=Math.max(1,Math.floor(h/8)),cols=Math.max(1,Math.floor(w/8));
-  // Deterministic window pattern based on position (no flicker)
+  const wRows=Math.max(1,Math.floor(h/9)),wCols=Math.max(1,Math.floor(hw/7));
   const seed=Math.floor(sx*7+sy*13);
-  for(let wr=0;wr<rows;wr++){for(let wc=0;wc<cols;wc++){
+  const slopeR=TH/(2*hw); // y shift per x pixel on right face
+  const ww=3,wh=4; // window size
+  for(let wr=0;wr<wRows;wr++){for(let wc=0;wc<wCols;wc++){
     const wHash=((seed+wr*31+wc*17)&0xFFFF)/65536;
-    const wy=sy+TH-h+4+wr*7;
-    const rwx=sx+2+wc*6;if(rwx<sx+hw-2){ctx.fillStyle=wHash<litC?winOn:winOff;ctx.fillRect(rwx,wy,3,4);}
-    const lwx=sx-4-wc*6;if(lwx>sx-hw+1){ctx.fillStyle=wHash<litC?winOn:winOff;ctx.fillRect(lwx,wy,3,4);}
+    ctx.fillStyle=wHash<litC?winOn:winOff;
+    const wy=sy+TH-h+5+wr*8;
+    // Right face windows — skewed parallelogram
+    const rx=sx+3+wc*6;
+    if(rx+ww<sx+hw){
+      const ry=wy+(rx-sx)*slopeR;
+      ctx.beginPath();
+      ctx.moveTo(rx,ry);ctx.lineTo(rx+ww,ry+ww*slopeR);
+      ctx.lineTo(rx+ww,ry+ww*slopeR+wh);ctx.lineTo(rx,ry+wh);
+      ctx.fill();
+    }
+    // Left face windows — opposite skew
+    const lx=sx-3-wc*6-ww;
+    if(lx>sx-hw){
+      const ly=wy+(sx-lx-ww)*slopeR;
+      ctx.beginPath();
+      ctx.moveTo(lx,ly);ctx.lineTo(lx+ww,ly-ww*slopeR);
+      ctx.lineTo(lx+ww,ly-ww*slopeR+wh);ctx.lineTo(lx,ly+wh);
+      ctx.fill();
+    }
   }}
   ctx.strokeStyle="rgba(0,0,0,.15)";ctx.lineWidth=.5;
   ctx.beginPath();ctx.moveTo(sx-hw,sy+TH/2);ctx.lineTo(sx-hw,sy+TH/2-h);ctx.lineTo(sx,sy-h);ctx.lineTo(sx+hw,sy+TH/2-h);ctx.lineTo(sx+hw,sy+TH/2);ctx.stroke();
