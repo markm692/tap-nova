@@ -504,8 +504,32 @@ function drawBuilding(ctx,sx,sy,w,h,colors,isNight){
   ctx.beginPath();ctx.moveTo(sx-hw,sy+TH/2);ctx.lineTo(sx-hw,sy+TH/2-h);ctx.lineTo(sx,sy-h);ctx.lineTo(sx+hw,sy+TH/2-h);ctx.lineTo(sx+hw,sy+TH/2);ctx.stroke();
 }
 
+// Island shape: -1=water, 0=land, 9=beach
+// Deterministic noise for organic coastline
+function islandNoise(r,c){return((Math.sin(r*12.9898+c*78.233)*43758.5453)%1+1)%1;}
+let islandMask=null;
+function buildIslandMask(){
+  islandMask=Array.from({length:GRID},()=>Array(GRID).fill(-1));
+  const mid=GRID/2-.5;
+  const rx=GRID*.42,ry=GRID*.42; // ellipse radii
+  for(let r=0;r<GRID;r++){for(let c=0;c<GRID;c++){
+    const dx=(c-mid)/rx,dy=(r-mid)/ry;
+    const dist=Math.sqrt(dx*dx+dy*dy);
+    const noise=islandNoise(r,c)*.25; // coastline irregularity
+    if(dist<.75+noise)islandMask[r][c]=0; // land
+    else if(dist<.92+noise)islandMask[r][c]=9; // beach
+  }}
+}
+buildIslandMask();
+
 function rebuildGrid(){
   cityGrid=Array.from({length:GRID},()=>Array(GRID).fill(0));
+  // Apply island mask
+  for(let r=0;r<GRID;r++)for(let c=0;c<GRID;c++){
+    if(islandMask[r][c]===-1)cityGrid[r][c]=-1; // water
+    else if(islandMask[r][c]===9)cityGrid[r][c]=9; // beach
+  }
+  // Collect buildable land slots
   let slots=[];
   for(let r=0;r<GRID;r++)for(let c=0;c<GRID;c++)if(cityGrid[r][c]===0)slots.push({r,c});
   const mid=Math.floor(GRID/2);
@@ -594,15 +618,22 @@ function renderCity(force){
   // Brighter ground colors so tiles are visible
   const gA=isNight?"#1e3a1e":"#3a7a3a";
   const gB=isNight?"#224022":"#448844";
+  const beachA=isNight?"#5a4a2a":"#d4b86a";
+  const beachB=isNight?"#4a3a20":"#c8a858";
+  const waterA=isNight?"#0a2040":"#1976d2";
+  const waterB=isNight?"#0c2848":"#1e88e5";
 
   // Draw all tiles back-to-front
   for(let row=0;row<GRID;row++){
     for(let col=0;col<GRID;col++){
       const p=isoToScreen(col,row,ox,oy);
       const cell=cityGrid[row][col];
+      const alt=(row+col)%2===0;
 
-      // Ground tile
-      drawTile(ctx,p.x,p.y,(row+col)%2===0?gA:gB,"rgba(255,255,255,.06)");
+      // Tile type
+      if(cell===-1){drawTile(ctx,p.x,p.y,alt?waterA:waterB,null);continue;}
+      if(cell===9){drawTile(ctx,p.x,p.y,alt?beachA:beachB,"rgba(255,255,255,.04)");continue;}
+      drawTile(ctx,p.x,p.y,alt?gA:gB,"rgba(255,255,255,.06)");
 
       // Building on this tile
       if(cell>=1&&cell<=7){
