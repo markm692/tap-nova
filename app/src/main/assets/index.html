@@ -473,14 +473,19 @@ function drawBuilding(ctx,sx,sy,w,h,colors,isNight){
   const litC=isNight?.65:.12;
   const winOn=isNight?"rgba(255,240,150,.8)":"rgba(180,220,255,.4)";
   const winOff=isNight?"rgba(40,50,70,.6)":"rgba(100,130,160,.25)";
-  const wRows=Math.max(1,Math.floor(h/9)),wCols=Math.max(1,Math.floor(hw/7));
+  // Window area: skip top portion (roof overlap) and bottom edge
+  const roofClear=TH/2+3; // clear the isometric roof overhang
+  const winAreaH=Math.max(0,h-roofClear-3);
+  const ww=3,wh=3;
+  const wSpaceY=wh+3,wSpaceX=ww+3;
+  const wRows=Math.max(0,Math.floor(winAreaH/wSpaceY));
+  const wCols=Math.max(1,Math.floor(hw/wSpaceX));
   const seed=Math.floor(sx*7+sy*13);
-  const slopeR=TH/(2*hw); // y shift per x pixel on right face
-  const ww=3,wh=4; // window size
+  const slopeR=TH/(2*hw);
   for(let wr=0;wr<wRows;wr++){for(let wc=0;wc<wCols;wc++){
     const wHash=((seed+wr*31+wc*17)&0xFFFF)/65536;
     ctx.fillStyle=wHash<litC?winOn:winOff;
-    const wy=sy+TH-h+5+wr*8;
+    const wy=sy+TH-h+roofClear+wr*wSpaceY;
     // Right face windows — skew follows right face slope (down to right)
     const rx=sx+3+wc*6;
     if(rx+ww<sx+hw){
