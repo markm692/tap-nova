@@ -481,22 +481,22 @@ function drawBuilding(ctx,sx,sy,w,h,colors,isNight){
     const wHash=((seed+wr*31+wc*17)&0xFFFF)/65536;
     ctx.fillStyle=wHash<litC?winOn:winOff;
     const wy=sy+TH-h+5+wr*8;
-    // Right face windows — skewed parallelogram
+    // Right face windows — skew follows right face slope (down to right)
     const rx=sx+3+wc*6;
     if(rx+ww<sx+hw){
       const ry=wy+(rx-sx)*slopeR;
       ctx.beginPath();
-      ctx.moveTo(rx,ry);ctx.lineTo(rx+ww,ry+ww*slopeR);
-      ctx.lineTo(rx+ww,ry+ww*slopeR+wh);ctx.lineTo(rx,ry+wh);
+      ctx.moveTo(rx,ry);ctx.lineTo(rx+ww,ry-ww*slopeR);
+      ctx.lineTo(rx+ww,ry-ww*slopeR+wh);ctx.lineTo(rx,ry+wh);
       ctx.fill();
     }
-    // Left face windows — opposite skew
+    // Left face windows — skew follows left face slope (down to left)
     const lx=sx-3-wc*6-ww;
     if(lx>sx-hw){
       const ly=wy+(sx-lx-ww)*slopeR;
       ctx.beginPath();
-      ctx.moveTo(lx,ly);ctx.lineTo(lx+ww,ly-ww*slopeR);
-      ctx.lineTo(lx+ww,ly-ww*slopeR+wh);ctx.lineTo(lx,ly+wh);
+      ctx.moveTo(lx,ly);ctx.lineTo(lx+ww,ly+ww*slopeR);
+      ctx.lineTo(lx+ww,ly+ww*slopeR+wh);ctx.lineTo(lx,ly+wh);
       ctx.fill();
     }
   }}
