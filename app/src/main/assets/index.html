@@ -340,7 +340,7 @@ html,body{width:100%;height:100%;overflow:hidden;background:#0a1628;font-family:
 const S={dust:0,lifetimeDust:0,allTimeDust:0,cityStars:0,mayorPoints:0,
 tapLevel:0,prestigeCount:0,ascensionCount:0,totalTaps:0,
 gens:[
-{name:"Hot Dog Stand",count:0,baseCost:10,baseRate:.5},
+{name:"Small House",count:0,baseCost:10,baseRate:.5},
 {name:"Coffee Shop",count:0,baseCost:100,baseRate:4},
 {name:"Apartment Block",count:0,baseCost:1200,baseRate:30},
 {name:"Shopping Mall",count:0,baseCost:15e3,baseRate:200},
@@ -449,7 +449,7 @@ let camMinZoom=.25,camMaxZoom=1.5;
 let touches={},lastPinchDist=0,isPanning=false,lastPanX=0,lastPanY=0;
 // Building configs per generator type
 const BLDG_COLORS=[
-  {front:"#b45309",side:"#92400e",roof:"#d97706",h:10},    // Hot Dog Stand (small shop)
+  {front:"#d4a574",side:"#b8956a",roof:"#c53030",h:10},    // Small House
   {front:"#92400e",side:"#78350f",roof:"#b45309",h:18},
   {front:"#64748b",side:"#475569",roof:"#94a3b8",h:35},
   {front:"#4a5568",side:"#2d3748",roof:"#718096",h:22},
@@ -544,26 +544,14 @@ function rebuildGrid(){
   for(let r=0;r<GRID;r++)for(let c=0;c<GRID;c++){
     if(cityGrid[r][c]===0&&(r%3===1||c%3===1))cityGrid[r][c]=8; // road
   }
-  // Place hot dog stands (gi=0) on road tiles as roadside vendors (value 10)
-  let roadSlots=[];
-  for(let r=0;r<GRID;r++)for(let c=0;c<GRID;c++)if(cityGrid[r][c]===8)roadSlots.push({r,c});
-  const mid=Math.floor(GRID/2);
-  roadSlots.sort((a,b)=>(Math.abs(a.r-mid)+Math.abs(a.c-mid))-(Math.abs(b.r-mid)+Math.abs(b.c-mid)));
-  const hdCount=Math.min(S.gens[0].count,roadSlots.length,30);
-  // Spread them out: pick every Nth road tile
-  const hdSpacing=Math.max(1,Math.floor(roadSlots.length/(hdCount||1)));
-  for(let i=0;i<hdCount;i++){
-    const idx=Math.min(i*hdSpacing,roadSlots.length-1);
-    cityGrid[roadSlots[idx].r][roadSlots[idx].c]=10; // hot dog stand on road
-  }
-
-  // Collect buildable land slots (not water, beach, road, or hot dog)
+  // Collect buildable land slots
   let slots=[];
   for(let r=0;r<GRID;r++)for(let c=0;c<GRID;c++)if(cityGrid[r][c]===0)slots.push({r,c});
+  const mid=Math.floor(GRID/2);
   slots.sort((a,b)=>(Math.abs(a.r-mid)+Math.abs(a.c-mid))-(Math.abs(b.r-mid)+Math.abs(b.c-mid)));
-  // Place buildings (skip gi=0 which is hot dog stands, already placed)
+  // Place tallest buildings first so they get center slots
   let si=0;
-  const genOrder=[...S.gens.keys()].filter(i=>i>0).sort((a,b)=>BLDG_COLORS[b].h-BLDG_COLORS[a].h);
+  const genOrder=[...S.gens.keys()].sort((a,b)=>BLDG_COLORS[b].h-BLDG_COLORS[a].h);
   genOrder.forEach(gi=>{
     const gen=S.gens[gi];
     const num=Math.min(gen.count,gi<2?Math.ceil(gen.count/2):Math.ceil(gen.count/3),30);
@@ -668,38 +656,10 @@ function renderCity(force){
       // Tile type
       if(cell===-1){drawTile(ctx,p.x,p.y,alt?waterA:waterB,null);continue;}
       if(cell===9){drawTile(ctx,p.x,p.y,alt?beachA:beachB,"rgba(255,255,255,.04)");continue;}
-      if(cell===8||cell===10){
-        // Draw road tile
+      if(cell===8){
         drawTile(ctx,p.x,p.y,isNight?"#2a2a2a":"#707070","rgba(255,255,255,.05)");
         ctx.fillStyle=isNight?"rgba(251,191,36,.25)":"rgba(251,191,36,.45)";
         ctx.fillRect(p.x-1,p.y+TH/2-1,2,2);
-        // Hot dog stand: isometric cart + umbrella
-        if(cell===10){
-          const cw=TW*.5,chw=cw/2,ch=4;
-          const cx=p.x,cy=p.y;
-          // Cart body — small isometric box
-          // Left face
-          ctx.beginPath();ctx.moveTo(cx-chw,cy+TH/2);ctx.lineTo(cx,cy+TH);ctx.lineTo(cx,cy+TH-ch);ctx.lineTo(cx-chw,cy+TH/2-ch);ctx.closePath();
-          ctx.fillStyle="#9b2c2c";ctx.fill();
-          // Right face
-          ctx.beginPath();ctx.moveTo(cx+chw,cy+TH/2);ctx.lineTo(cx,cy+TH);ctx.lineTo(cx,cy+TH-ch);ctx.lineTo(cx+chw,cy+TH/2-ch);ctx.closePath();
-          ctx.fillStyle="#dc2626";ctx.fill();
-          // Top face
-          ctx.beginPath();ctx.moveTo(cx,cy+TH-ch);ctx.lineTo(cx+chw,cy+TH/2-ch);ctx.lineTo(cx,cy-ch);ctx.lineTo(cx-chw,cy+TH/2-ch);ctx.closePath();
-          ctx.fillStyle="#ef4444";ctx.fill();
-          // Pole
-          ctx.strokeStyle="#78350f";ctx.lineWidth=1;
-          ctx.beginPath();ctx.moveTo(cx,cy+TH-ch);ctx.lineTo(cx,cy-ch-8);ctx.stroke();
-          // Umbrella — isometric diamond above
-          const uw=TW*.6,uhw=uw/2,uh=3,uy=cy-ch-8;
-          ctx.beginPath();ctx.moveTo(cx,uy);ctx.lineTo(cx+uhw,uy+TH*.3);ctx.lineTo(cx,uy+TH*.6);ctx.lineTo(cx-uhw,uy+TH*.3);ctx.closePath();
-          ctx.fillStyle="#f59e0b";ctx.fill();
-          // Umbrella underside (darker)
-          ctx.beginPath();ctx.moveTo(cx,uy+TH*.6);ctx.lineTo(cx+uhw,uy+TH*.3);ctx.lineTo(cx+uhw,uy+TH*.3+uh);ctx.lineTo(cx,uy+TH*.6+uh);ctx.closePath();
-          ctx.fillStyle="#d97706";ctx.fill();
-          ctx.beginPath();ctx.moveTo(cx,uy+TH*.6);ctx.lineTo(cx-uhw,uy+TH*.3);ctx.lineTo(cx-uhw,uy+TH*.3+uh);ctx.lineTo(cx,uy+TH*.6+uh);ctx.closePath();
-          ctx.fillStyle="#b45309";ctx.fill();
-        }
         continue;
       }
       drawTile(ctx,p.x,p.y,alt?gA:gB,"rgba(255,255,255,.06)");
