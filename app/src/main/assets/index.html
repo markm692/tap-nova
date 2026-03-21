@@ -471,10 +471,13 @@ function drawBuilding(ctx,sx,sy,w,h,colors,isNight){
   const winOn=isNight?"rgba(255,240,150,.8)":"rgba(180,220,255,.4)";
   const winOff=isNight?"rgba(40,50,70,.6)":"rgba(100,130,160,.25)";
   const rows=Math.max(1,Math.floor(h/8)),cols=Math.max(1,Math.floor(w/8));
+  // Deterministic window pattern based on position (no flicker)
+  const seed=Math.floor(sx*7+sy*13);
   for(let wr=0;wr<rows;wr++){for(let wc=0;wc<cols;wc++){
+    const wHash=((seed+wr*31+wc*17)&0xFFFF)/65536;
     const wy=sy+TH-h+4+wr*7;
-    const rwx=sx+2+wc*6;if(rwx<sx+hw-2){ctx.fillStyle=Math.random()<litC?winOn:winOff;ctx.fillRect(rwx,wy,3,4);}
-    const lwx=sx-4-wc*6;if(lwx>sx-hw+1){ctx.fillStyle=Math.random()<litC?winOn:winOff;ctx.fillRect(lwx,wy,3,4);}
+    const rwx=sx+2+wc*6;if(rwx<sx+hw-2){ctx.fillStyle=wHash<litC?winOn:winOff;ctx.fillRect(rwx,wy,3,4);}
+    const lwx=sx-4-wc*6;if(lwx>sx-hw+1){ctx.fillStyle=wHash<litC?winOn:winOff;ctx.fillRect(lwx,wy,3,4);}
   }}
   ctx.strokeStyle="rgba(0,0,0,.15)";ctx.lineWidth=.5;
   ctx.beginPath();ctx.moveTo(sx-hw,sy+TH/2);ctx.lineTo(sx-hw,sy+TH/2-h);ctx.lineTo(sx,sy-h);ctx.lineTo(sx+hw,sy+TH/2-h);ctx.lineTo(sx+hw,sy+TH/2);ctx.stroke();
@@ -482,7 +485,6 @@ function drawBuilding(ctx,sx,sy,w,h,colors,isNight){
 
 function rebuildGrid(){
   cityGrid=Array.from({length:GRID},()=>Array(GRID).fill(0));
-  for(let c=0;c<GRID;c++)cityGrid[6][c]=8;
   let slots=[];
   for(let r=0;r<GRID;r++)for(let c=0;c<GRID;c++)if(cityGrid[r][c]===0)slots.push({r,c});
   slots.sort((a,b)=>(Math.abs(a.r-3)+Math.abs(a.c-3))-(Math.abs(b.r-3)+Math.abs(b.c-3)));
@@ -570,15 +572,16 @@ function renderCity(force){
   if(cityDrawCount<3){window._dbg&&window._dbg("renderCity: w="+w+" h="+h+" gens="+S.gens.map(g=>g.count).join(","),"#0ff");cityDrawCount++;}
   const ctx=cCtx;
   ctx.clearRect(0,0,w,h);
-  const ox=w/2,oy=h*.12;
+  // Position grid at bottom: oy = total height minus grid height minus padding
+  // Grid spans GRID*TH/2 vertically from oy
+  const gridH=GRID*TH;
+  const ox=w/2,oy=h-gridH-20;
   const phase=getDayPhase();
   const isNight=phase==="night"||phase==="dusk";
 
   // Brighter ground colors so tiles are visible
   const gA=isNight?"#1e3a1e":"#3a7a3a";
   const gB=isNight?"#224022":"#448844";
-  const rdC=isNight?"#333":"#666";
-  const rdL=isNight?"rgba(251,191,36,.4)":"rgba(251,191,36,.6)";
 
   // Draw all tiles back-to-front
   for(let row=0;row<GRID;row++){
@@ -587,14 +590,7 @@ function renderCity(force){
       const cell=cityGrid[row][col];
 
       // Ground tile
-      if(cell===8){
-        drawTile(ctx,p.x,p.y,rdC,"rgba(255,255,255,.1)");
-        // Road dashes
-        ctx.fillStyle=rdL;
-        ctx.fillRect(p.x-3,p.y+TH/2-1,6,2);
-      }else{
-        drawTile(ctx,p.x,p.y,(row+col)%2===0?gA:gB,"rgba(255,255,255,.06)");
-      }
+      drawTile(ctx,p.x,p.y,(row+col)%2===0?gA:gB,"rgba(255,255,255,.06)");
 
       // Building on this tile
       if(cell>=1&&cell<=7){
