@@ -496,6 +496,68 @@ function rebuildGrid(){
 let cityNeedsRedraw=true;
 let cityGridCache=null;
 let cityDrawCount=0;
+
+// =============================================================================
+// DAY/NIGHT CYCLE
+// =============================================================================
+const DAY_CYCLE=120;
+let dayTimer=0,lastDayPhase="";
+function getDayProgress(){return(dayTimer%DAY_CYCLE)/DAY_CYCLE;}
+function getDayPhase(){
+  const p=getDayProgress();
+  if(p<.15)return"dawn";if(p<.45)return"day";if(p<.6)return"dusk";return"night";
+}
+function lerpColor(a,b,t){
+  const pa=parseInt(a.slice(1),16),pb=parseInt(b.slice(1),16);
+  const r1=(pa>>16)&255,g1=(pa>>8)&255,b1=pa&255;
+  const r2=(pb>>16)&255,g2=(pb>>8)&255,b2=pb&255;
+  const r=Math.round(r1+(r2-r1)*t),g=Math.round(g1+(g2-g1)*t),b3=Math.round(b1+(b2-b1)*t);
+  return"#"+((1<<24)+(r<<16)+(g<<8)+b3).toString(16).slice(1);
+}
+const SKY_KEYS=[
+  {p:0,top:"#1a1040",mid:"#d97706",bot:"#fef3c7",stars:.1},
+  {p:.15,top:"#1565c0",mid:"#42a5f5",bot:"#e3f2fd",stars:0},
+  {p:.3,top:"#1e88e5",mid:"#90caf9",bot:"#e3f2fd",stars:0},
+  {p:.45,top:"#1565c0",mid:"#64b5f6",bot:"#bbdefb",stars:0},
+  {p:.55,top:"#4a1a5a",mid:"#c2185b",bot:"#ff8f00",stars:.15},
+  {p:.65,top:"#1a1045",mid:"#4a1a5a",bot:"#ef6c00",stars:.4},
+  {p:.75,top:"#050a18",mid:"#0a1628",bot:"#152a45",stars:1},
+  {p:.9,top:"#050a18",mid:"#0f1830",bot:"#152a45",stars:1},
+  {p:1,top:"#1a1040",mid:"#d97706",bot:"#fef3c7",stars:.1},
+];
+function interpSkyKey(p){
+  let a=SKY_KEYS[0],b=SKY_KEYS[1];
+  for(let i=0;i<SKY_KEYS.length-1;i++){if(p>=SKY_KEYS[i].p&&p<=SKY_KEYS[i+1].p){a=SKY_KEYS[i];b=SKY_KEYS[i+1];break;}}
+  const t=(p-a.p)/(b.p-a.p||1);
+  return{top:lerpColor(a.top,b.top,t),mid:lerpColor(a.mid,b.mid,t),bot:lerpColor(a.bot,b.bot,t),stars:a.stars+(b.stars-a.stars)*t};
+}
+function updateDayNight(dt){
+  dayTimer+=dt;
+  const p=getDayProgress();
+  const phase=getDayPhase();
+  // Sun/moon arc
+  const sun=document.getElementById("citySun");
+  if(sun){
+    const isSun=p<.55;
+    const arcP=isSun?p/.55:(p-.55)/.45;
+    const x=10+arcP*80;
+    const yArc=1-4*Math.pow(arcP-.5,2);
+    const y=80-yArc*70;
+    if(y<82){
+      sun.style.display="block";sun.style.left=x+"%";sun.style.top=y+"%";
+      if(isSun){const w2=1-yArc;const sz=26+w2*8;sun.style.width=sz+"px";sun.style.height=sz+"px";const rr=255,gg=Math.round(245-w2*100),bb=Math.round(157-w2*120);sun.style.background="rgb("+rr+","+gg+","+bb+")";sun.style.boxShadow="0 0 "+(20+w2*20)+"px rgba("+rr+","+gg+","+bb+",.6)";}
+      else{sun.style.width="20px";sun.style.height="20px";sun.style.background="#e2e8f0";sun.style.boxShadow="0 0 15px rgba(226,232,240,.4)";}
+    }else{sun.style.display="none";}
+  }
+  // Sky interpolation
+  const sk=interpSkyKey(p);
+  const sky=document.getElementById("citySky");
+  if(sky)sky.style.background="linear-gradient(180deg,"+sk.top+" 0%,"+sk.mid+" 55%,"+sk.bot+" 100%)";
+  const stars=document.getElementById("cityStarsBg");
+  if(stars)stars.style.opacity=sk.stars;
+  // Phase change triggers city redraw
+  if(phase!==lastDayPhase){lastDayPhase=phase;lastCityHash="";}
+}
 function renderCity(force){
   if(!cCanvas||!cCtx){if(cityDrawCount<3){window._dbg&&window._dbg("renderCity: no canvas","#f84");cityDrawCount++;}return;}
   const w=cCanvas.width,h=cCanvas.height;
