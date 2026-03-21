@@ -24,13 +24,15 @@ html,body{width:100%;height:100%;overflow:hidden;background:#0a1628;font-family:
 
 .orb-area{flex:2;position:relative;min-height:0;overflow:hidden;cursor:pointer}
 
-/* Sky — transitions driven by JS day/night cycle */
-.city-sky{position:absolute;inset:0;z-index:0}
-.city-stars-bg{position:absolute;inset:0;z-index:0;transition:opacity .5s ease}
-.city-star-dot{position:absolute;width:2px;height:2px;background:#fff;border-radius:50%;opacity:.3;animation:twinkle 3s ease-in-out infinite}
-@keyframes twinkle{0%,100%{opacity:.15}50%{opacity:.5}}
-/* Sun/moon */
-.city-sun{position:absolute;border-radius:50%;z-index:1;pointer-events:none}
+/* Sea background */
+.city-sky{position:absolute;inset:0;z-index:0;background:linear-gradient(180deg,#0a4a8a 0%,#1565c0 30%,#1976d2 50%,#2196f3 70%,#42a5f5 100%)}
+.city-stars-bg{display:none}
+.city-sun{display:none}
+/* Animated wave overlay */
+.sea-waves{position:absolute;bottom:0;left:0;right:0;height:40%;z-index:0;pointer-events:none;
+  background:repeating-linear-gradient(0deg,transparent,transparent 8px,rgba(255,255,255,.03) 8px,rgba(255,255,255,.03) 9px);
+  animation:waveShift 3s linear infinite}
+@keyframes waveShift{from{background-position:0 0}to{background-position:0 18px}}
 
 /* City drawn on particle canvas — no separate element needed */
 .bldg-windows{display:flex;flex-wrap:wrap;gap:2px;padding:3px 2px;justify-content:center;align-content:flex-start}
@@ -267,6 +269,7 @@ html,body{width:100%;height:100%;overflow:hidden;background:#0a1628;font-family:
   </div>
   <div class="orb-area" id="orbArea">
     <div class="city-sky" id="citySky"></div>
+    <div class="sea-waves"></div>
     <div class="city-sun" id="citySun"></div>
     <div class="city-stars-bg" id="cityStarsBg"></div>
     <canvas id="particleCanvas" style="position:absolute;inset:0;width:100%;height:100%;pointer-events:none;z-index:15"></canvas>
@@ -436,8 +439,8 @@ function applyOrbVisuals(){ /* legacy - city replaces orb visuals */ }
 // =============================================================================
 // City draws on particle canvas (shared) — city first, particles on top
 let cCanvas=null,cCtx=null; // set after pCanvas is created
-const TW=30,TH=15; // tile width/height (2:1 isometric)
-const GRID=8; // 8x8 grid
+const TW=24,TH=12; // tile width/height (2:1 isometric)
+const GRID=14; // 14x14 grid
 // Building configs per generator type
 const BLDG_COLORS=[
   {front:"#c53030",side:"#9b2c2c",roof:"#e53e3e",h:12},
@@ -505,10 +508,11 @@ function rebuildGrid(){
   cityGrid=Array.from({length:GRID},()=>Array(GRID).fill(0));
   let slots=[];
   for(let r=0;r<GRID;r++)for(let c=0;c<GRID;c++)if(cityGrid[r][c]===0)slots.push({r,c});
-  slots.sort((a,b)=>(Math.abs(a.r-3)+Math.abs(a.c-3))-(Math.abs(b.r-3)+Math.abs(b.c-3)));
+  const mid=Math.floor(GRID/2);
+  slots.sort((a,b)=>(Math.abs(a.r-mid)+Math.abs(a.c-mid))-(Math.abs(b.r-mid)+Math.abs(b.c-mid)));
   let si=0;
   S.gens.forEach((gen,gi)=>{
-    const num=Math.min(gen.count,gi<2?Math.ceil(gen.count/2):Math.ceil(gen.count/3),7);
+    const num=Math.min(gen.count,gi<2?Math.ceil(gen.count/2):Math.ceil(gen.count/3),14);
     for(let b=0;b<num&&si<slots.length;b++){cityGrid[slots[si].r][slots[si].c]=gi+1;si++;}
   });
 }
@@ -553,29 +557,18 @@ function interpSkyKey(p){
 }
 function updateDayNight(dt){
   dayTimer+=dt;
-  const p=getDayProgress();
   const phase=getDayPhase();
-  // Sun/moon arc
-  const sun=document.getElementById("citySun");
-  if(sun){
-    const isSun=p<.55;
-    const arcP=isSun?p/.55:(p-.55)/.45;
-    const x=10+arcP*80;
-    const yArc=1-4*Math.pow(arcP-.5,2);
-    const y=80-yArc*70;
-    if(y<82){
-      sun.style.display="block";sun.style.left=x+"%";sun.style.top=y+"%";
-      if(isSun){const w2=1-yArc;const sz=26+w2*8;sun.style.width=sz+"px";sun.style.height=sz+"px";const rr=255,gg=Math.round(245-w2*100),bb=Math.round(157-w2*120);sun.style.background="rgb("+rr+","+gg+","+bb+")";sun.style.boxShadow="0 0 "+(20+w2*20)+"px rgba("+rr+","+gg+","+bb+",.6)";}
-      else{sun.style.width="20px";sun.style.height="20px";sun.style.background="#e2e8f0";sun.style.boxShadow="0 0 15px rgba(226,232,240,.4)";}
-    }else{sun.style.display="none";}
-  }
-  // Sky interpolation
-  const sk=interpSkyKey(p);
+  const p=getDayProgress();
+  // Sea color shifts with time of day
   const sky=document.getElementById("citySky");
-  if(sky)sky.style.background="linear-gradient(180deg,"+sk.top+" 0%,"+sk.mid+" 55%,"+sk.bot+" 100%)";
-  const stars=document.getElementById("cityStarsBg");
-  if(stars)stars.style.opacity=sk.stars;
-  // Phase change triggers city redraw
+  if(sky){
+    const isNight=phase==="night"||phase==="dusk";
+    const isDawn=phase==="dawn";
+    if(isNight)sky.style.background="linear-gradient(180deg,#051530 0%,#0a2a50 30%,#0d3060 50%,#103868 100%)";
+    else if(isDawn)sky.style.background="linear-gradient(180deg,#1a3a6a 0%,#2565a0 30%,#1976d2 60%,#42a5f5 100%)";
+    else sky.style.background="linear-gradient(180deg,#0a4a8a 0%,#1565c0 30%,#1976d2 50%,#2196f3 70%,#42a5f5 100%)";
+  }
+  // Phase change triggers city redraw for window lighting
   if(phase!==lastDayPhase){lastDayPhase=phase;lastCityHash="";}
 }
 function renderCity(force){
