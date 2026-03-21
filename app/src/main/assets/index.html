@@ -25,11 +25,13 @@ html,body{width:100%;height:100%;overflow:hidden;background:#0a1628;font-family:
 .orb-area{flex:2;position:relative;min-height:0;overflow:hidden;cursor:pointer}
 .orb-area:active .city{transform:scale(.97)}
 
-/* Sky gradient — fills entire area */
-.city-sky{position:absolute;inset:0;background:linear-gradient(180deg,#0a1628 0%,#0f2840 50%,#1a3550 100%);z-index:0}
-.city-stars-bg{position:absolute;inset:0;z-index:0}
+/* Sky — transitions driven by JS day/night cycle */
+.city-sky{position:absolute;inset:0;transition:background 3s ease;z-index:0}
+.city-stars-bg{position:absolute;inset:0;z-index:0;transition:opacity 3s ease}
 .city-star-dot{position:absolute;width:2px;height:2px;background:#fff;border-radius:50%;opacity:.3;animation:twinkle 3s ease-in-out infinite}
 @keyframes twinkle{0%,100%{opacity:.15}50%{opacity:.5}}
+/* Sun/moon */
+.city-sun{position:absolute;border-radius:50%;z-index:0;transition:top 3s ease,left 3s ease,background 3s ease,box-shadow 3s ease,width 3s ease,height 3s ease}
 
 /* City skyline — absolute, anchored to bottom */
 .city{position:absolute;bottom:14px;left:0;right:0;z-index:3;display:flex;align-items:flex-end;justify-content:center;gap:2px;padding:0 6px;transition:transform .08s ease;pointer-events:none}
@@ -273,7 +275,8 @@ html,body{width:100%;height:100%;overflow:hidden;background:#0a1628;font-family:
     <div class="combo-track"><div class="combo-fill" id="comboFill"></div></div>
   </div>
   <div class="orb-area" id="orbArea">
-    <div class="city-sky"></div>
+    <div class="city-sky" id="citySky"></div>
+    <div class="city-sun" id="citySun"></div>
     <div class="city-stars-bg" id="cityStarsBg"></div>
     <canvas id="particleCanvas" style="position:absolute;inset:0;width:100%;height:100%;pointer-events:none;z-index:15"></canvas>
     <div class="glow" id="glow"></div>
@@ -461,11 +464,13 @@ function renderCity(){
     const hasAntenna=b.h>60&&b.gi>=4;
     const hasCrane=b.isNew;
     let wins='';
+    const phase=getDayPhase();
+    const litRate=phase==="night"?.7:phase==="dusk"?.5:phase==="dawn"?.35:.12;
+    const offColor=phase==="day"?"rgba(140,170,200,.3)":"rgba(80,100,120,.3)";
     for(let r=0;r<b.winRows;r++){
       for(let c=0;c<b.winCols;c++){
-        const lit=Math.random()<.6;
-        const dark=Math.random()<.15;
-        const color=dark?'rgba(30,40,60,.8)':lit?b.style.winColor:'rgba(100,120,140,.3)';
+        const lit=Math.random()<litRate;
+        const color=lit?b.style.winColor:offColor;
         wins+=`<div class="bldg-win${lit?' lit':''}" style="background:${color}"></div>`;
       }
     }
@@ -497,13 +502,91 @@ function flickerWindows(dt){
   if(windowFlickerTimer<2)return;
   windowFlickerTimer=0;
   const wins=document.querySelectorAll(".bldg-win");
+  const phase=getDayPhase();
+  const litChance=phase==="night"?.7:phase==="dusk"?.5:phase==="dawn"?.4:.15;
   wins.forEach(w=>{
     if(Math.random()<.08){
       const wasLit=w.classList.contains("lit");
-      if(wasLit){w.classList.remove("lit");w.style.background="rgba(100,120,140,.3)";}
-      else{w.classList.add("lit");w.style.background=w.closest(".bldg-body")?"#fef08a":"#fde68a";}
+      if(wasLit&&Math.random()>litChance){w.classList.remove("lit");w.style.background=phase==="day"?"rgba(140,160,180,.25)":"rgba(100,120,140,.3)";}
+      else if(!wasLit&&Math.random()<litChance){w.classList.add("lit");w.style.background="#fef08a";}
     }
   });
+}
+
+// =============================================================================
+// DAY/NIGHT CYCLE
+// =============================================================================
+const DAY_CYCLE_DURATION=120; // full cycle in seconds (2 min)
+let dayTimer=0;
+let lastDayPhase="";
+
+// Phases: 0-0.2=dawn, 0.2-0.5=day, 0.5-0.7=dusk, 0.7-1.0=night
+function getDayProgress(){return(dayTimer%DAY_CYCLE_DURATION)/DAY_CYCLE_DURATION;}
+function getDayPhase(){
+  const p=getDayProgress();
+  if(p<.2)return"dawn";if(p<.5)return"day";if(p<.7)return"dusk";return"night";
+}
+
+const SKY_THEMES={
+  dawn:{
+    sky:"linear-gradient(180deg,#1a1040 0%,#4a2060 20%,#d97706 50%,#fbbf24 80%,#fef3c7 100%)",
+    ground:"#2a2520",road:"#3a3025",
+    starOpacity:0.15,
+    sun:{show:true,x:"75%",y:"70%",size:30,bg:"#fbbf24",shadow:"0 0 30px rgba(251,191,36,.6),0 0 60px rgba(251,191,36,.2)"},
+  },
+  day:{
+    sky:"linear-gradient(180deg,#1e88e5 0%,#42a5f5 30%,#90caf9 60%,#bbdefb 85%,#e3f2fd 100%)",
+    ground:"#3a5a40",road:"#606060",
+    starOpacity:0,
+    sun:{show:true,x:"50%",y:"12%",size:28,bg:"#fff59d",shadow:"0 0 40px rgba(255,245,157,.8),0 0 80px rgba(255,245,157,.3)"},
+  },
+  dusk:{
+    sky:"linear-gradient(180deg,#1a1045 0%,#4a1a5a 20%,#c2185b 45%,#ef6c00 70%,#ff8f00 100%)",
+    ground:"#2a2025",road:"#352a20",
+    starOpacity:0.2,
+    sun:{show:true,x:"25%",y:"72%",size:32,bg:"#ef6c00",shadow:"0 0 30px rgba(239,108,0,.6),0 0 60px rgba(239,108,0,.2)"},
+  },
+  night:{
+    sky:"linear-gradient(180deg,#050a18 0%,#0a1628 30%,#0f2040 70%,#152a45 100%)",
+    ground:"#141e2e",road:"#222e3e",
+    starOpacity:1,
+    sun:{show:true,x:"70%",y:"18%",size:22,bg:"#e2e8f0",shadow:"0 0 20px rgba(226,232,240,.4),0 0 40px rgba(226,232,240,.15)"},
+  },
+};
+
+function updateDayNight(dt){
+  dayTimer+=dt;
+  const phase=getDayPhase();
+  if(phase===lastDayPhase)return;
+  lastDayPhase=phase;
+
+  const theme=SKY_THEMES[phase];
+  const sky=document.getElementById("citySky");
+  const stars=document.getElementById("cityStarsBg");
+  const sun=document.getElementById("citySun");
+  const ground=document.querySelector(".city-ground");
+  const road=document.querySelector(".city-road");
+
+  // Sky
+  if(sky)sky.style.background=theme.sky;
+  // Stars
+  if(stars)stars.style.opacity=theme.starOpacity;
+  // Ground & road
+  if(ground)ground.style.background=`linear-gradient(0deg,${theme.ground},${theme.ground})`;
+  if(road)road.style.background=theme.road;
+  // Sun/moon
+  if(sun&&theme.sun.show){
+    sun.style.width=theme.sun.size+"px";
+    sun.style.height=theme.sun.size+"px";
+    sun.style.left=theme.sun.x;
+    sun.style.top=theme.sun.y;
+    sun.style.background=theme.sun.bg;
+    sun.style.boxShadow=theme.sun.shadow;
+    sun.style.display="block";
+  }else if(sun){sun.style.display="none";}
+
+  // Force window re-light on phase change
+  lastCityHash="";
 }
 
 // =============================================================================
@@ -1104,13 +1187,8 @@ function doTap(x,y,isAuto){
 // Tap on city area (replaces orb tap)
 orbArea.addEventListener("pointerdown",e=>{if(e.target.closest(".investor"))return;e.preventDefault();const r=orbArea.getBoundingClientRect();doTap(e.clientX-r.left-30,e.clientY-r.top,false);updateUI();checkAchievements();});
 function updateOrbVisuals(){
-  // City replaces orb — update sky color based on combo
-  const sky=document.querySelector(".city-sky");
-  if(!sky)return;
-  const m=S.comboMultiplier;
-  if(m>=8)sky.style.background="linear-gradient(180deg,#1a0505 0%,#3d1010 50%,#4a1515 100%)";
-  else if(m>=3)sky.style.background="linear-gradient(180deg,#1a1005 0%,#2d2010 50%,#3a2a15 100%)";
-  else sky.style.background="linear-gradient(180deg,#0a1628 0%,#0f2840 50%,#1a3550 100%)";
+  // Combo override: flash sky temporarily handled by screenFlash, not sky override
+  // Day/night cycle handles sky via updateDayNight()
   renderCity();
 }
 
@@ -1189,8 +1267,9 @@ function tick(now){
   updateCombo(dt);updateBuffs(dt);updateBoss(dt);
   if(S.wheelCooldown>0)S.wheelCooldown=Math.max(0,S.wheelCooldown-dt);
   if(S.mgCooldown>0)S.mgCooldown=Math.max(0,S.mgCooldown-dt);
-  // City + stage check
+  // City + stage + day/night
   orbStageTimer+=dt;if(orbStageTimer>=3){orbStageTimer=0;updateOrbStage();}
+  updateDayNight(dt);
   renderCity();
   updateParticles(dt);
   flickerWindows(dt);
