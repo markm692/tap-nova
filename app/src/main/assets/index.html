@@ -449,7 +449,7 @@ let camMinZoom=.25,camMaxZoom=1.5;
 let touches={},lastPinchDist=0,isPanning=false,lastPanX=0,lastPanY=0;
 // Building configs per generator type
 const BLDG_COLORS=[
-  {front:"#c53030",side:"#9b2c2c",roof:"#e53e3e",h:12},
+  {front:"#b45309",side:"#92400e",roof:"#d97706",h:10},    // Hot Dog Stand (small shop)
   {front:"#92400e",side:"#78350f",roof:"#b45309",h:18},
   {front:"#64748b",side:"#475569",roof:"#94a3b8",h:35},
   {front:"#4a5568",side:"#2d3748",roof:"#718096",h:22},
@@ -544,14 +544,26 @@ function rebuildGrid(){
   for(let r=0;r<GRID;r++)for(let c=0;c<GRID;c++){
     if(cityGrid[r][c]===0&&(r%3===1||c%3===1))cityGrid[r][c]=8; // road
   }
-  // Collect buildable land slots (not water, beach, or road)
+  // Place hot dog stands (gi=0) on road tiles as roadside vendors (value 10)
+  let roadSlots=[];
+  for(let r=0;r<GRID;r++)for(let c=0;c<GRID;c++)if(cityGrid[r][c]===8)roadSlots.push({r,c});
+  const mid=Math.floor(GRID/2);
+  roadSlots.sort((a,b)=>(Math.abs(a.r-mid)+Math.abs(a.c-mid))-(Math.abs(b.r-mid)+Math.abs(b.c-mid)));
+  const hdCount=Math.min(S.gens[0].count,roadSlots.length,30);
+  // Spread them out: pick every Nth road tile
+  const hdSpacing=Math.max(1,Math.floor(roadSlots.length/(hdCount||1)));
+  for(let i=0;i<hdCount;i++){
+    const idx=Math.min(i*hdSpacing,roadSlots.length-1);
+    cityGrid[roadSlots[idx].r][roadSlots[idx].c]=10; // hot dog stand on road
+  }
+
+  // Collect buildable land slots (not water, beach, road, or hot dog)
   let slots=[];
   for(let r=0;r<GRID;r++)for(let c=0;c<GRID;c++)if(cityGrid[r][c]===0)slots.push({r,c});
-  const mid=Math.floor(GRID/2);
   slots.sort((a,b)=>(Math.abs(a.r-mid)+Math.abs(a.c-mid))-(Math.abs(b.r-mid)+Math.abs(b.c-mid)));
-  // Place tallest buildings first so they get center slots
+  // Place buildings (skip gi=0 which is hot dog stands, already placed)
   let si=0;
-  const genOrder=[...S.gens.keys()].sort((a,b)=>BLDG_COLORS[b].h-BLDG_COLORS[a].h);
+  const genOrder=[...S.gens.keys()].filter(i=>i>0).sort((a,b)=>BLDG_COLORS[b].h-BLDG_COLORS[a].h);
   genOrder.forEach(gi=>{
     const gen=S.gens[gi];
     const num=Math.min(gen.count,gi<2?Math.ceil(gen.count/2):Math.ceil(gen.count/3),30);
@@ -656,11 +668,28 @@ function renderCity(force){
       // Tile type
       if(cell===-1){drawTile(ctx,p.x,p.y,alt?waterA:waterB,null);continue;}
       if(cell===9){drawTile(ctx,p.x,p.y,alt?beachA:beachB,"rgba(255,255,255,.04)");continue;}
-      if(cell===8){
+      if(cell===8||cell===10){
+        // Draw road tile
         drawTile(ctx,p.x,p.y,isNight?"#2a2a2a":"#707070","rgba(255,255,255,.05)");
-        // Road center line
         ctx.fillStyle=isNight?"rgba(251,191,36,.25)":"rgba(251,191,36,.45)";
         ctx.fillRect(p.x-1,p.y+TH/2-1,2,2);
+        // Hot dog stand: small cart on the road
+        if(cell===10){
+          const cw=TW*.4,ch=6;
+          // Cart body (red)
+          ctx.fillStyle="#dc2626";
+          ctx.fillRect(p.x-cw/2,p.y+TH/2-ch-1,cw,ch);
+          // Umbrella (yellow/orange stripe)
+          ctx.fillStyle="#f59e0b";
+          ctx.beginPath();
+          ctx.moveTo(p.x-cw/2-1,p.y+TH/2-ch-2);
+          ctx.lineTo(p.x+cw/2+1,p.y+TH/2-ch-2);
+          ctx.lineTo(p.x,p.y+TH/2-ch-6);
+          ctx.fill();
+          // Pole
+          ctx.fillStyle="#78350f";
+          ctx.fillRect(p.x,p.y+TH/2-ch-1,1,ch+1);
+        }
         continue;
       }
       drawTile(ctx,p.x,p.y,alt?gA:gB,"rgba(255,255,255,.06)");
