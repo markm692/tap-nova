@@ -539,6 +539,35 @@ function getWheelCD(){return hs("wheel1")?150:300;}
 function getSynergyBonus(){if(!hs("synergy"))return 1;let t=0;for(const g of S.gens)if(g.count>0)t++;return 1+t*.05;}
 
 // =============================================================================
+// ACHIEVEMENTS (must be before achievBonus which references it)
+// =============================================================================
+const ACHIEVEMENTS=[
+{id:"tap100",name:"Getting Started",desc:"Tap 100 times",check:()=>S.totalTaps>=100,bonus:.05,icon:"\u2B50"},
+{id:"tap1000",name:"Busy Mayor",desc:"Tap 1,000 times",check:()=>S.totalTaps>=1e3,bonus:.1,icon:"\uD83D\uDD25"},
+{id:"tap10000",name:"Workaholic",desc:"Tap 10,000 times",check:()=>S.totalTaps>=1e4,bonus:.15,icon:"\uD83D\uDCAA"},
+{id:"dust1k",name:"Penny Pincher",desc:"Earn 1K total",check:()=>S.allTimeDust>=1e3,bonus:.05,icon:"\u2728"},
+{id:"dust1m",name:"Cash Magnate",desc:"Earn 1M total",check:()=>S.allTimeDust>=1e6,bonus:.1,icon:"\uD83D\uDCAB"},
+{id:"dust1b",name:"City Tycoon",desc:"Earn 1B total",check:()=>S.allTimeDust>=1e9,bonus:.15,icon:"\uD83C\uDF0C"},
+{id:"gen1",name:"First Hire",desc:"Buy first generator",check:()=>S.gens[0].count>=1,bonus:.05,icon:"\u2699\uFE0F"},
+{id:"gen50",name:"Empire Builder",desc:"Own 50 generators",check:()=>totalGens()>=50,bonus:.1,icon:"\uD83C\uDFED"},
+{id:"crit10",name:"Lucky Deals",desc:"Land 10 crits",check:()=>S.critCount>=10,bonus:.05,icon:"\uD83C\uDFAF"},
+{id:"crit100",name:"Deal Machine",desc:"Land 100 crits",check:()=>S.critCount>=100,bonus:.1,icon:"\u26A1"},
+{id:"investor5",name:"VIP Hunter",desc:"Catch 5 investors",check:()=>S.investorsCollected>=5,bonus:.1,icon:"\u2604\uFE0F"},
+{id:"investor25",name:"VIP Magnet",desc:"Catch 25 investors",check:()=>S.investorsCollected>=25,bonus:.15,icon:"\uD83E\uDE90"},
+{id:"prestige1",name:"New District",desc:"Prestige once",check:()=>S.prestigeCount>=1,bonus:.1,icon:"\uD83D\uDCA5"},
+{id:"prestige5",name:"Serial Expander",desc:"Prestige 5 times",check:()=>S.prestigeCount>=5,bonus:.15,icon:"\uD83C\uDF1F"},
+{id:"combo5",name:"Momentum",desc:"Reach x5 combo",check:()=>S.comboMultiplier>=5,bonus:.05,icon:"\uD83D\uDD17"},
+{id:"combo12",name:"MAX MOMENTUM",desc:"Reach x12 combo",check:()=>S.comboMultiplier>=12,bonus:.15,icon:"\uD83C\uDF2A\uFE0F"},
+{id:"boss5",name:"Crisis Manager",desc:"Handle 5 crises",check:()=>S.bossesHandled>=5,bonus:.1,icon:"\u2694\uFE0F"},
+{id:"boss20",name:"Crisis Expert",desc:"Handle 20 crises",check:()=>S.bossesHandled>=20,bonus:.15,icon:"\uD83D\uDDE1\uFE0F"},
+{id:"spin10",name:"Wheel Spinner",desc:"Spin wheel 10 times",check:()=>S.wheelSpins>=10,bonus:.05,icon:"\uD83C\uDFA1"},
+{id:"streak7",name:"Daily Grind",desc:"7-day streak",check:()=>S.dailyStreak>=7,bonus:.15,icon:"\uD83D\uDCC5"},
+{id:"newcity1",name:"Global Reach",desc:"New City once",check:()=>S.ascensionCount>=1,bonus:.2,icon:"\uD83C\uDF00"},
+];
+function totalGens(){return S.gens.reduce((s,g)=>s+g.count,0);}
+function checkAchievements(){for(const a of ACHIEVEMENTS){if(!S.achieved[a.id]&&a.check()){S.achieved[a.id]=true;showToast("Achievement: "+a.name,"+"+(a.bonus*100)+"% all");screenFlash("rgba(245,158,11,0.3)");SFX.achievement();if(navigator.vibrate)navigator.vibrate([30,20,30,20,30]);}}}
+
+// =============================================================================
 // CORE CALCS
 // =============================================================================
 function achievBonus(){let b=0;for(const a of ACHIEVEMENTS)if(S.achieved[a.id])b+=a.bonus;return 1+b;}
@@ -1009,35 +1038,6 @@ function buildMore(){
 }
 
 // =============================================================================
-// ACHIEVEMENTS
-// =============================================================================
-const ACHIEVEMENTS=[
-{id:"tap100",name:"Getting Started",desc:"Tap 100 times",check:()=>S.totalTaps>=100,bonus:.05,icon:"\u2B50"},
-{id:"tap1000",name:"Busy Mayor",desc:"Tap 1,000 times",check:()=>S.totalTaps>=1e3,bonus:.1,icon:"\uD83D\uDD25"},
-{id:"tap10000",name:"Workaholic",desc:"Tap 10,000 times",check:()=>S.totalTaps>=1e4,bonus:.15,icon:"\uD83D\uDCAA"},
-{id:"dust1k",name:"Penny Pincher",desc:"Earn 1K total",check:()=>S.allTimeDust>=1e3,bonus:.05,icon:"\u2728"},
-{id:"dust1m",name:"Cash Magnate",desc:"Earn 1M total",check:()=>S.allTimeDust>=1e6,bonus:.1,icon:"\uD83D\uDCAB"},
-{id:"dust1b",name:"City Tycoon",desc:"Earn 1B total",check:()=>S.allTimeDust>=1e9,bonus:.15,icon:"\uD83C\uDF0C"},
-{id:"gen1",name:"First Hire",desc:"Buy first generator",check:()=>S.gens[0].count>=1,bonus:.05,icon:"\u2699\uFE0F"},
-{id:"gen50",name:"Empire Builder",desc:"Own 50 generators",check:()=>totalGens()>=50,bonus:.1,icon:"\uD83C\uDFED"},
-{id:"crit10",name:"Lucky Deals",desc:"Land 10 crits",check:()=>S.critCount>=10,bonus:.05,icon:"\uD83C\uDFAF"},
-{id:"crit100",name:"Deal Machine",desc:"Land 100 crits",check:()=>S.critCount>=100,bonus:.1,icon:"\u26A1"},
-{id:"investor5",name:"VIP Hunter",desc:"Catch 5 investors",check:()=>S.investorsCollected>=5,bonus:.1,icon:"\u2604\uFE0F"},
-{id:"investor25",name:"VIP Magnet",desc:"Catch 25 investors",check:()=>S.investorsCollected>=25,bonus:.15,icon:"\uD83E\uDE90"},
-{id:"prestige1",name:"New District",desc:"Prestige once",check:()=>S.prestigeCount>=1,bonus:.1,icon:"\uD83D\uDCA5"},
-{id:"prestige5",name:"Serial Expander",desc:"Prestige 5 times",check:()=>S.prestigeCount>=5,bonus:.15,icon:"\uD83C\uDF1F"},
-{id:"combo5",name:"Momentum",desc:"Reach x5 combo",check:()=>S.comboMultiplier>=5,bonus:.05,icon:"\uD83D\uDD17"},
-{id:"combo12",name:"MAX MOMENTUM",desc:"Reach x12 combo",check:()=>S.comboMultiplier>=12,bonus:.15,icon:"\uD83C\uDF2A\uFE0F"},
-{id:"boss5",name:"Crisis Manager",desc:"Handle 5 bosses",check:()=>S.bossesHandled>=5,bonus:.1,icon:"\u2694\uFE0F"},
-{id:"boss20",name:"Crisis Expert",desc:"Handle 20 bosses",check:()=>S.bossesHandled>=20,bonus:.15,icon:"\uD83D\uDDE1\uFE0F"},
-{id:"spin10",name:"Wheel Spinner",desc:"Spin wheel 10 times",check:()=>S.wheelSpins>=10,bonus:.05,icon:"\uD83C\uDFA1"},
-{id:"streak7",name:"Daily Grind",desc:"7-day streak",check:()=>S.dailyStreak>=7,bonus:.15,icon:"\uD83D\uDCC5"},
-{id:"new city1",name:"Global Reach",desc:"New City once",check:()=>S.ascensionCount>=1,bonus:.2,icon:"\uD83C\uDF00"},
-];
-function totalGens(){return S.gens.reduce((s,g)=>s+g.count,0);}
-function checkAchievements(){for(const a of ACHIEVEMENTS){if(!S.achieved[a.id]&&a.check()){S.achieved[a.id]=true;showToast("Achievement: "+a.name,"+"+(a.bonus*100)+"% all");screenFlash("rgba(245,158,11,0.3)");SFX.achievement();if(navigator.vibrate)navigator.vibrate([30,20,30,20,30]);}}}
-
-// =============================================================================
 // SKILL TREE UI
 // =============================================================================
 function buildSkillTree(){
@@ -1196,8 +1196,8 @@ function tick(now){
   // City + stage + day/night
   orbStageTimer+=dt;if(orbStageTimer>=3){orbStageTimer=0;updateOrbStage();}
   updateDayNight(dt);
-  renderCity();
-  updateParticles(dt);
+  try{renderCity();}catch(e){console.error("renderCity:",e);}
+  try{updateParticles(dt);}catch(e){}
   flickerWindows(dt);
   runTime+=dt;
   achievTimer+=dt;if(achievTimer>=2){achievTimer=0;checkAchievements();checkPrestigeChallenges();}
