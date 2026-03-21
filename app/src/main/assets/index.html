@@ -22,12 +22,40 @@ html,body{width:100%;height:100%;overflow:hidden;background:#0a1628;font-family:
 .combo-fill{height:100%;width:0%;background:linear-gradient(90deg,#f59e0b,#ef4444);border-radius:2px;transition:width .15s}
 .combo-bar-wrap.hidden{opacity:0}
 
-.orb-area{flex:2;display:flex;align-items:center;justify-content:center;position:relative;min-height:0}
-#orb{width:140px;height:140px;border-radius:50%;cursor:pointer;transition:transform .08s ease,box-shadow .5s,background .5s;position:relative;z-index:2}
-#orb:active{transform:scale(.88)}
-#orb .label{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-size:16px;font-weight:700;letter-spacing:2px;text-shadow:0 2px 8px rgba(0,0,0,.5)}
-.glow{position:absolute;width:210px;height:210px;border-radius:50%;animation:pulse 2s ease-in-out infinite;z-index:1}
-@keyframes pulse{0%,100%{transform:scale(1);opacity:.6}50%{transform:scale(1.12);opacity:1}}
+.orb-area{flex:2;display:flex;align-items:flex-end;justify-content:center;position:relative;min-height:0;overflow:hidden;cursor:pointer}
+.orb-area:active .city{transform:scale(.97)}
+
+/* City skyline */
+.city{width:100%;height:100%;position:relative;z-index:2;display:flex;align-items:flex-end;justify-content:center;gap:2px;padding:0 4px;transition:transform .08s ease}
+.city-ground{position:absolute;bottom:0;left:0;right:0;height:12px;background:linear-gradient(0deg,#1a2332,#1e3a4a);z-index:1}
+.city-road{position:absolute;bottom:2px;left:0;right:0;height:3px;background:#2a3a4a;z-index:2}
+.city-road::before{content:'';position:absolute;top:1px;left:0;right:0;height:1px;background:repeating-linear-gradient(90deg,#fbbf24 0,#fbbf24 8px,transparent 8px,transparent 16px);opacity:.4}
+
+/* Buildings */
+.bldg{position:relative;z-index:3;display:flex;flex-direction:column;align-items:center;flex-shrink:0;transition:height .5s ease,opacity .3s}
+.bldg-body{width:100%;height:100%;border-radius:2px 2px 0 0;position:relative;overflow:hidden}
+.bldg-windows{display:flex;flex-wrap:wrap;gap:2px;padding:3px;justify-content:center}
+.bldg-win{width:4px;height:5px;border-radius:1px;opacity:.7}
+.bldg-win.lit{opacity:1;box-shadow:0 0 3px rgba(253,230,138,.4)}
+.bldg-antenna{width:2px;height:8px;background:#475569;position:absolute;top:-8px;left:50%;transform:translateX(-50%)}
+.bldg-antenna::after{content:'';position:absolute;top:-2px;left:-1px;width:4px;height:4px;border-radius:50%;background:#ef4444;animation:blink 2s ease-in-out infinite}
+@keyframes blink{0%,100%{opacity:.3}50%{opacity:1}}
+.crane{position:absolute;top:-20px;left:50%;transform:translateX(-50%);width:2px;height:20px;background:#94a3b8}
+.crane::before{content:'';position:absolute;top:0;left:-8px;width:18px;height:2px;background:#94a3b8}
+.crane::after{content:'';position:absolute;top:2px;right:-8px;width:1px;height:12px;background:#64748b;border-bottom:2px solid #fbbf24}
+
+/* Tap label overlay */
+.tap-hint{position:absolute;bottom:18px;left:50%;transform:translateX(-50%);font-size:11px;font-weight:700;letter-spacing:2px;color:rgba(255,255,255,.25);z-index:5;text-shadow:0 1px 4px rgba(0,0,0,.5)}
+
+/* Sky gradient */
+.city-sky{position:absolute;inset:0;background:linear-gradient(180deg,#0a1628 0%,#0f2840 50%,#1a3550 100%);z-index:0}
+.city-stars-bg{position:absolute;inset:0;z-index:0}
+.city-star-dot{position:absolute;width:2px;height:2px;background:#fff;border-radius:50%;opacity:.3;animation:twinkle 3s ease-in-out infinite}
+@keyframes twinkle{0%,100%{opacity:.15}50%{opacity:.5}}
+
+/* Legacy orb - hidden but kept for JS refs */
+#orb{display:none}
+.glow{display:none}
 
 .floater{position:absolute;font-size:20px;font-weight:700;color:#fde68a;text-shadow:0 0 8px rgba(253,230,138,.5);pointer-events:none;z-index:10;animation:floatUp .8s ease-out forwards}
 .floater.crit{font-size:30px;color:#ff4444;text-shadow:0 0 16px rgba(255,60,60,.8),0 0 30px rgba(255,60,60,.4);animation:floatUpCrit .9s ease-out forwards}
@@ -245,9 +273,15 @@ html,body{width:100%;height:100%;overflow:hidden;background:#0a1628;font-family:
     <div class="combo-track"><div class="combo-fill" id="comboFill"></div></div>
   </div>
   <div class="orb-area" id="orbArea">
+    <div class="city-sky"></div>
+    <div class="city-stars-bg" id="cityStarsBg"></div>
     <canvas id="particleCanvas" style="position:absolute;inset:0;width:100%;height:100%;pointer-events:none;z-index:15"></canvas>
     <div class="glow" id="glow"></div>
-    <div id="orb"><div class="label">TAP</div></div>
+    <div id="orb"></div>
+    <div class="city" id="cityView"></div>
+    <div class="city-ground"></div>
+    <div class="city-road"></div>
+    <div class="tap-hint">TAP TO EARN</div>
   </div>
   <div class="sep"></div>
   <div class="tab-bar">
@@ -368,13 +402,108 @@ function updateOrbStage(){
   }
   applyOrbVisuals();
 }
-function applyOrbVisuals(){
-  const s=ORB_STAGES[S.orbStage];
-  orb.style.background=s.bg;
-  if(S.comboMultiplier<3){
-    orb.style.boxShadow=`0 0 40px ${s.shadow},0 0 80px ${s.shadow.replace(/[\d.]+\)$/,'.2)')},inset 0 -8px 20px rgba(0,0,0,.3)`;
-    document.getElementById("glow").style.background=`radial-gradient(circle,${s.glow},transparent 70%)`;
+function applyOrbVisuals(){ /* legacy - city replaces orb visuals */ }
+
+// =============================================================================
+// CITY RENDERER
+// =============================================================================
+const BLDG_STYLES=[
+  {w:16,maxH:25, color:"#dc2626",winColor:"#fef08a",name:"cart"},      // Hot Dog Stand
+  {w:22,maxH:40, color:"#92400e",winColor:"#fde68a",name:"shop"},      // Coffee Shop
+  {w:28,maxH:70, color:"#64748b",winColor:"#fef9c3",name:"apt"},       // Apartment Block
+  {w:40,maxH:45, color:"#475569",winColor:"#fef08a",name:"mall"},      // Shopping Mall
+  {w:24,maxH:90, color:"#0ea5e9",winColor:"#e0f2fe",name:"tech"},      // Tech Campus
+  {w:20,maxH:110,color:"#1e3a5f",winColor:"#fde68a",name:"fin"},       // Financial District
+  {w:30,maxH:140,color:"#334155",winColor:"#f0f9ff",name:"mega"},      // Mega Tower
+];
+let lastCityHash="";
+
+function renderCity(){
+  // Build a hash of generator counts to avoid unnecessary re-renders
+  const hash=S.gens.map(g=>g.count).join(",");
+  if(hash===lastCityHash)return;
+  lastCityHash=hash;
+
+  const cv=document.getElementById("cityView");
+  const totalCount=S.gens.reduce((s,g)=>s+g.count,0);
+  if(totalCount===0){
+    cv.innerHTML='<div style="position:absolute;bottom:20px;left:50%;transform:translateX(-50%);color:rgba(255,255,255,.2);font-size:11px;white-space:nowrap">Tap to start building!</div>';
+    return;
   }
+
+  let buildings=[];
+  // Generate buildings based on generator counts
+  S.gens.forEach((gen,gi)=>{
+    const style=BLDG_STYLES[gi];
+    // Each generator count adds buildings, but diminishing
+    const numBldgs=Math.min(gen.count,gi<2?Math.ceil(gen.count/2):Math.ceil(gen.count/3),8);
+    for(let b=0;b<numBldgs;b++){
+      const hScale=.4+Math.min(gen.count,20)/20*.6;
+      const h=Math.floor(style.maxH*hScale*(0.7+Math.random()*.3));
+      const w=style.w+Math.floor(Math.random()*6-3);
+      // More windows for taller buildings
+      const winRows=Math.max(1,Math.floor(h/8));
+      const winCols=Math.max(1,Math.floor(w/7));
+      buildings.push({gi,w,h,style,winRows,winCols,isNew:gen.count<=2&&b===numBldgs-1,order:gi*100+b});
+    }
+  });
+
+  // Sort for visual layout: tallest in center
+  buildings.sort((a,b)=>a.order-b.order);
+  // Rearrange: short-tall-short pattern
+  const sorted=[...buildings].sort((a,b)=>b.h-a.h);
+  const arranged=[];
+  let left=true;
+  sorted.forEach(b=>{if(left)arranged.unshift(b);else arranged.push(b);left=!left;});
+
+  let html='';
+  arranged.forEach(b=>{
+    const hasAntenna=b.h>60&&b.gi>=4;
+    const hasCrane=b.isNew;
+    let wins='';
+    for(let r=0;r<b.winRows;r++){
+      for(let c=0;c<b.winCols;c++){
+        const lit=Math.random()<.6;
+        const dark=Math.random()<.15;
+        const color=dark?'rgba(30,40,60,.8)':lit?b.style.winColor:'rgba(100,120,140,.3)';
+        wins+=`<div class="bldg-win${lit?' lit':''}" style="background:${color}"></div>`;
+      }
+    }
+    html+=`<div class="bldg" style="width:${b.w}px;height:${b.h}px">
+      ${hasAntenna?'<div class="bldg-antenna"></div>':''}
+      ${hasCrane?'<div class="crane"></div>':''}
+      <div class="bldg-body" style="background:${b.style.color}">
+        <div class="bldg-windows">${wins}</div>
+      </div>
+    </div>`;
+  });
+  cv.innerHTML=html;
+}
+
+// Seed background stars
+function initCityStars(){
+  const bg=document.getElementById("cityStarsBg");
+  let html='';
+  for(let i=0;i<25;i++){
+    html+=`<div class="city-star-dot" style="left:${Math.random()*100}%;top:${Math.random()*60}%;animation-delay:${Math.random()*3}s"></div>`;
+  }
+  bg.innerHTML=html;
+}
+
+// Animate window lights (call occasionally)
+let windowFlickerTimer=0;
+function flickerWindows(dt){
+  windowFlickerTimer+=dt;
+  if(windowFlickerTimer<2)return;
+  windowFlickerTimer=0;
+  const wins=document.querySelectorAll(".bldg-win");
+  wins.forEach(w=>{
+    if(Math.random()<.08){
+      const wasLit=w.classList.contains("lit");
+      if(wasLit){w.classList.remove("lit");w.style.background="rgba(100,120,140,.3)";}
+      else{w.classList.add("lit");w.style.background=w.closest(".bldg-body")?"#fef08a":"#fde68a";}
+    }
+  });
 }
 
 // =============================================================================
@@ -972,12 +1101,17 @@ function doTap(x,y,isAuto){
   if(!isAuto)tryArtifactDrop(.0015*(1+S.comboMultiplier*.05));
   if(!isAuto||Math.random()<.1){const f=document.createElement("div");f.className=isCrit?"floater crit":"floater";f.textContent=(isMega?"MEGA +":isCrit?"CRIT +":"+")+fmt(amount);if(isMega)f.style.color="#fef08a";f.style.left=(x+(Math.random()*40-20))+"px";f.style.top=(y-20)+"px";orbArea.appendChild(f);setTimeout(()=>f.remove(),isCrit?900:800);}
 }
-orb.addEventListener("pointerdown",e=>{e.preventDefault();const r=orbArea.getBoundingClientRect();doTap(e.clientX-r.left-30,e.clientY-r.top,false);updateUI();checkAchievements();});
+// Tap on city area (replaces orb tap)
+orbArea.addEventListener("pointerdown",e=>{if(e.target.closest(".investor"))return;e.preventDefault();const r=orbArea.getBoundingClientRect();doTap(e.clientX-r.left-30,e.clientY-r.top,false);updateUI();checkAchievements();});
 function updateOrbVisuals(){
-  const m=S.comboMultiplier,s=ORB_STAGES[S.orbStage];
-  if(m>=8){orb.style.boxShadow="0 0 50px rgba(239,68,68,.5),0 0 100px rgba(239,68,68,.3),inset 0 -8px 20px rgba(0,0,0,.3)";document.getElementById("glow").style.background="radial-gradient(circle,rgba(239,68,68,.3),transparent 70%)";}
-  else if(m>=3){orb.style.boxShadow="0 0 50px rgba(245,158,11,.4),0 0 90px rgba(245,158,11,.2),inset 0 -8px 20px rgba(0,0,0,.3)";document.getElementById("glow").style.background="radial-gradient(circle,rgba(245,158,11,.25),transparent 70%)";}
-  else applyOrbVisuals();
+  // City replaces orb — update sky color based on combo
+  const sky=document.querySelector(".city-sky");
+  if(!sky)return;
+  const m=S.comboMultiplier;
+  if(m>=8)sky.style.background="linear-gradient(180deg,#1a0505 0%,#3d1010 50%,#4a1515 100%)";
+  else if(m>=3)sky.style.background="linear-gradient(180deg,#1a1005 0%,#2d2010 50%,#3a2a15 100%)";
+  else sky.style.background="linear-gradient(180deg,#0a1628 0%,#0f2840 50%,#1a3550 100%)";
+  renderCity();
 }
 
 // =============================================================================
@@ -1058,6 +1192,7 @@ function tick(now){
   // Orb stage check
   orbStageTimer+=dt;if(orbStageTimer>=3){orbStageTimer=0;updateOrbStage();}
   updateParticles(dt);
+  flickerWindows(dt);
   runTime+=dt;
   achievTimer+=dt;if(achievTimer>=2){achievTimer=0;checkAchievements();checkPrestigeChallenges();}
   updateUI();requestAnimationFrame(tick);
@@ -1069,7 +1204,7 @@ function tick(now){
 const offlineSec=load();
 initRivals();initWeekly();
 if(offlineSec>0)applyOffline(offlineSec);
-updateOrbStage();applyOrbVisuals();updateUI();
+updateOrbStage();applyOrbVisuals();initCityStars();renderCity();updateUI();
 if(S.pChallenges.length===0)rollPrestigeChallenges();
 if(S.musicOn){startMusic();musicToggle.textContent="MUSIC ON";musicToggle.classList.add("on");}
 requestAnimationFrame(tick);
