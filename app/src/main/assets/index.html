@@ -529,7 +529,11 @@ function rebuildGrid(){
     if(islandMask[r][c]===-1)cityGrid[r][c]=-1; // water
     else if(islandMask[r][c]===9)cityGrid[r][c]=9; // beach
   }
-  // Collect buildable land slots
+  // Roads: grid pattern every 3 tiles on land (not beach/water)
+  for(let r=0;r<GRID;r++)for(let c=0;c<GRID;c++){
+    if(cityGrid[r][c]===0&&(r%3===1||c%3===1))cityGrid[r][c]=8; // road
+  }
+  // Collect buildable land slots (not water, beach, or road)
   let slots=[];
   for(let r=0;r<GRID;r++)for(let c=0;c<GRID;c++)if(cityGrid[r][c]===0)slots.push({r,c});
   const mid=Math.floor(GRID/2);
@@ -633,6 +637,13 @@ function renderCity(force){
       // Tile type
       if(cell===-1){drawTile(ctx,p.x,p.y,alt?waterA:waterB,null);continue;}
       if(cell===9){drawTile(ctx,p.x,p.y,alt?beachA:beachB,"rgba(255,255,255,.04)");continue;}
+      if(cell===8){
+        drawTile(ctx,p.x,p.y,isNight?"#2a2a2a":"#707070","rgba(255,255,255,.05)");
+        // Road center line
+        ctx.fillStyle=isNight?"rgba(251,191,36,.25)":"rgba(251,191,36,.45)";
+        ctx.fillRect(p.x-1,p.y+TH/2-1,2,2);
+        continue;
+      }
       drawTile(ctx,p.x,p.y,alt?gA:gB,"rgba(255,255,255,.06)");
 
       // Building on this tile
