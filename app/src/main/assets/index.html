@@ -285,6 +285,8 @@ html,body{width:100%;height:100%;overflow:hidden;background:#0a1628;font-family:
   <div class="tab-panel" data-panel="skills"><div class="shop" id="skillList"></div></div>
   <div class="tab-panel" data-panel="rivals"><div class="shop" id="rivalList"></div></div>
   <div class="tab-panel" data-panel="more"><div class="shop" id="moreList"></div></div>
+  <div id="dbg" style="position:fixed;bottom:0;left:0;right:0;max-height:40%;overflow-y:auto;background:rgba(0,0,0,.95);color:#0f0;font:10px monospace;padding:6px;z-index:9999;display:none"></div>
+  <div id="dbgToggle" style="position:fixed;bottom:4px;right:4px;background:#f00;color:#fff;font:bold 10px sans-serif;padding:2px 6px;border-radius:4px;z-index:10000;cursor:pointer">DBG</div>
 </div>
 <div class="music-toggle" id="musicToggle">MUSIC OFF</div>
 <div class="screen-flash" id="screenFlash"></div>
@@ -295,6 +297,40 @@ html,body{width:100%;height:100%;overflow:hidden;background:#0a1628;font-family:
 <div class="minigame-overlay" id="mgOverlay"><div class="mg-title" id="mgTitle"></div><div class="mg-subtitle" id="mgSubtitle"></div><div class="mg-area" id="mgArea"></div><div class="mg-score" id="mgScore"></div><div class="mg-timer" id="mgTimer"></div><div class="mg-result" id="mgResult"></div><button class="mg-close" id="mgClose" style="display:none">Collect</button></div>
 
 <script>
+// =============================================================================
+// DEBUG CONSOLE — tap red DBG button to toggle
+// =============================================================================
+(function(){
+  const dbg=document.getElementById("dbg");
+  const tog=document.getElementById("dbgToggle");
+  let visible=false;
+  tog.addEventListener("click",()=>{visible=!visible;dbg.style.display=visible?"block":"none";});
+  function log(msg,color){
+    const d=document.createElement("div");
+    d.style.color=color||"#0f0";
+    d.textContent=new Date().toLocaleTimeString()+": "+msg;
+    dbg.appendChild(d);
+    dbg.scrollTop=dbg.scrollHeight;
+    if(dbg.children.length>100)dbg.removeChild(dbg.firstChild);
+  }
+  window._dbg=log;
+  window.onerror=function(msg,src,line,col,err){
+    log("ERROR: "+msg+" (line "+line+")","#f44");
+    return false;
+  };
+  window.addEventListener("unhandledrejection",function(e){
+    log("PROMISE: "+e.reason,"#f84");
+  });
+  const origLog=console.log,origErr=console.error;
+  console.log=function(){origLog.apply(console,arguments);log(Array.from(arguments).join(" "),"#0f0");};
+  console.error=function(){origErr.apply(console,arguments);log(Array.from(arguments).join(" "),"#f44");};
+  log("Debug console ready","#0ff");
+  log("Canvas test: particleCanvas="+!!document.getElementById("particleCanvas"),"#0ff");
+  log("orbArea="+!!document.getElementById("orbArea"),"#0ff");
+  const oa=document.getElementById("orbArea");
+  if(oa){const r=oa.getBoundingClientRect();log("orbArea size: "+Math.floor(r.width)+"x"+Math.floor(r.height),"#0ff");}
+})();
+
 // =============================================================================
 // STATE
 // =============================================================================
@@ -458,9 +494,10 @@ function rebuildGrid(){
 }
 
 let cityNeedsRedraw=true;
-let cityGridCache=null; // cached grid to avoid rebuilding every frame
+let cityGridCache=null;
+let cityDrawCount=0;
 function renderCity(force){
-  if(!cCanvas||!cCtx)return;
+  if(!cCanvas||!cCtx){if(cityDrawCount<3){window._dbg&&window._dbg("renderCity: no canvas","#f84");cityDrawCount++;}return;}
   const w=cCanvas.width,h=cCanvas.height;
   if(w<10||h<10)return;
 
@@ -468,7 +505,7 @@ function renderCity(force){
   const genHash=S.gens.map(g=>g.count).join(",");
   if(genHash!==lastCityHash||force){lastCityHash=genHash;rebuildGrid();}
 
-  // Always redraw (shares canvas with particles which need clearing)
+  if(cityDrawCount<3){window._dbg&&window._dbg("renderCity: w="+w+" h="+h+" gens="+S.gens.map(g=>g.count).join(","),"#0ff");cityDrawCount++;}
   const ctx=cCtx;
   ctx.clearRect(0,0,w,h);
   const ox=w/2,oy=h*.12;
@@ -761,9 +798,12 @@ document.getElementById("mgClose").addEventListener("click",()=>document.getElem
 // PARTICLE SYSTEM
 // =============================================================================
 const pCanvas=document.getElementById("particleCanvas");
-const pCtx=pCanvas.getContext("2d");
+window._dbg&&window._dbg("pCanvas="+!!pCanvas,"#0ff");
+const pCtx=pCanvas?pCanvas.getContext("2d"):null;
+window._dbg&&window._dbg("pCtx="+!!pCtx,"#0ff");
 // Share canvas for city drawing
 cCanvas=pCanvas;cCtx=pCtx;
+window._dbg&&window._dbg("cCanvas assigned="+!!cCanvas,"#0ff");
 let particles=[];
 function resizeParticleCanvas(){const r=document.getElementById("orbArea").getBoundingClientRect();pCanvas.width=r.width;pCanvas.height=r.height;cityNeedsRedraw=true;}
 setTimeout(resizeParticleCanvas,0);window.addEventListener("resize",resizeParticleCanvas);
@@ -1207,12 +1247,20 @@ function tick(now){
 // =============================================================================
 // INIT
 // =============================================================================
+window._dbg&&window._dbg("=== INIT START ===","#ff0");
 const offlineSec=load();
+window._dbg&&window._dbg("load() done, offline="+offlineSec+"s","#0ff");
 initRivals();initWeekly();
 if(offlineSec>0)applyOffline(offlineSec);
+window._dbg&&window._dbg("applyOffline done","#0ff");
 updateOrbStage();applyOrbVisuals();initCityStars();updateUI();
+window._dbg&&window._dbg("updateUI done, canvas="+cCanvas?.width+"x"+cCanvas?.height,"#0ff");
 // Force city render after layout is complete
-setTimeout(()=>{cityNeedsRedraw=true;renderCity(true);},100);
+setTimeout(()=>{
+  window._dbg&&window._dbg("delayed renderCity: pCanvas="+pCanvas?.width+"x"+pCanvas?.height,"#ff0");
+  cityNeedsRedraw=true;renderCity(true);
+  window._dbg&&window._dbg("renderCity done","#0f0");
+},100);
 if(S.pChallenges.length===0)rollPrestigeChallenges();
 if(S.musicOn){startMusic();musicToggle.textContent="MUSIC ON";musicToggle.classList.add("on");}
 requestAnimationFrame(tick);
