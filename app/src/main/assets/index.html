@@ -22,36 +22,36 @@ html,body{width:100%;height:100%;overflow:hidden;background:#0a1628;font-family:
 .combo-fill{height:100%;width:0%;background:linear-gradient(90deg,#f59e0b,#ef4444);border-radius:2px;transition:width .15s}
 .combo-bar-wrap.hidden{opacity:0}
 
-.orb-area{flex:2;display:flex;align-items:flex-end;justify-content:center;position:relative;min-height:0;overflow:hidden;cursor:pointer}
+.orb-area{flex:2;position:relative;min-height:0;overflow:hidden;cursor:pointer}
 .orb-area:active .city{transform:scale(.97)}
 
-/* City skyline */
-.city{width:100%;height:100%;position:relative;z-index:2;display:flex;align-items:flex-end;justify-content:center;gap:2px;padding:0 4px;transition:transform .08s ease}
-.city-ground{position:absolute;bottom:0;left:0;right:0;height:12px;background:linear-gradient(0deg,#1a2332,#1e3a4a);z-index:1}
-.city-road{position:absolute;bottom:2px;left:0;right:0;height:3px;background:#2a3a4a;z-index:2}
-.city-road::before{content:'';position:absolute;top:1px;left:0;right:0;height:1px;background:repeating-linear-gradient(90deg,#fbbf24 0,#fbbf24 8px,transparent 8px,transparent 16px);opacity:.4}
-
-/* Buildings */
-.bldg{position:relative;z-index:3;display:flex;flex-direction:column;align-items:center;flex-shrink:0;transition:height .5s ease,opacity .3s}
-.bldg-body{width:100%;height:100%;border-radius:2px 2px 0 0;position:relative;overflow:hidden}
-.bldg-windows{display:flex;flex-wrap:wrap;gap:2px;padding:3px;justify-content:center}
-.bldg-win{width:4px;height:5px;border-radius:1px;opacity:.7}
-.bldg-win.lit{opacity:1;box-shadow:0 0 3px rgba(253,230,138,.4)}
-.bldg-antenna{width:2px;height:8px;background:#475569;position:absolute;top:-8px;left:50%;transform:translateX(-50%)}
-.bldg-antenna::after{content:'';position:absolute;top:-2px;left:-1px;width:4px;height:4px;border-radius:50%;background:#ef4444;animation:blink 2s ease-in-out infinite}
-@keyframes blink{0%,100%{opacity:.3}50%{opacity:1}}
-.crane{position:absolute;top:-20px;left:50%;transform:translateX(-50%);width:2px;height:20px;background:#94a3b8}
-.crane::before{content:'';position:absolute;top:0;left:-8px;width:18px;height:2px;background:#94a3b8}
-.crane::after{content:'';position:absolute;top:2px;right:-8px;width:1px;height:12px;background:#64748b;border-bottom:2px solid #fbbf24}
-
-/* Tap label overlay */
-.tap-hint{position:absolute;bottom:18px;left:50%;transform:translateX(-50%);font-size:11px;font-weight:700;letter-spacing:2px;color:rgba(255,255,255,.25);z-index:5;text-shadow:0 1px 4px rgba(0,0,0,.5)}
-
-/* Sky gradient */
+/* Sky gradient — fills entire area */
 .city-sky{position:absolute;inset:0;background:linear-gradient(180deg,#0a1628 0%,#0f2840 50%,#1a3550 100%);z-index:0}
 .city-stars-bg{position:absolute;inset:0;z-index:0}
 .city-star-dot{position:absolute;width:2px;height:2px;background:#fff;border-radius:50%;opacity:.3;animation:twinkle 3s ease-in-out infinite}
 @keyframes twinkle{0%,100%{opacity:.15}50%{opacity:.5}}
+
+/* City skyline — absolute, anchored to bottom */
+.city{position:absolute;bottom:14px;left:0;right:0;z-index:3;display:flex;align-items:flex-end;justify-content:center;gap:2px;padding:0 6px;transition:transform .08s ease;pointer-events:none}
+.city-ground{position:absolute;bottom:0;left:0;right:0;height:14px;background:linear-gradient(0deg,#141e2e,#1a2e40);z-index:2}
+.city-road{position:absolute;bottom:4px;left:0;right:0;height:4px;background:#222e3e;z-index:2}
+.city-road::before{content:'';position:absolute;top:1px;left:0;right:0;height:2px;background:repeating-linear-gradient(90deg,#fbbf24 0,#fbbf24 10px,transparent 10px,transparent 20px);opacity:.35}
+
+/* Buildings */
+.bldg{flex-shrink:0;position:relative;transition:height .5s ease}
+.bldg-body{width:100%;height:100%;border-radius:2px 2px 0 0;position:relative;overflow:hidden}
+.bldg-windows{display:flex;flex-wrap:wrap;gap:2px;padding:3px 2px;justify-content:center;align-content:flex-start}
+.bldg-win{width:5px;height:6px;border-radius:1px}
+.bldg-win.lit{box-shadow:0 0 4px rgba(253,230,138,.5)}
+.bldg-antenna{width:2px;height:10px;background:#64748b;position:absolute;top:-10px;left:50%;transform:translateX(-50%)}
+.bldg-antenna::after{content:'';position:absolute;top:-3px;left:-2px;width:6px;height:6px;border-radius:50%;background:#ef4444;animation:blink 2s ease-in-out infinite}
+@keyframes blink{0%,100%{opacity:.2}50%{opacity:1}}
+.crane{position:absolute;top:-22px;left:50%;transform:translateX(-50%);width:2px;height:22px;background:#94a3b8}
+.crane::before{content:'';position:absolute;top:0;left:-10px;width:22px;height:2px;background:#94a3b8}
+.crane::after{content:'';position:absolute;top:2px;right:-10px;width:1px;height:14px;background:#64748b;border-bottom:3px solid #fbbf24}
+
+/* Tap label overlay */
+.tap-hint{position:absolute;bottom:22px;left:50%;transform:translateX(-50%);font-size:12px;font-weight:700;letter-spacing:3px;color:rgba(255,255,255,.2);z-index:5;text-shadow:0 1px 4px rgba(0,0,0,.5)}
 
 /* Legacy orb - hidden but kept for JS refs */
 #orb{display:none}
@@ -1189,8 +1189,9 @@ function tick(now){
   updateCombo(dt);updateBuffs(dt);updateBoss(dt);
   if(S.wheelCooldown>0)S.wheelCooldown=Math.max(0,S.wheelCooldown-dt);
   if(S.mgCooldown>0)S.mgCooldown=Math.max(0,S.mgCooldown-dt);
-  // Orb stage check
+  // City + stage check
   orbStageTimer+=dt;if(orbStageTimer>=3){orbStageTimer=0;updateOrbStage();}
+  renderCity();
   updateParticles(dt);
   flickerWindows(dt);
   runTime+=dt;
