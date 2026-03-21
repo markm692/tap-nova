@@ -439,8 +439,8 @@ function applyOrbVisuals(){ /* legacy - city replaces orb visuals */ }
 // =============================================================================
 // City draws on particle canvas (shared) — city first, particles on top
 let cCanvas=null,cCtx=null; // set after pCanvas is created
-const TW=24,TH=12; // tile width/height (2:1 isometric)
-const GRID=14; // 14x14 grid
+const TW=18,TH=9; // tile width/height (2:1 isometric)
+const GRID=20; // 20x20 grid
 // Building configs per generator type
 const BLDG_COLORS=[
   {front:"#c53030",side:"#9b2c2c",roof:"#e53e3e",h:12},
@@ -540,7 +540,7 @@ function rebuildGrid(){
   slots.sort((a,b)=>(Math.abs(a.r-mid)+Math.abs(a.c-mid))-(Math.abs(b.r-mid)+Math.abs(b.c-mid)));
   let si=0;
   S.gens.forEach((gen,gi)=>{
-    const num=Math.min(gen.count,gi<2?Math.ceil(gen.count/2):Math.ceil(gen.count/3),14);
+    const num=Math.min(gen.count,gi<2?Math.ceil(gen.count/2):Math.ceil(gen.count/3),20);
     for(let b=0;b<num&&si<slots.length;b++){cityGrid[slots[si].r][slots[si].c]=gi+1;si++;}
   });
 }
