@@ -197,7 +197,51 @@ html,body{width:100%;height:100%;overflow:hidden;background:#0f172a;font-family:
   log("Debug ready","#0ff");
 })();
 
-// === ACHIEVEMENTS (before achievBonus) ===
+// === LOCATIONS ===
+const LOCATIONS=[
+  {name:"Suburb",icon:"\uD83C\uDFE1",mult:1,rentMult:1,desc:"Cheap, low traffic"},
+  {name:"Downtown",icon:"\uD83C\uDFD9\uFE0F",mult:2.5,rentMult:3,desc:"Busy, expensive"},
+  {name:"Airport",icon:"\u2708\uFE0F",mult:4,rentMult:5,desc:"Premium, very costly"},
+];
+const RELOCATE_COST_MULT=50;
+
+// === DEMAND ===
+let marketTime=0;
+let demandSpike={idx:-1,mult:1,timer:0};
+
+// === BIZ CONFIG (must be before ACHIEVEMENTS/STATE) ===
+const BIZ=[
+{name:"Lemonade Stand",icon:"\uD83C\uDF4B",baseCost:4,basePayout:1,baseTime:.6,unlock:0,mgrCost:100,baseSalary:.1,maxEmployees:5},
+{name:"Freelance Gig",icon:"\uD83D\uDCBB",baseCost:60,basePayout:15,baseTime:3,unlock:50,mgrCost:2e3,baseSalary:1,maxEmployees:8},
+{name:"Corner Shop",icon:"\uD83C\uDFEA",baseCost:720,basePayout:100,baseTime:6,unlock:500,mgrCost:5e4,baseSalary:8,maxEmployees:10},
+{name:"Food Trucks",icon:"\uD83D\uDE9A",baseCost:8640,basePayout:1200,baseTime:12,unlock:5e3,mgrCost:5e5,baseSalary:50,maxEmployees:12},
+{name:"Tech Startup",icon:"\uD83D\uDE80",baseCost:1036800,basePayout:1e4,baseTime:24,unlock:1e5,mgrCost:5e6,baseSalary:400,maxEmployees:15},
+{name:"Corporation",icon:"\uD83C\uDFE2",baseCost:29859840,basePayout:1e5,baseTime:48,unlock:1e6,mgrCost:5e7,baseSalary:3e3,maxEmployees:20},
+{name:"Mega Corp",icon:"\uD83C\uDFD7",baseCost:859963392,basePayout:1e6,baseTime:96,unlock:25e6,mgrCost:1e9,baseSalary:2e4,maxEmployees:30},
+];
+const MILESTONES=[25,50,100,200,300,400];
+
+const MARKET_PARAMS=BIZ.map((_,i)=>({
+  freq:.02+i*.007,phase:i*1.3,noiseFreq:.05+i*.01,noiseAmp:.15,
+}));
+
+// === STATE (must be after BIZ) ===
+const S={dust:0,lifetimeDust:0,allTimeDust:0,shares:0,legacy:0,
+tapLevel:0,prestigeCount:0,ascensionCount:0,totalTaps:0,
+gens:BIZ.map(()=>({count:0,timer:0,running:false,employees:0,location:0,reputation:3})),
+managers:BIZ.map(()=>false),
+comboCount:0,comboTimer:0,comboMultiplier:1,
+achieved:{},critCount:0,investorsCollected:0,
+wheelCooldown:0,wheelSpins:0,buffs:[],
+dailyStreak:0,lastClaimDay:"",todayClaimed:false,
+skills:{},bossesHandled:0,
+challengeActive:false,challengeHP:0,challengeMaxHP:0,challengeTimer:0,challengeReward:0,challengeName:"",
+mgCooldown:0,mgPlayed:0,
+rivalSeed:0,weeklyTarget:0,weeklyProgress:0,weeklyWeek:"",
+artifacts:[],artifactDrops:0,pChallenges:[],pChallengesDone:0,
+};
+
+// === ACHIEVEMENTS ===
 const ACHIEVEMENTS=[
 {id:"tap100",name:"Getting Started",desc:"Tap 100x",check:()=>S.totalTaps>=100,bonus:.05,icon:"\uD83D\uDC4A"},
 {id:"tap1k",name:"Hustler",desc:"Tap 1,000x",check:()=>S.totalTaps>=1e3,bonus:.1,icon:"\uD83D\uDD25"},
@@ -216,68 +260,6 @@ const ACHIEVEMENTS=[
 ];
 function totalGens(){return S.gens.reduce((s,g)=>s+g.count,0);}
 function checkAchievements(){for(const a of ACHIEVEMENTS)if(!S.achieved[a.id]&&a.check()){S.achieved[a.id]=true;showToast(a.name,a.desc+" | +"+(a.bonus*100)+"%");screenFlash("rgba(251,191,36,0.3)");SFX.achievement();}}
-
-// === LOCATIONS ===
-const LOCATIONS=[
-  {name:"Suburb",icon:"\uD83C\uDFE1",mult:1,rentMult:1,desc:"Cheap, low traffic"},
-  {name:"Downtown",icon:"\uD83C\uDFD9\uFE0F",mult:2.5,rentMult:3,desc:"Busy, expensive"},
-  {name:"Airport",icon:"\u2708\uFE0F",mult:4,rentMult:5,desc:"Premium, very costly"},
-];
-const RELOCATE_COST_MULT=50; // x business base cost to relocate
-
-// === DEMAND SYSTEM — continuous fluctuating market ===
-// Each business has its own demand curve: base sine wave + noise
-// Range: 0.5x (low demand) to 2.0x (high demand), centered at 1.0x
-let marketTime=0; // global market clock
-// Each biz has a unique phase offset and frequency so they don't sync
-const MARKET_PARAMS=BIZ.map((_,i)=>({
-  freq:.02+i*.007,      // oscillation speed (different per biz)
-  phase:i*1.3,          // phase offset
-  noiseFreq:.05+i*.01,  // secondary noise frequency
-  noiseAmp:.15,         // noise amplitude
-}));
-function getDemand(i){
-  const p=MARKET_PARAMS[i];
-  const base=Math.sin(marketTime*p.freq+p.phase); // -1 to 1
-  const noise=Math.sin(marketTime*p.noiseFreq+p.phase*2.7)*.5; // secondary wave
-  const raw=base*.4+noise*p.noiseAmp; // combined: roughly -0.5 to 0.5
-  return 1+raw; // 0.5 to 1.5 range
-}
-function getDemandLabel(d){
-  if(d>=1.4)return{text:"HIGH",color:"#22c55e"};
-  if(d>=1.15)return{text:"GOOD",color:"#4ade80"};
-  if(d>=.85)return{text:"NORMAL",color:"#94a3b8"};
-  if(d>=.65)return{text:"LOW",color:"#f59e0b"};
-  return{text:"SLUMP",color:"#ef4444"};
-}
-// Trending spikes: occasional sharp demand spike on one business
-let demandSpike={idx:-1,mult:1,timer:0};
-
-// === STATE ===
-const BIZ=[
-{name:"Lemonade Stand",icon:"\uD83C\uDF4B",baseCost:4,basePayout:1,baseTime:.6,unlock:0,mgrCost:100,baseSalary:.1,maxEmployees:5},
-{name:"Freelance Gig",icon:"\uD83D\uDCBB",baseCost:60,basePayout:15,baseTime:3,unlock:50,mgrCost:2e3,baseSalary:1,maxEmployees:8},
-{name:"Corner Shop",icon:"\uD83C\uDFEA",baseCost:720,basePayout:100,baseTime:6,unlock:500,mgrCost:5e4,baseSalary:8,maxEmployees:10},
-{name:"Food Trucks",icon:"\uD83D\uDE9A",baseCost:8640,basePayout:1200,baseTime:12,unlock:5e3,mgrCost:5e5,baseSalary:50,maxEmployees:12},
-{name:"Tech Startup",icon:"\uD83D\uDE80",baseCost:1036800,basePayout:1e4,baseTime:24,unlock:1e5,mgrCost:5e6,baseSalary:400,maxEmployees:15},
-{name:"Corporation",icon:"\uD83C\uDFE2",baseCost:29859840,basePayout:1e5,baseTime:48,unlock:1e6,mgrCost:5e7,baseSalary:3e3,maxEmployees:20},
-{name:"Mega Corp",icon:"\uD83C\uDFD7",baseCost:859963392,basePayout:1e6,baseTime:96,unlock:25e6,mgrCost:1e9,baseSalary:2e4,maxEmployees:30},
-];
-const MILESTONES=[25,50,100,200,300,400];
-const S={dust:0,lifetimeDust:0,allTimeDust:0,shares:0,legacy:0,
-tapLevel:0,prestigeCount:0,ascensionCount:0,totalTaps:0,
-gens:BIZ.map(()=>({count:0,timer:0,running:false,employees:0,location:0,reputation:3})),
-managers:BIZ.map(()=>false),
-comboCount:0,comboTimer:0,comboMultiplier:1,
-achieved:{},critCount:0,investorsCollected:0,
-wheelCooldown:0,wheelSpins:0,buffs:[],
-dailyStreak:0,lastClaimDay:"",todayClaimed:false,
-skills:{},bossesHandled:0,
-challengeActive:false,challengeHP:0,challengeMaxHP:0,challengeTimer:0,challengeReward:0,challengeName:"",
-mgCooldown:0,mgPlayed:0,
-rivalSeed:0,weeklyTarget:0,weeklyProgress:0,weeklyWeek:"",
-artifacts:[],artifactDrops:0,pChallenges:[],pChallengesDone:0,
-};
 
 // === SFX ===
 let audioCtx=null;
