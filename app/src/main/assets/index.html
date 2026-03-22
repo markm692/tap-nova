@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
-<title>Creator Content Machine</title>
+<title>Creator Empire</title>
 <style>
 *{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent;user-select:none}
 html,body{width:100%;height:100%;overflow:hidden;background:#0f172a;font-family:'Segoe UI',system-ui,sans-serif;color:#fff}
@@ -23,11 +23,21 @@ html,body{width:100%;height:100%;overflow:hidden;background:#0f172a;font-family:
 .combo-fill{height:100%;width:0%;background:linear-gradient(90deg,#fbbf24,#ef4444);border-radius:2px;transition:width .15s}
 .combo-wrap.hidden{opacity:0}
 
-.tap-area{height:100px;display:flex;align-items:center;justify-content:center;position:relative;cursor:pointer;overflow:hidden}
-.tap-circle{width:80px;height:80px;border-radius:50%;background:linear-gradient(135deg,#e040fb,#ab47bc);box-shadow:0 0 30px rgba(224,64,251,.3);display:flex;align-items:center;justify-content:center;flex-direction:column;transition:transform .08s;z-index:2}
-.tap-circle:active{transform:scale(.88)}
-.tap-icon{font-size:20px}
-.tap-label{font-size:9px;font-weight:700;letter-spacing:1px;color:rgba(255,255,255,.7)}
+.tap-area{height:120px;display:flex;align-items:center;justify-content:center;position:relative;cursor:pointer;overflow:hidden}
+.tap-circle{width:100px;height:100px;border-radius:50%;background:linear-gradient(135deg,#e040fb,#ab47bc);box-shadow:0 0 40px rgba(224,64,251,.3),0 0 80px rgba(224,64,251,.1);display:flex;align-items:center;justify-content:center;flex-direction:column;transition:transform .08s;z-index:2}
+.tap-circle:active{transform:scale(.85)}
+.tap-icon{font-size:28px}
+.tap-label{font-size:10px;font-weight:700;letter-spacing:2px;color:rgba(255,255,255,.8)}
+.tap-hint-arrow{position:absolute;bottom:-30px;left:50%;transform:translateX(-50%);font-size:24px;animation:bounceArrow 1s ease-in-out infinite;z-index:3}
+@keyframes bounceArrow{0%,100%{transform:translateX(-50%) translateY(0)}50%{transform:translateX(-50%) translateY(-8px)}}
+
+/* Onboarding overlay */
+.onboard{position:fixed;inset:0;background:rgba(0,0,0,.85);z-index:300;display:flex;align-items:center;justify-content:center}
+.onboard-box{background:#1e293b;border:2px solid rgba(224,64,251,.4);border-radius:16px;padding:24px;text-align:center;width:85%;max-width:300px}
+.onboard-box h2{font-size:20px;color:#f06292;margin-bottom:8px}
+.onboard-box p{font-size:13px;color:#94a3b8;margin-bottom:16px;line-height:1.4}
+.onboard-box .emoji{font-size:48px;margin-bottom:12px}
+.onboard-box button{padding:10px 32px;background:#e040fb;border:none;border-radius:8px;color:#000;font-size:15px;font-weight:700;cursor:pointer}
 .floater{position:absolute;font-weight:700;pointer-events:none;z-index:10;animation:floatUp .7s ease-out forwards}
 .floater.crit{font-size:24px;color:#fbbf24;text-shadow:0 0 10px rgba(251,191,36,.5);animation:floatUpCrit .8s ease-out forwards}
 .floater:not(.crit){font-size:16px;color:#f06292}
@@ -147,7 +157,7 @@ html,body{width:100%;height:100%;overflow:hidden;background:#0f172a;font-family:
   <div class="top-bar">
     <div class="currency-name">Followers</div>
     <div class="currency-value" id="dustVal">0</div>
-    <div class="rate" id="rateVal">0/s</div>
+    <div class="rate" id="rateVal">0 followers/s</div>
     <div class="prestige-info" id="novaInfo"></div>
     <div class="buff-bar" id="buffBar"></div>
   </div>
@@ -170,6 +180,9 @@ html,body{width:100%;height:100%;overflow:hidden;background:#0f172a;font-family:
   <div class="tab-panel" data-panel="rivals"><div class="biz-list" id="rivalList"></div></div>
   <div class="tab-panel" data-panel="more"><div class="biz-list" id="moreList"></div></div>
 </div>
+<div id="onboard1" class="onboard" style="display:none"><div class="onboard-box"><div class="emoji">📱</div><h2>Creator Empire</h2><p>You're a nobody with a phone.<br>Tap to create content.<br>Build your following.<br>Become the biggest creator on the planet.</p><button onclick="document.getElementById('onboard1').style.display='none';document.getElementById('onboard2').style.display='flex'">LET'S GO!</button></div></div>
+<div id="onboard2" class="onboard" style="display:none"><div class="onboard-box"><div class="emoji">👆</div><h2>Tap to Post</h2><p>Tap the purple button to create content and earn followers!</p><button onclick="document.getElementById('onboard2').style.display='none';document.getElementById('onboard3').style.display='flex'">GOT IT</button></div></div>
+<div id="onboard3" class="onboard" style="display:none"><div class="onboard-box"><div class="emoji">📝</div><h2>Buy Content</h2><p>Spend followers to buy content types. They earn followers automatically! Tap them to collect.</p><button onclick="document.getElementById('onboard3').style.display='none';localStorage.setItem('onboarded','1')">START POSTING!</button></div></div>
 <div class="screen-flash" id="screenFlash"></div>
 <div class="toast" id="toast"><div class="toast-title" id="toastTitle"></div><div class="toast-desc" id="toastDesc"></div></div>
 <div class="drop-toast" id="dropToast"><div class="drop-icon" id="dropIcon"></div><div class="drop-name" id="dropName"></div><div class="drop-effect" id="dropEffect"></div></div>
@@ -177,26 +190,8 @@ html,body{width:100%;height:100%;overflow:hidden;background:#0f172a;font-family:
 <div class="modal-overlay" id="streakOverlay"><div class="modal"><h3 id="streakTitle">Daily Upload!</h3><p id="streakSubtitle" style="font-size:11px;color:#94a3b8;margin-bottom:6px"></p><div class="streak-days" id="streakDays"></div><button class="btn-p" id="streakClaim">Claim</button></div></div>
 
 <script>
-// === DEBUG ===
-(function(){
-  const d=document.createElement("div");
-  d.style.cssText="position:fixed;bottom:0;left:0;right:0;max-height:45%;overflow-y:auto;background:rgba(0,0,0,.95);color:#0f0;font:11px monospace;padding:8px;z-index:9999;display:none;user-select:text;-webkit-user-select:text";
-  document.body.appendChild(d);
-  const t=document.createElement("div");
-  t.textContent="DBG";
-  t.style.cssText="position:fixed;bottom:4px;right:4px;background:#ef4444;color:#fff;font:bold 10px sans-serif;padding:3px 7px;border-radius:4px;z-index:10000;cursor:pointer";
-  document.body.appendChild(t);
-  let v=false;
-  t.addEventListener("click",()=>{v=!v;d.style.display=v?"block":"none";});
-  function log(m,c){const e=document.createElement("div");e.style.cssText="color:"+(c||"#0f0")+";margin:1px 0;user-select:text;-webkit-user-select:text";e.textContent=new Date().toLocaleTimeString()+": "+m;d.appendChild(e);d.scrollTop=d.scrollHeight;if(d.children.length>150)d.removeChild(d.firstChild);}
-  window._dbg=log;
-  window.onerror=function(m,s,l,c,e){log("ERROR L"+l+": "+m,"#f44");return false;};
-  window.addEventListener("unhandledrejection",function(e){log("PROMISE: "+e.reason,"#f84");});
-  const oLog=console.log,oErr=console.error;
-  console.log=function(){oLog.apply(console,arguments);log(Array.from(arguments).join(" "),"#0f0");};
-  console.error=function(){oErr.apply(console,arguments);log(Array.from(arguments).join(" "),"#f44");};
-  log("Debug ready","#0ff");
-})();
+// === ERROR HANDLER ===
+window.onerror=function(m,s,l){console.error("L"+l+": "+m);return false;};
 
 // === BIZ CONFIG ===
 const BIZ=[
@@ -272,7 +267,7 @@ investorCollect(){for(let i=0;i<6;i++)osc("sine",800+i*200,.12,.12,0,i*.05);},
 
 // === FORMAT ===
 const SUF=["","K","M","B","T","Qa","Qi","Sx","Sp","Oc"];
-function fmt(n){if(n<1e3)return n<10?n.toFixed(1):Math.floor(n).toString();const t=Math.min(Math.floor(Math.log10(Math.abs(n))/3),SUF.length-1);const s=n/Math.pow(1e3,t);return(s>=100?Math.floor(s):s>=10?s.toFixed(1):s.toFixed(2))+SUF[t];}
+function fmt(n){if(n<1e3)return n<1&&n>0?n.toFixed(1):Math.floor(n).toString();const t=Math.min(Math.floor(Math.log10(Math.abs(n))/3),SUF.length-1);const s=n/Math.pow(1e3,t);return(s>=100?Math.floor(s):s>=10?s.toFixed(1):s.toFixed(2))+SUF[t];}
 
 // === SKILLS ===
 const SKILLS=[
@@ -380,7 +375,7 @@ const BOSSES=[{n:"Algorithm Change",hp:30,t:10,m:200},{n:"Got Cancelled",hp:50,t
 let bossTo=null,bossEl=null;
 function schedBoss(){bossTo=setTimeout(spawnBoss,(180+Math.random()*120)*1e3);}
 function spawnBoss(){if(S.challengeActive)return;const b=BOSSES[Math.min(S.bossesHandled,BOSSES.length-1)];S.challengeActive=true;S.challengeHP=b.hp;S.challengeMaxHP=b.hp;S.challengeTimer=b.t;S.challengeReward=tapPower()*b.m;S.challengeName=b.n;SFX.bossAppear();showToast("CRISIS!",b.n+" - Tap "+b.hp+"x!");const a=document.getElementById("orbArea");bossEl=document.createElement("div");bossEl.style.cssText="position:absolute;bottom:4px;left:4px;right:4px;z-index:30;background:rgba(15,23,42,.9);border:1px solid rgba(239,68,68,.5);border-radius:6px;padding:4px 8px;text-align:center";bossEl.innerHTML=`<div style="font-size:11px;font-weight:700;color:#ef4444">${b.n}</div><div style="height:5px;background:rgba(255,255,255,.1);border-radius:3px;margin:2px 0;overflow:hidden"><div id="bossHpFill" style="height:100%;background:linear-gradient(90deg,#ef4444,#f59e0b);width:100%;border-radius:3px;transition:width .1s"></div></div><div id="bossTimer" style="font-size:8px;color:#fbbf24">${b.t}s</div>`;a.appendChild(bossEl);}
-function hitBoss(){if(!S.challengeActive)return;S.challengeHP--;SFX.bossHit();const f=document.getElementById("bossHpFill");if(f)f.style.width=(S.challengeHP/S.challengeMaxHP*100)+"%";if(S.challengeHP<=0){S.dust+=S.challengeReward;S.lifetimeDust+=S.challengeReward;S.allTimeDust+=S.challengeReward;S.bossesHandled++;tryDrop(.2);S.challengeActive=false;SFX.bossHandle();screenFlash("rgba(240,98,146,0.3)");showToast(S.challengeName+" RESOLVED!","$"+fmt(S.challengeReward));if(bossEl){bossEl.remove();bossEl=null;}schedBoss();checkAchievements();}}
+function hitBoss(){if(!S.challengeActive)return;S.challengeHP--;SFX.bossHit();const f=document.getElementById("bossHpFill");if(f)f.style.width=(S.challengeHP/S.challengeMaxHP*100)+"%";if(S.challengeHP<=0){S.dust+=S.challengeReward;S.lifetimeDust+=S.challengeReward;S.allTimeDust+=S.challengeReward;S.bossesHandled++;tryDrop(.2);S.challengeActive=false;SFX.bossHandle();screenFlash("rgba(240,98,146,0.3)");showToast(S.challengeName+" RESOLVED!","+"+fmt(S.challengeReward));if(bossEl){bossEl.remove();bossEl=null;}schedBoss();checkAchievements();}}
 function updateBoss(dt){if(!S.challengeActive)return;S.challengeTimer-=dt;const t=document.getElementById("bossTimer");if(t)t.textContent=Math.ceil(S.challengeTimer)+"s";if(S.challengeTimer<=0){S.challengeActive=false;showToast("CRISIS ESCALATED!","");if(bossEl){bossEl.remove();bossEl=null;}schedBoss();}}
 
 // === WHEEL ===
@@ -515,7 +510,8 @@ function buildMore(){const el=document.getElementById("moreList");let h=`<div cl
 const dustVal=document.getElementById("dustVal"),rateVal=document.getElementById("rateVal"),novaInfo=document.getElementById("novaInfo");
 function updateUI(){
   dustVal.textContent=fmt(S.dust);
-  rateVal.textContent=fmt(totalRate())+"/s";
+  const r=totalRate();
+  rateVal.textContent=r>0?"+"+fmt(r)+" followers/s":"0 followers/s";
   let info=[];
   if(S.shares>0)info.push("Clout: "+fmt(S.shares));
   if(S.legacy>0)info.push("Influence: "+fmt(S.legacy));
@@ -541,18 +537,14 @@ achievTimer+=dt;if(achievTimer>=2){achievTimer=0;checkAchievements();checkUnlock
 updateUI();requestAnimationFrame(tick);}
 
 // === INIT ===
-window._dbg("=== INIT START ===","#ff0");
-try{
 const offlineSec=load();
-window._dbg("load done, offline="+offlineSec+"s","#0ff");
 initRivals();initWeekly();
 if(offlineSec>0)applyOffline(offlineSec);
 for(let i=0;i<BIZ.length;i++)if(S.managers[i]&&S.gens[i].count>0)S.gens[i].running=true;
-window._dbg("calling updateUI...","#0ff");
 updateUI();
-window._dbg("updateUI done, starting loop","#0f0");
 requestAnimationFrame(tick);
-}catch(e){window._dbg("INIT CRASH: "+e.message+" at "+e.stack,"#f44");}
+// Show onboarding for new players
+if(!localStorage.getItem('onboarded'))document.getElementById('onboard1').style.display='flex';
 schedInv();schedBoss();
 setTimeout(()=>checkStreak(),500);
 setInterval(save,15e3);
