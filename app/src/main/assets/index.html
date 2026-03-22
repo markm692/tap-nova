@@ -135,6 +135,7 @@ html,body{width:100%;height:100%;overflow:hidden;background:#0f172a;font-family:
 
 .offline-banner{position:fixed;top:0;left:0;right:0;background:rgba(15,23,42,.97);border-bottom:1px solid rgba(74,222,128,.3);padding:14px;text-align:center;z-index:100;animation:slideDown .4s ease}
 @keyframes slideDown{from{transform:translateY(-100%)}to{transform:translateY(0)}}
+@keyframes invBounce{0%,100%{transform:scale(1)}50%{transform:scale(1.15)}}
 
 .drop-toast{position:fixed;bottom:60px;left:50%;transform:translateX(-50%) scale(0);background:#1e293b;border:2px solid;border-radius:12px;padding:8px 16px;text-align:center;z-index:110;transition:transform .3s;pointer-events:none}
 .drop-toast.show{transform:translateX(-50%) scale(1)}
@@ -420,7 +421,24 @@ function updateBuffs(dt){S.buffs=S.buffs.filter(b=>{b.remaining-=dt;return b.rem
 // === INVESTOR ===
 let invEl=null,invTo=null,invEx=null;
 function schedInv(){invTo=setTimeout(spawnInv,(30+Math.random()*60)*1e3);}
-function spawnInv(){if(S.investorActive)return;S.investorActive=true;const a=document.getElementById("orbArea");invEl=document.createElement("div");invEl.style.cssText="position:absolute;width:36px;height:36px;border-radius:50%;background:linear-gradient(135deg,#fbbf24,#f59e0b);box-shadow:0 0 12px rgba(251,191,36,.5);cursor:pointer;z-index:20;display:flex;align-items:center;justify-content:center;font-size:16px;pointer-events:auto";invEl.textContent="\uD83D\uDC54";invEl.style.left=Math.random()*60+20+"%";invEl.style.top=Math.random()*50+10+"%";const m=30+Math.floor(Math.random()*70);invEl.addEventListener("pointerdown",e=>{e.stopPropagation();const r=tapPower()*m;S.dust+=r;S.lifetimeDust+=r;S.allTimeDust+=r;S.investorsCollected++;screenFlash("rgba(251,191,36,0.3)");SFX.investorCollect();showToast("INVESTOR!","$"+fmt(r));clearTimeout(invEx);removeInv();schedInv();});a.appendChild(invEl);SFX.investorAppear();invEx=setTimeout(()=>{removeInv();schedInv();},5e3);}
+function spawnInv(){if(S.investorActive)return;S.investorActive=true;
+  invEl=document.createElement("div");
+  invEl.style.cssText="position:fixed;width:50px;height:50px;border-radius:50%;background:linear-gradient(135deg,#fbbf24,#f59e0b);box-shadow:0 0 20px rgba(251,191,36,.6);cursor:pointer;z-index:90;display:flex;align-items:center;justify-content:center;font-size:24px;animation:invBounce 1s ease-in-out infinite";
+  invEl.textContent="\uD83D\uDC54";
+  // Random position on screen (avoid edges)
+  invEl.style.left=(15+Math.random()*60)+"%";
+  invEl.style.top=(15+Math.random()*30)+"%";
+  const m=30+Math.floor(Math.random()*70);
+  function collect(e){e.preventDefault();e.stopPropagation();
+    const r=tapPower()*m;S.dust+=r;S.lifetimeDust+=r;S.allTimeDust+=r;S.investorsCollected++;
+    screenFlash("rgba(251,191,36,0.3)");SFX.investorCollect();
+    if(navigator.vibrate)navigator.vibrate([30,20,30]);
+    showToast("INVESTOR!","$"+fmt(r)+" deal closed!");
+    clearTimeout(invEx);removeInv();schedInv();checkAchievements();}
+  invEl.addEventListener("pointerdown",collect);
+  invEl.addEventListener("touchstart",collect,{passive:false});
+  document.body.appendChild(invEl);SFX.investorAppear();
+  invEx=setTimeout(()=>{removeInv();schedInv();},5e3);}
 function removeInv(){if(invEl){invEl.remove();invEl=null;}S.investorActive=false;}
 
 // === BOSS ===
