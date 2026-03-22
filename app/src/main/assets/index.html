@@ -266,6 +266,8 @@ bossHandle(){[523,659,784,1047,1319].forEach((f,i)=>osc("triangle",f,.3,.12,0,i*
 streak(){[440,554,659,880].forEach((f,i)=>osc("sine",f,.2,.1,0,i*.12));},
 ascend(){for(let i=0;i<8;i++)osc("sine",200+i*100,.6,.05,1e3+i*200,i*.08);},
 unlock(){[440,554,659,880,1047].forEach((f,i)=>osc("sine",f,.15,.1,0,i*.06));},
+investorAppear(){for(let i=0;i<3;i++)osc("sine",600+i*200,.15,.1,0,i*.1);},
+investorCollect(){for(let i=0;i<6;i++)osc("sine",800+i*200,.12,.12,0,i*.05);},
 };
 
 // === FORMAT ===
