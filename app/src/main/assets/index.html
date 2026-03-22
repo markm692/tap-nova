@@ -464,7 +464,7 @@ function checkUnlocks(){const nu=nextUnlock();if(nu>=0&&isUnlocked(nu)&&!lastUnl
 
 // === SHOP ===
 const shop=document.getElementById("shop");
-function buildShop(){
+function buildShop(){try{
   let h="";
   // Wheel & mini-game
   const wr=S.wheelCooldown<=0;
@@ -488,7 +488,7 @@ function buildShop(){
       <div class="biz-icon">${b.icon}<div class="biz-mgr-badge">\uD83D\uDC64</div></div>
       <div class="biz-body">
         <div class="biz-top"><div class="biz-name">${b.name} <span class="biz-count">x${g.count}</span></div></div>
-        <div class="biz-payout">${g.count>0?"$"+fmt(bizPayout(i))+" / "+bizTime(i).toFixed(1)+"s":"$"+fmt(b.basePayout)+" each"}${demandSpike.idx===i&&demandSpike.timer>0?' <span style="color:#ef4444">SPIKE!</span>':(()=>{const dl=getDemandLabel(getDemand(i));return' <span style="color:'+dl.color+'">'+dl.text+'</span>';})()}</div>
+        <div class="biz-payout">${g.count>0?"$"+fmt(bizPayout(i))+" / "+bizTime(i).toFixed(1)+"s":"$"+fmt(b.basePayout)+" each"} ${demandSpike.idx===i&&demandSpike.timer>0?'<span style="color:#ef4444">SPIKE!</span>':'<span style="color:'+getDemandLabel(getDemand(i)).color+'">'+getDemandLabel(getDemand(i)).text+'</span>'}</div>
         <div style="font-size:8px;color:#94a3b8;display:flex;gap:6px;margin-top:1px">
           ${g.count>0?`<span>${LOCATIONS[g.location].icon}${LOCATIONS[g.location].name}</span>
           <span>\uD83D\uDC64${g.employees}/${b.maxEmployees}</span>
@@ -523,7 +523,7 @@ function buildShop(){
   if(ag>0)h+=`<div class="btn-sp btn-global" data-a="global">GO GLOBAL +${fmt(ag)} Legacy (+${fmt(ag*25)}%)</div>`;
   shop.innerHTML=h;
   document.getElementById("wheelNotif").style.display=wr?"block":"none";
-}
+}catch(e){console.error("buildShop:",e);shop.innerHTML='<div style="color:#ef4444;padding:10px;font-size:11px">Shop error: '+e.message+'</div>';}}
 shop.addEventListener("pointerdown",e=>{
   // Collect payout
   const biz=e.target.closest("[data-biz]");
@@ -557,7 +557,7 @@ function buildMore(){const el=document.getElementById("moreList");let h=`<div cl
 
 // === UI ===
 const dustVal=document.getElementById("dustVal"),rateVal=document.getElementById("rateVal"),novaInfo=document.getElementById("novaInfo");
-function updateUI(){dustVal.textContent=fmt(S.dust);const sal=totalSalary();rateVal.textContent="$"+fmt(totalRate())+"/s"+(sal>0?' <span style="color:#ef4444;font-size:9px">-$'+fmt(sal)+'/s salary</span>':"");let info=[];if(S.shares>0)info.push("Shares: "+fmt(S.shares));if(S.legacy>0)info.push("Legacy: "+fmt(S.legacy));novaInfo.textContent=info.join(" | ");buildShop();}
+function updateUI(){dustVal.textContent=fmt(S.dust);const sal=totalSalary();rateVal.innerHTML="$"+fmt(totalRate())+"/s"+(sal>0?' <span style="color:#ef4444;font-size:9px">-$'+fmt(sal)+'/s salary</span>':"");let info=[];if(S.shares>0)info.push("Shares: "+fmt(S.shares));if(S.legacy>0)info.push("Legacy: "+fmt(S.legacy));novaInfo.textContent=info.join(" | ");buildShop();}
 
 // === GAME LOOP ===
 let lastTick=performance.now(),achievTimer=0,autoAccum=0;
