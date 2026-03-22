@@ -538,8 +538,15 @@ shop.addEventListener("pointerdown",e=>{
   // Collect payout
   const biz=e.target.closest("[data-biz]");
   if(biz){const i=parseInt(biz.dataset.biz);const g=S.gens[i];
-    if(g.timer>=bizTime(i)){collectBiz(i);}
-    else if(!g.running&&g.count>0){g.running=true;g.timer=0;} // start timer
+    // If clicking the cost/buy area, or business has 0 count — buy it
+    const clickedCost=e.target.closest(".biz-cost")||e.target.closest(".biz-cost-label");
+    if(clickedCost||g.count===0){
+      const c=bizCost(i);
+      if(S.dust>=c){S.dust-=c;g.count++;if(g.count===1)g.running=true;SFX.buy();checkUnlocks();}
+    }
+    // Otherwise start/collect timer
+    else if(g.timer>=bizTime(i)){collectBiz(i);}
+    else if(!g.running&&g.count>0){g.running=true;g.timer=0;}
     return;}
   const btn=e.target.closest("[data-a]");if(!btn)return;
   const a=btn.dataset.a;
