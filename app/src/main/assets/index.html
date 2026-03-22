@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
-<title>Tap Empire</title>
+<title>Creator Content Machine</title>
 <style>
 *{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent;user-select:none}
 html,body{width:100%;height:100%;overflow:hidden;background:#0f172a;font-family:'Segoe UI',system-ui,sans-serif;color:#fff}
@@ -11,9 +11,9 @@ html,body{width:100%;height:100%;overflow:hidden;background:#0f172a;font-family:
 
 .top-bar{text-align:center;padding:4px 0}
 .currency-name{font-size:9px;letter-spacing:4px;color:#94a3b8}
-.currency-value{font-size:36px;font-weight:800;color:#4ade80;text-shadow:0 0 20px rgba(74,222,128,.3);font-family:'Courier New',monospace}
-.currency-value::before{content:'$';font-size:20px;vertical-align:top;margin-right:2px;color:#22c55e}
-.rate{font-size:11px;color:#22c55e;margin-top:1px}
+.currency-value{font-size:36px;font-weight:800;color:#f06292;text-shadow:0 0 20px rgba(240,98,146,.3);font-family:'Courier New',monospace}
+.currency-value::before{content:'';font-size:20px;vertical-align:top;margin-right:2px;color:#e040fb}
+.rate{font-size:11px;color:#e040fb;margin-top:1px}
 .prestige-info{font-size:10px;color:#fbbf24;margin-top:1px}
 .buff-bar{font-size:9px;color:#a78bfa;min-height:12px}
 
@@ -24,13 +24,13 @@ html,body{width:100%;height:100%;overflow:hidden;background:#0f172a;font-family:
 .combo-wrap.hidden{opacity:0}
 
 .tap-area{height:100px;display:flex;align-items:center;justify-content:center;position:relative;cursor:pointer;overflow:hidden}
-.tap-circle{width:80px;height:80px;border-radius:50%;background:linear-gradient(135deg,#22c55e,#16a34a);box-shadow:0 0 30px rgba(34,197,94,.3);display:flex;align-items:center;justify-content:center;flex-direction:column;transition:transform .08s;z-index:2}
+.tap-circle{width:80px;height:80px;border-radius:50%;background:linear-gradient(135deg,#e040fb,#ab47bc);box-shadow:0 0 30px rgba(224,64,251,.3);display:flex;align-items:center;justify-content:center;flex-direction:column;transition:transform .08s;z-index:2}
 .tap-circle:active{transform:scale(.88)}
-.tap-icon{font-size:24px}
+.tap-icon{font-size:20px}
 .tap-label{font-size:9px;font-weight:700;letter-spacing:1px;color:rgba(255,255,255,.7)}
 .floater{position:absolute;font-weight:700;pointer-events:none;z-index:10;animation:floatUp .7s ease-out forwards}
 .floater.crit{font-size:24px;color:#fbbf24;text-shadow:0 0 10px rgba(251,191,36,.5);animation:floatUpCrit .8s ease-out forwards}
-.floater:not(.crit){font-size:16px;color:#4ade80}
+.floater:not(.crit){font-size:16px;color:#f06292}
 @keyframes floatUp{0%{opacity:1;transform:translateY(0)}100%{opacity:0;transform:translateY(-60px)}}
 @keyframes floatUpCrit{0%{opacity:1;transform:translateY(0) scale(1.2)}100%{opacity:0;transform:translateY(-80px) scale(.8)}}
 
@@ -43,7 +43,7 @@ html,body{width:100%;height:100%;overflow:hidden;background:#0f172a;font-family:
 
 .tab-bar{display:flex;gap:2px;margin-bottom:2px}
 .tab{flex:1;padding:4px 0;text-align:center;font-size:9px;font-weight:600;color:#64748b;background:rgba(15,23,42,.6);border:1px solid rgba(30,41,59,.5);border-radius:6px;cursor:pointer;position:relative}
-.tab.active{color:#fff;background:rgba(30,41,59,.8);border-color:rgba(74,222,128,.3)}
+.tab.active{color:#fff;background:rgba(30,41,59,.8);border-color:rgba(240,98,146,.3)}
 .tab-notif{position:absolute;top:2px;right:6px;width:5px;height:5px;border-radius:50%;background:#ef4444;display:none}
 .tab-panel{display:none;flex:1;overflow-y:auto;-webkit-overflow-scrolling:touch;min-height:0}
 .tab-panel.active{display:flex;flex-direction:column}
@@ -56,34 +56,34 @@ html,body{width:100%;height:100%;overflow:hidden;background:#0f172a;font-family:
 .biz{width:100%;padding:8px 10px;margin-bottom:3px;background:rgba(30,41,59,.5);border:1px solid rgba(51,65,85,.4);border-radius:10px;cursor:pointer;display:flex;align-items:center;gap:8px;transition:all .15s;position:relative;overflow:hidden}
 .biz:active{background:rgba(51,65,85,.5)}
 .biz.locked{opacity:.25;pointer-events:none;filter:grayscale(1)}
-.biz.ready{border-color:rgba(74,222,128,.6);background:rgba(20,60,30,.3)}
+.biz.ready{border-color:rgba(240,98,146,.6);background:rgba(20,60,30,.3)}
 .biz.ready .biz-collect{display:block}
 .biz-icon{font-size:22px;width:34px;height:34px;display:flex;align-items:center;justify-content:center;background:rgba(15,23,42,.5);border-radius:8px;flex-shrink:0;position:relative}
-.biz-mgr-badge{position:absolute;bottom:-2px;right:-2px;font-size:8px;background:#22c55e;border-radius:50%;width:14px;height:14px;display:flex;align-items:center;justify-content:center;display:none}
+.biz-mgr-badge{position:absolute;bottom:-2px;right:-2px;font-size:8px;background:#e040fb;border-radius:50%;width:14px;height:14px;display:flex;align-items:center;justify-content:center;display:none}
 .biz.managed .biz-mgr-badge{display:flex}
 .biz-body{flex:1;min-width:0}
 .biz-top{display:flex;justify-content:space-between;align-items:center}
 .biz-name{font-size:12px;font-weight:600}
 .biz-count{font-size:10px;color:#94a3b8}
-.biz-payout{font-size:10px;color:#22c55e;margin-top:1px}
+.biz-payout{font-size:10px;color:#e040fb;margin-top:1px}
 .biz-milestone{font-size:8px;color:#fbbf24;margin-top:1px}
 .biz-timer-bar{height:6px;background:rgba(255,255,255,.06);border-radius:3px;margin-top:4px;overflow:hidden}
-.biz-timer-fill{height:100%;background:linear-gradient(90deg,#22c55e,#4ade80);border-radius:3px;width:0%;transition:width .1s linear}
+.biz-timer-fill{height:100%;background:linear-gradient(90deg,#e040fb,#f06292);border-radius:3px;width:0%;transition:width .1s linear}
 .biz.ready .biz-timer-fill{background:linear-gradient(90deg,#fbbf24,#f59e0b);width:100%!important}
 .biz-cost{font-size:11px;color:#fbbf24;font-weight:600;flex-shrink:0;text-align:right}
 .biz-cost-label{font-size:8px;color:#64748b}
-.biz-collect{display:none;position:absolute;right:10px;top:50%;transform:translateY(-50%);background:#22c55e;color:#000;font-size:9px;font-weight:700;padding:3px 8px;border-radius:4px;letter-spacing:1px;animation:pulse-collect 1s ease-in-out infinite}
+.biz-collect{display:none;position:absolute;right:10px;top:50%;transform:translateY(-50%);background:#e040fb;color:#000;font-size:9px;font-weight:700;padding:3px 8px;border-radius:4px;letter-spacing:1px;animation:pulse-collect 1s ease-in-out infinite}
 @keyframes pulse-collect{0%,100%{transform:translateY(-50%) scale(1)}50%{transform:translateY(-50%) scale(1.1)}}
 .biz-unlock{font-size:9px;color:#64748b;text-align:center;padding:4px}
 
-/* Buy/Manager buttons */
+/* Buy/AI Writer buttons */
 .buy-row{display:flex;gap:3px;margin-bottom:3px}
 .buy-btn{flex:1;padding:6px;text-align:center;border-radius:8px;font-size:10px;font-weight:600;cursor:pointer;transition:all .15s}
-.buy-btn.buy{background:rgba(34,197,94,.1);border:1px solid rgba(34,197,94,.3);color:#4ade80}
+.buy-btn.buy{background:rgba(224,64,251,.1);border:1px solid rgba(224,64,251,.3);color:#f06292}
 .buy-btn.buy.disabled{opacity:.3;pointer-events:none}
 .buy-btn.mgr{background:rgba(139,92,246,.1);border:1px solid rgba(139,92,246,.3);color:#a78bfa}
 .buy-btn.mgr.disabled{opacity:.3;pointer-events:none}
-.buy-btn.mgr.owned{background:rgba(34,197,94,.1);border-color:rgba(34,197,94,.3);color:#4ade80}
+.buy-btn.mgr.owned{background:rgba(224,64,251,.1);border-color:rgba(224,64,251,.3);color:#f06292}
 
 /* Special buttons */
 .btn-sp{width:100%;padding:8px;margin-bottom:3px;border-radius:8px;text-align:center;cursor:pointer;font-size:11px;font-weight:600}
@@ -97,31 +97,31 @@ html,body{width:100%;height:100%;overflow:hidden;background:#0f172a;font-family:
 /* Skill/Achievement/Rival (same as before) */
 .item{padding:7px 10px;margin-bottom:3px;background:rgba(30,41,59,.4);border:1px solid rgba(51,65,85,.3);border-radius:8px;display:flex;gap:8px;align-items:center}
 .item.done{border-color:rgba(251,191,36,.3)}
-.item.owned{border-color:rgba(74,222,128,.3);background:rgba(20,60,30,.15)}
+.item.owned{border-color:rgba(240,98,146,.3);background:rgba(20,60,30,.15)}
 .item.affordable{border-color:rgba(139,92,246,.4)}
 .item-icon{font-size:18px;width:26px;text-align:center;flex-shrink:0}
 .item-info{flex:1}.item-name{font-size:11px;font-weight:600}.item-desc{font-size:9px;color:#94a3b8}
 .item-val{font-size:10px;font-weight:600;color:#fbbf24;flex-shrink:0}
-.item.owned .item-val{color:#4ade80}
+.item.owned .item-val{color:#f06292}
 .item-bar{height:3px;background:rgba(255,255,255,.05);border-radius:2px;margin-top:2px;overflow:hidden}
-.item-bar-fill{height:100%;background:#22c55e;border-radius:2px}
+.item-bar-fill{height:100%;background:#e040fb;border-radius:2px}
 .item.done .item-bar-fill{background:#fbbf24}
 
-.weekly{padding:6px 10px;margin-bottom:3px;background:rgba(20,60,40,.3);border:1px solid rgba(74,222,128,.2);border-radius:8px;text-align:center;font-size:10px;color:#22c55e}
+.weekly{padding:6px 10px;margin-bottom:3px;background:rgba(20,60,40,.3);border:1px solid rgba(240,98,146,.2);border-radius:8px;text-align:center;font-size:10px;color:#e040fb}
 .weekly-bar{height:4px;background:rgba(255,255,255,.05);border-radius:2px;margin-top:3px;overflow:hidden}
-.weekly-bar-fill{height:100%;background:#22c55e;border-radius:2px}
+.weekly-bar-fill{height:100%;background:#e040fb;border-radius:2px}
 
 .modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,.8);z-index:200;display:none;align-items:center;justify-content:center}
 .modal-overlay.show{display:flex}
 .modal{background:#1e293b;border:1px solid rgba(51,65,85,.8);border-radius:14px;padding:18px;text-align:center;width:88%;max-width:300px}
-.modal h3{font-size:15px;color:#4ade80;margin-bottom:6px}
-.modal .btn-p{padding:7px 20px;background:#22c55e;border:none;border-radius:6px;color:#000;font-size:13px;font-weight:600;cursor:pointer;margin-top:6px}
+.modal h3{font-size:15px;color:#f06292;margin-bottom:6px}
+.modal .btn-p{padding:7px 20px;background:#e040fb;border:none;border-radius:6px;color:#000;font-size:13px;font-weight:600;cursor:pointer;margin-top:6px}
 .modal .btn-s{padding:5px 16px;background:transparent;border:1px solid rgba(100,116,139,.4);border-radius:6px;color:#94a3b8;font-size:11px;cursor:pointer;margin-top:6px;margin-left:4px}
 
 .wheel-container{position:relative;width:180px;height:180px;margin:8px auto}
 .wheel-canvas{width:180px;height:180px}
 .wheel-pointer{position:absolute;top:-5px;left:50%;transform:translateX(-50%);border-left:7px solid transparent;border-right:7px solid transparent;border-top:12px solid #fbbf24;z-index:2}
-.wheel-result{font-size:13px;font-weight:700;color:#4ade80;margin:4px 0;min-height:18px}
+.wheel-result{font-size:13px;font-weight:700;color:#f06292;margin:4px 0;min-height:18px}
 
 .streak-days{display:flex;gap:3px;justify-content:center;margin:10px 0}
 .streak-day{width:30px;height:36px;border-radius:5px;background:rgba(15,23,42,.6);border:1px solid rgba(51,65,85,.4);display:flex;flex-direction:column;align-items:center;justify-content:center;font-size:8px;color:#64748b}
@@ -133,7 +133,7 @@ html,body{width:100%;height:100%;overflow:hidden;background:#0f172a;font-family:
 .toast-title{font-size:11px;font-weight:700;color:#fbbf24}
 .toast-desc{font-size:9px;color:#94a3b8}
 
-.offline-banner{position:fixed;top:0;left:0;right:0;background:rgba(15,23,42,.97);border-bottom:1px solid rgba(74,222,128,.3);padding:14px;text-align:center;z-index:100;animation:slideDown .4s ease}
+.offline-banner{position:fixed;top:0;left:0;right:0;background:rgba(15,23,42,.97);border-bottom:1px solid rgba(240,98,146,.3);padding:14px;text-align:center;z-index:100;animation:slideDown .4s ease}
 @keyframes slideDown{from{transform:translateY(-100%)}to{transform:translateY(0)}}
 @keyframes invBounce{0%,100%{transform:scale(1)}50%{transform:scale(1.15)}}
 
@@ -145,9 +145,9 @@ html,body{width:100%;height:100%;overflow:hidden;background:#0f172a;font-family:
 <body>
 <div id="game">
   <div class="top-bar">
-    <div class="currency-name">Revenue</div>
+    <div class="currency-name">Followers</div>
     <div class="currency-value" id="dustVal">0</div>
-    <div class="rate" id="rateVal">$0/s</div>
+    <div class="rate" id="rateVal">0/s</div>
     <div class="prestige-info" id="novaInfo"></div>
     <div class="buff-bar" id="buffBar"></div>
   </div>
@@ -156,11 +156,11 @@ html,body{width:100%;height:100%;overflow:hidden;background:#0f172a;font-family:
     <div class="combo-track"><div class="combo-fill" id="comboFill"></div></div>
   </div>
   <div class="tap-area" id="orbArea">
-    <div class="tap-circle" id="orb"><div class="tap-icon">$</div><div class="tap-label">TAP</div></div>
+    <div class="tap-circle" id="orb"><div class="tap-icon">📱</div><div class="tap-label">POST</div></div>
   </div>
   <div class="sep"></div>
   <div class="tab-bar">
-    <div class="tab active" data-tab="shop">BUSINESS<div class="tab-notif" id="wheelNotif"></div></div>
+    <div class="tab active" data-tab="shop">CONTENT<div class="tab-notif" id="wheelNotif"></div></div>
     <div class="tab" data-tab="skills">PERKS</div>
     <div class="tab" data-tab="rivals">RIVALS</div>
     <div class="tab" data-tab="more">MORE</div>
@@ -173,8 +173,8 @@ html,body{width:100%;height:100%;overflow:hidden;background:#0f172a;font-family:
 <div class="screen-flash" id="screenFlash"></div>
 <div class="toast" id="toast"><div class="toast-title" id="toastTitle"></div><div class="toast-desc" id="toastDesc"></div></div>
 <div class="drop-toast" id="dropToast"><div class="drop-icon" id="dropIcon"></div><div class="drop-name" id="dropName"></div><div class="drop-effect" id="dropEffect"></div></div>
-<div class="modal-overlay" id="wheelOverlay"><div class="modal"><h3>LUCKY SPIN</h3><div class="wheel-container"><div class="wheel-pointer"></div><canvas class="wheel-canvas" id="wheelCanvas" width="180" height="180"></canvas></div><div class="wheel-result" id="wheelResult"></div><button class="btn-p" id="wheelSpinBtn">SPIN!</button><button class="btn-s" id="wheelClose">Close</button></div></div>
-<div class="modal-overlay" id="streakOverlay"><div class="modal"><h3 id="streakTitle">Daily Bonus!</h3><p id="streakSubtitle" style="font-size:11px;color:#94a3b8;margin-bottom:6px"></p><div class="streak-days" id="streakDays"></div><button class="btn-p" id="streakClaim">Claim</button></div></div>
+<div class="modal-overlay" id="wheelOverlay"><div class="modal"><h3>CONTENT ROULETTE</h3><div class="wheel-container"><div class="wheel-pointer"></div><canvas class="wheel-canvas" id="wheelCanvas" width="180" height="180"></canvas></div><div class="wheel-result" id="wheelResult"></div><button class="btn-p" id="wheelSpinBtn">SPIN!</button><button class="btn-s" id="wheelClose">Close</button></div></div>
+<div class="modal-overlay" id="streakOverlay"><div class="modal"><h3 id="streakTitle">Daily Upload!</h3><p id="streakSubtitle" style="font-size:11px;color:#94a3b8;margin-bottom:6px"></p><div class="streak-days" id="streakDays"></div><button class="btn-p" id="streakClaim">Claim</button></div></div>
 
 <script>
 // === DEBUG ===
@@ -200,13 +200,13 @@ html,body{width:100%;height:100%;overflow:hidden;background:#0f172a;font-family:
 
 // === BIZ CONFIG ===
 const BIZ=[
-{name:"Lemonade Stand",icon:"\uD83C\uDF4B",baseCost:4,basePayout:1,baseTime:.6,unlock:0,mgrCost:100},
-{name:"Freelance Gig",icon:"\uD83D\uDCBB",baseCost:60,basePayout:15,baseTime:3,unlock:50,mgrCost:2e3},
-{name:"Corner Shop",icon:"\uD83C\uDFEA",baseCost:720,basePayout:100,baseTime:6,unlock:500,mgrCost:5e4},
-{name:"Food Trucks",icon:"\uD83D\uDE9A",baseCost:8640,basePayout:1200,baseTime:12,unlock:5e3,mgrCost:5e5},
-{name:"Tech Startup",icon:"\uD83D\uDE80",baseCost:1036800,basePayout:1e4,baseTime:24,unlock:1e5,mgrCost:5e6},
-{name:"Corporation",icon:"\uD83C\uDFE2",baseCost:29859840,basePayout:1e5,baseTime:48,unlock:1e6,mgrCost:5e7},
-{name:"Mega Corp",icon:"\uD83C\uDFD7",baseCost:859963392,basePayout:1e6,baseTime:96,unlock:25e6,mgrCost:1e9},
+{name:"Blog Post",icon:"D83DDCDD",baseCost:4,basePayout:1,baseTime:.6,unlock:0,mgrCost:100},
+{name:"TikTok",icon:"D83DDCF1",baseCost:60,basePayout:15,baseTime:3,unlock:50,mgrCost:2e3},
+{name:"YouTube Channel",icon:"D83CDFAC",baseCost:720,basePayout:100,baseTime:6,unlock:500,mgrCost:5e4},
+{name:"Podcast",icon:"D83CDFA4",baseCost:8640,basePayout:1200,baseTime:12,unlock:5e3,mgrCost:5e5},
+{name:"Merch Store",icon:"D83DDC55",baseCost:1036800,basePayout:1e4,baseTime:24,unlock:1e5,mgrCost:5e6},
+{name:"Online Course",icon:"D83CDF93",baseCost:29859840,basePayout:1e5,baseTime:48,unlock:1e6,mgrCost:5e7},
+{name:"Media Agency",icon:"D83CDFE2",baseCost:859963392,basePayout:1e6,baseTime:96,unlock:25e6,mgrCost:1e9},
 ];
 const MILESTONES=[25,50,100,200,300,400];
 
@@ -230,18 +230,18 @@ artifacts:[],artifactDrops:0,pChallenges:[],pChallengesDone:0,
 const ACHIEVEMENTS=[
 {id:"tap100",name:"Getting Started",desc:"Tap 100x",check:()=>S.totalTaps>=100,bonus:.05,icon:"\uD83D\uDC4A"},
 {id:"tap1k",name:"Hustler",desc:"Tap 1,000x",check:()=>S.totalTaps>=1e3,bonus:.1,icon:"\uD83D\uDD25"},
-{id:"earn1k",name:"First $1K",desc:"Earn $1K",check:()=>S.allTimeDust>=1e3,bonus:.05,icon:"\uD83D\uDCB5"},
-{id:"earn1m",name:"Millionaire",desc:"Earn $1M",check:()=>S.allTimeDust>=1e6,bonus:.1,icon:"\uD83D\uDCB0"},
-{id:"earn1b",name:"Billionaire",desc:"Earn $1B",check:()=>S.allTimeDust>=1e9,bonus:.15,icon:"\uD83D\uDC8E"},
-{id:"biz1",name:"Entrepreneur",desc:"Buy a business",check:()=>S.gens[0].count>=1,bonus:.05,icon:"\uD83C\uDFEA"},
-{id:"biz50",name:"Empire",desc:"Own 50 businesses",check:()=>totalGens()>=50,bonus:.1,icon:"\uD83C\uDFD7"},
-{id:"mgr1",name:"First Manager",desc:"Hire a manager",check:()=>S.managers.some(m=>m),bonus:.05,icon:"\uD83D\uDC68\u200D\uD83D\uDCBC"},
-{id:"ipo1",name:"IPO!",desc:"Go public",check:()=>S.prestigeCount>=1,bonus:.1,icon:"\uD83D\uDCC8"},
+{id:"earn1k",name:"First 1K",desc:"Earn $1K",check:()=>S.allTimeDust>=1e3,bonus:.05,icon:"\uD83D\uDCB5"},
+{id:"earn1m",name:"1M Followers",desc:"Earn $1M",check:()=>S.allTimeDust>=1e6,bonus:.1,icon:"\uD83D\uDCB0"},
+{id:"earn1b",name:"1B Followers",desc:"Earn $1B",check:()=>S.allTimeDust>=1e9,bonus:.15,icon:"\uD83D\uDC8E"},
+{id:"biz1",name:"First Post",desc:"Make your first post",check:()=>S.gens[0].count>=1,bonus:.05,icon:"D83CDFAC"},
+{id:"biz50",name:"Content Machine",desc:"Own 50 content channels",check:()=>totalGens()>=50,bonus:.1,icon:"D83CDFE2"},
+{id:"mgr1",name:"First Editor",desc:"Hire a manager",check:()=>S.managers.some(m=>m),bonus:.05,icon:"\uD83D\uDC68\u200D\uD83D\uDCBC"},
+{id:"ipo1",name:"GO VIRAL!",desc:"Go viral",check:()=>S.prestigeCount>=1,bonus:.1,icon:"\uD83D\uDCC8"},
 {id:"combo5",name:"Momentum",desc:"x5 combo",check:()=>S.comboMultiplier>=5,bonus:.05,icon:"\uD83D\uDD17"},
 {id:"combo12",name:"UNSTOPPABLE",desc:"x12 combo",check:()=>S.comboMultiplier>=12,bonus:.15,icon:"\uD83C\uDF2A"},
-{id:"crisis5",name:"Crisis Manager",desc:"Handle 5 crises",check:()=>S.bossesHandled>=5,bonus:.1,icon:"\uD83D\uDEE1"},
+{id:"crisis5",name:"PR Expert",desc:"Handle 5 crises",check:()=>S.bossesHandled>=5,bonus:.1,icon:"\uD83D\uDEE1"},
 {id:"streak7",name:"Dedicated",desc:"7-day streak",check:()=>S.dailyStreak>=7,bonus:.15,icon:"\uD83D\uDCC5"},
-{id:"global1",name:"Global Mogul",desc:"Go Global",check:()=>S.ascensionCount>=1,bonus:.2,icon:"\uD83C\uDF0D"},
+{id:"global1",name:"Media Mogul",desc:"Go Global",check:()=>S.ascensionCount>=1,bonus:.2,icon:"\uD83C\uDF0D"},
 ];
 function totalGens(){return S.gens.reduce((s,g)=>s+g.count,0);}
 function checkAchievements(){for(const a of ACHIEVEMENTS)if(!S.achieved[a.id]&&a.check()){S.achieved[a.id]=true;showToast(a.name,a.desc+" | +"+(a.bonus*100)+"%");screenFlash("rgba(251,191,36,0.3)");SFX.achievement();}}
@@ -274,15 +274,15 @@ function fmt(n){if(n<1e3)return n<10?n.toFixed(1):Math.floor(n).toString();const
 
 // === SKILLS ===
 const SKILLS=[
-{id:"autotap1",name:"Intern",desc:"1 auto-tap/s",cost:2,icon:"\uD83E\uDD16",req:null},
-{id:"autotap2",name:"Assistant",desc:"3 auto-tap/s",cost:5,icon:"\uD83E\uDD16",req:"autotap1"},
-{id:"autotap3",name:"Manager",desc:"8 auto-tap/s",cost:12,icon:"\uD83E\uDD16",req:"autotap2"},
+{id:"autotap1",name:"Bot Account",desc:"1 auto-tap/s",cost:2,icon:"\uD83E\uDD16",req:null},
+{id:"autotap2",name:"Content Scheduler",desc:"3 auto-tap/s",cost:5,icon:"\uD83E\uDD16",req:"autotap1"},
+{id:"autotap3",name:"AI Writer",desc:"8 auto-tap/s",cost:12,icon:"\uD83E\uDD16",req:"autotap2"},
 {id:"crit1",name:"Research I",desc:"Crit: 10%",cost:3,icon:"\uD83D\uDD0D",req:null},
 {id:"crit2",name:"Research II",desc:"Crit: 18%",cost:8,icon:"\uD83D\uDD0D",req:"crit1"},
-{id:"critdmg1",name:"Negotiation I",desc:"Crit: 20x",cost:4,icon:"\uD83D\uDCAC",req:null},
-{id:"critdmg2",name:"Negotiation II",desc:"Crit: 50x",cost:10,icon:"\uD83D\uDCAC",req:"critdmg1"},
-{id:"synergy",name:"Synergy",desc:"Each biz type +5%",cost:10,icon:"\uD83D\uDD17",req:null},
-{id:"megacrit",name:"Jackpot",desc:"1% for 500x",cost:20,icon:"\uD83D\uDCA0",req:"critdmg2"},
+{id:"critdmg1",name:"Clickbait I",desc:"Crit: 20x",cost:4,icon:"\uD83D\uDCAC",req:null},
+{id:"critdmg2",name:"Clickbait II",desc:"Crit: 50x",cost:10,icon:"\uD83D\uDCAC",req:"critdmg1"},
+{id:"synergy",name:"Cross-Promotion",desc:"Each biz type +5%",cost:10,icon:"\uD83D\uDD17",req:null},
+{id:"megacrit",name:"Viral Algorithm",desc:"1% for 500x",cost:20,icon:"\uD83D\uDCA0",req:"critdmg2"},
 ];
 function hs(id){return!!S.skills[id];}
 function getAutoTapRate(){return hs("autotap3")?8:hs("autotap2")?3:hs("autotap1")?1:0;}
@@ -334,7 +334,7 @@ const CD=1.2;
 const CT=[{t:0,m:1,l:"x1"},{t:5,m:1.5,l:"x1.5"},{t:15,m:2,l:"x2"},{t:30,m:3,l:"x3"},{t:50,m:5,l:"x5"},{t:80,m:8,l:"x8"},{t:120,m:12,l:"x12!"}];
 function gct(){let r=CT[0];for(const c of CT)if(S.comboCount>=c.t)r=c;return r;}
 function addCombo(){const p=gct();S.comboCount++;S.comboTimer=CD;const t=gct();S.comboMultiplier=t.m;if(t.m>p.m)SFX.comboUp(CT.indexOf(t));}
-function updateCombo(dt){if(S.comboTimer>0){S.comboTimer-=dt;if(S.comboTimer<=0){S.comboCount=0;S.comboTimer=0;S.comboMultiplier=1;}}const w=document.getElementById("comboWrap"),l=document.getElementById("comboLabel"),f=document.getElementById("comboFill");if(S.comboCount>0){w.classList.remove("hidden");const t=gct(),n=CT.find(c=>S.comboCount<c.t);l.textContent=t.l;l.style.color=t.m>=5?"#ef4444":t.m>=2?"#fbbf24":"#22c55e";f.style.width=n?((S.comboCount-t.t)/(n.t-t.t)*100)+"%":"100%";}else w.classList.add("hidden");}
+function updateCombo(dt){if(S.comboTimer>0){S.comboTimer-=dt;if(S.comboTimer<=0){S.comboCount=0;S.comboTimer=0;S.comboMultiplier=1;}}const w=document.getElementById("comboWrap"),l=document.getElementById("comboLabel"),f=document.getElementById("comboFill");if(S.comboCount>0){w.classList.remove("hidden");const t=gct(),n=CT.find(c=>S.comboCount<c.t);l.textContent=t.l;l.style.color=t.m>=5?"#ef4444":t.m>=2?"#fbbf24":"#e040fb";f.style.width=n?((S.comboCount-t.t)/(n.t-t.t)*100)+"%":"100%";}else w.classList.add("hidden");}
 
 // === FX ===
 function rollCrit(){return Math.random()<getCritChance();}
@@ -344,7 +344,7 @@ function screenFlash(c){const e=document.getElementById("screenFlash");e.style.b
 function addBuff(t,d,v){S.buffs=S.buffs.filter(b=>b.type!==t);S.buffs.push({type:t,remaining:d,value:v});}
 function updateBuffs(dt){S.buffs=S.buffs.filter(b=>{b.remaining-=dt;return b.remaining>0;});document.getElementById("buffBar").textContent=S.buffs.map(b=>{const t=Math.ceil(b.remaining);return b.type==="2x"?"2X "+t+"s":b.type==="crit"?"+CRIT "+t+"s":"";}).filter(Boolean).join(" | ");}
 
-// === INVESTOR ===
+// === BRAND DEAL ===
 let invEl=null,invTo=null,invEx=null;
 function schedInv(){invTo=setTimeout(spawnInv,(30+Math.random()*60)*1e3);}
 function spawnInv(){if(S.investorActive)return;S.investorActive=true;
@@ -365,7 +365,7 @@ function spawnInv(){if(S.investorActive)return;S.investorActive=true;
     const rv=tapPower()*m;S.dust+=rv;S.lifetimeDust+=rv;S.allTimeDust+=rv;S.investorsCollected++;
     screenFlash("rgba(251,191,36,0.3)");SFX.investorCollect();
     if(navigator.vibrate)navigator.vibrate([30,20,30]);
-    showToast("INVESTOR!","$"+fmt(rv)+" deal closed!");
+    showToast("BRAND DEAL!",""+fmt(rv)+" partnership signed!");
     clearTimeout(invEx);removeInv();schedInv();checkAchievements();}
   invEl.addEventListener("pointerdown",collect);
   invEl.addEventListener("touchstart",collect,{passive:false});
@@ -374,15 +374,15 @@ function spawnInv(){if(S.investorActive)return;S.investorActive=true;
 function removeInv(){if(invEl){invEl.remove();invEl=null;}S.investorActive=false;}
 
 // === BOSS ===
-const BOSSES=[{n:"Tax Audit",hp:30,t:10,m:200},{n:"PR Scandal",hp:50,t:12,m:400},{n:"Market Crash",hp:80,t:12,m:800},{n:"Hostile Takeover",hp:120,t:15,m:1500},{n:"Recession",hp:200,t:15,m:3e3}];
+const BOSSES=[{n:"Algorithm Change",hp:30,t:10,m:200},{n:"Got Cancelled",hp:50,t:12,m:400},{n:"Copyright Strike",hp:80,t:12,m:800},{n:"Creator Burnout",hp:120,t:15,m:1500},{n:"Platform Ban",hp:200,t:15,m:3e3}];
 let bossTo=null,bossEl=null;
 function schedBoss(){bossTo=setTimeout(spawnBoss,(180+Math.random()*120)*1e3);}
 function spawnBoss(){if(S.challengeActive)return;const b=BOSSES[Math.min(S.bossesHandled,BOSSES.length-1)];S.challengeActive=true;S.challengeHP=b.hp;S.challengeMaxHP=b.hp;S.challengeTimer=b.t;S.challengeReward=tapPower()*b.m;S.challengeName=b.n;SFX.bossAppear();showToast("CRISIS!",b.n+" - Tap "+b.hp+"x!");const a=document.getElementById("orbArea");bossEl=document.createElement("div");bossEl.style.cssText="position:absolute;bottom:4px;left:4px;right:4px;z-index:30;background:rgba(15,23,42,.9);border:1px solid rgba(239,68,68,.5);border-radius:6px;padding:4px 8px;text-align:center";bossEl.innerHTML=`<div style="font-size:11px;font-weight:700;color:#ef4444">${b.n}</div><div style="height:5px;background:rgba(255,255,255,.1);border-radius:3px;margin:2px 0;overflow:hidden"><div id="bossHpFill" style="height:100%;background:linear-gradient(90deg,#ef4444,#f59e0b);width:100%;border-radius:3px;transition:width .1s"></div></div><div id="bossTimer" style="font-size:8px;color:#fbbf24">${b.t}s</div>`;a.appendChild(bossEl);}
-function hitBoss(){if(!S.challengeActive)return;S.challengeHP--;SFX.bossHit();const f=document.getElementById("bossHpFill");if(f)f.style.width=(S.challengeHP/S.challengeMaxHP*100)+"%";if(S.challengeHP<=0){S.dust+=S.challengeReward;S.lifetimeDust+=S.challengeReward;S.allTimeDust+=S.challengeReward;S.bossesHandled++;tryDrop(.2);S.challengeActive=false;SFX.bossHandle();screenFlash("rgba(74,222,128,0.3)");showToast(S.challengeName+" RESOLVED!","$"+fmt(S.challengeReward));if(bossEl){bossEl.remove();bossEl=null;}schedBoss();checkAchievements();}}
+function hitBoss(){if(!S.challengeActive)return;S.challengeHP--;SFX.bossHit();const f=document.getElementById("bossHpFill");if(f)f.style.width=(S.challengeHP/S.challengeMaxHP*100)+"%";if(S.challengeHP<=0){S.dust+=S.challengeReward;S.lifetimeDust+=S.challengeReward;S.allTimeDust+=S.challengeReward;S.bossesHandled++;tryDrop(.2);S.challengeActive=false;SFX.bossHandle();screenFlash("rgba(240,98,146,0.3)");showToast(S.challengeName+" RESOLVED!","$"+fmt(S.challengeReward));if(bossEl){bossEl.remove();bossEl=null;}schedBoss();checkAchievements();}}
 function updateBoss(dt){if(!S.challengeActive)return;S.challengeTimer-=dt;const t=document.getElementById("bossTimer");if(t)t.textContent=Math.ceil(S.challengeTimer)+"s";if(S.challengeTimer<=0){S.challengeActive=false;showToast("CRISIS ESCALATED!","");if(bossEl){bossEl.remove();bossEl=null;}schedBoss();}}
 
 // === WHEEL ===
-const WSEGS=[{l:"2X\n30s",c:"#22c55e",a:()=>{addBuff("2x",30);return"2X 30s!";}},{l:"CASH",c:"#0ea5e9",a:()=>{const r=totalRate()*300||tapPower()*100;S.dust+=r;S.lifetimeDust+=r;S.allTimeDust+=r;return"$"+fmt(r);}},{l:"+CRIT\n60s",c:"#ef4444",a:()=>{addBuff("crit",60);return"+Crit 60s!";}},{l:"BURST",c:"#8b5cf6",a:()=>{addBuff("autoburst",30,10);return"Burst 30s!";}},{l:"+SHARE",c:"#f59e0b",a:()=>{S.shares+=.5;return"+0.5 Shares!";}},{l:"MEGA\nCASH",c:"#14b8a6",a:()=>{const r=totalRate()*60||tapPower()*30;S.dust+=r;S.lifetimeDust+=r;S.allTimeDust+=r;return"$"+fmt(r);}}];
+const WSEGS=[{l:"2X\n30s",c:"#e040fb",a:()=>{addBuff("2x",30);return"2X 30s!";}},{l:"FOLLOWER",c:"#0ea5e9",a:()=>{const r=totalRate()*300||tapPower()*100;S.dust+=r;S.lifetimeDust+=r;S.allTimeDust+=r;return""+fmt(r);}},{l:"+CRIT\n60s",c:"#ef4444",a:()=>{addBuff("crit",60);return"+Crit 60s!";}},{l:"BURST",c:"#8b5cf6",a:()=>{addBuff("autoburst",30,10);return"Burst 30s!";}},{l:"+SHARE",c:"#f59e0b",a:()=>{S.shares+=.5;return"+0.5 Clout!";}},{l:"MEGA\nFOLLOWER",c:"#14b8a6",a:()=>{const r=totalRate()*60||tapPower()*30;S.dust+=r;S.lifetimeDust+=r;S.allTimeDust+=r;return""+fmt(r);}}];
 let wAng=0,wSpin=false;const wC=document.getElementById("wheelCanvas"),wX=wC.getContext("2d");
 function drawW(){const cx=90,cy=90,r=80,seg=WSEGS.length,arc=Math.PI*2/seg;wX.clearRect(0,0,180,180);for(let i=0;i<seg;i++){const a=wAng+i*arc;wX.beginPath();wX.moveTo(cx,cy);wX.arc(cx,cy,r,a-arc/2,a+arc/2);wX.fillStyle=WSEGS[i].c;wX.fill();wX.save();wX.translate(cx,cy);wX.rotate(a);wX.fillStyle="#fff";wX.font="bold 8px sans-serif";wX.textAlign="center";WSEGS[i].l.split("\n").forEach((l,j)=>wX.fillText(l,r*.6,-2+j*10));wX.restore();}wX.beginPath();wX.arc(cx,cy,10,0,Math.PI*2);wX.fillStyle="#1e293b";wX.fill();}drawW();
 function spinW(){if(wSpin||S.wheelCooldown>0)return;wSpin=true;S.wheelCooldown=300;S.wheelSpins++;document.getElementById("wheelSpinBtn").disabled=true;document.getElementById("wheelResult").textContent="";SFX.wheelSpin();const tgt=Math.floor(Math.random()*WSEGS.length),arc=Math.PI*2/WSEGS.length,ta=-(tgt*arc)+(Math.PI*2*(4+Math.random()*2)),sa=wAng,dur=3e3,st=performance.now();(function an(now){const t=Math.min((now-st)/dur,1);wAng=sa+ta*(1-Math.pow(1-t,3));drawW();if(t<1)requestAnimationFrame(an);else{wSpin=false;document.getElementById("wheelResult").textContent=WSEGS[tgt].a();SFX.wheelWin();updateUI();}})(performance.now());}
@@ -392,8 +392,8 @@ document.getElementById("wheelClose").addEventListener("click",()=>document.getE
 // === DAILY STREAK ===
 const STREAKS=[{d:100,l:"$100"},{d:500,l:"$500"},{d:2e3,l:"$2K"},{d:1e4,l:"$10K"},{d:5e4,l:"$50K"},{d:2e5,l:"$200K"},{d:0,nova:1,l:"Share!"}];
 function getTodayStr(){const d=new Date();return d.getFullYear()+"-"+String(d.getMonth()+1).padStart(2,"0")+"-"+String(d.getDate()).padStart(2,"0");}
-function checkStreak(){const today=getTodayStr();if(S.lastClaimDay===today){S.todayClaimed=true;return;}const last=S.lastClaimDay?new Date(S.lastClaimDay):null;if(last&&Math.floor((new Date(today)-last)/864e5)>1)S.dailyStreak=0;S.todayClaimed=false;const ov=document.getElementById("streakOverlay");document.getElementById("streakTitle").textContent=S.dailyStreak>0?"Day "+(S.dailyStreak+1)+"!":"Daily Bonus!";const c=document.getElementById("streakDays");let h="";const di=S.dailyStreak%7;for(let i=0;i<7;i++){const r=STREAKS[i];h+=`<div class="streak-day${i<di?" claimed":""}${i===di?" today":""}"><div class="day-num">D${i+1}</div><div>${r.l}</div></div>`;}c.innerHTML=h;ov.classList.add("show");}
-document.getElementById("streakClaim").addEventListener("click",()=>{if(S.todayClaimed)return;const di=S.dailyStreak%7,r=STREAKS[di];const dr=(r.d||0)*Math.max(1,globalMult());S.dust+=dr;S.lifetimeDust+=dr;S.allTimeDust+=dr;if(r.nova)S.shares+=r.nova;S.dailyStreak++;S.lastClaimDay=getTodayStr();S.todayClaimed=true;SFX.streak();showToast("Daily!",r.nova?"+1 Share":"$"+fmt(dr));document.getElementById("streakOverlay").classList.remove("show");save();});
+function checkStreak(){const today=getTodayStr();if(S.lastClaimDay===today){S.todayClaimed=true;return;}const last=S.lastClaimDay?new Date(S.lastClaimDay):null;if(last&&Math.floor((new Date(today)-last)/864e5)>1)S.dailyStreak=0;S.todayClaimed=false;const ov=document.getElementById("streakOverlay");document.getElementById("streakTitle").textContent=S.dailyStreak>0?"Day "+(S.dailyStreak+1)+"!":"Daily Upload!";const c=document.getElementById("streakDays");let h="";const di=S.dailyStreak%7;for(let i=0;i<7;i++){const r=STREAKS[i];h+=`<div class="streak-day${i<di?" claimed":""}${i===di?" today":""}"><div class="day-num">D${i+1}</div><div>${r.l}</div></div>`;}c.innerHTML=h;ov.classList.add("show");}
+document.getElementById("streakClaim").addEventListener("click",()=>{if(S.todayClaimed)return;const di=S.dailyStreak%7,r=STREAKS[di];const dr=(r.d||0)*Math.max(1,globalMult());S.dust+=dr;S.lifetimeDust+=dr;S.allTimeDust+=dr;if(r.nova)S.shares+=r.nova;S.dailyStreak++;S.lastClaimDay=getTodayStr();S.todayClaimed=true;SFX.streak();showToast("Daily!",r.nova?"+1 Share":""+fmt(dr));document.getElementById("streakOverlay").classList.remove("show");save();});
 
 // === TOAST ===
 let toastT=null;
@@ -408,19 +408,19 @@ function save(){try{localStorage.setItem(SAVE_KEY,JSON.stringify({d:S.dust,ld:S.
 function load(){try{const raw=localStorage.getItem(SAVE_KEY);if(!raw)return 0;const d=JSON.parse(raw);S.dust=d.d||0;S.lifetimeDust=d.ld||0;S.allTimeDust=d.ad||0;S.shares=d.sh||0;S.legacy=d.lg||0;S.tapLevel=d.tl||0;S.prestigeCount=d.pc||0;S.ascensionCount=d.ac||0;S.totalTaps=d.tt||0;S.critCount=d.cc||0;S.investorsCollected=d.ic||0;if(d.g)d.g.forEach((g,i)=>{if(S.gens[i]){S.gens[i].count=g.c||0;}});if(d.mg)S.managers=d.mg;S.achieved=d.ach||{};S.skills=d.sk||{};S.wheelCooldown=d.wc||0;S.wheelSpins=d.ws||0;S.dailyStreak=d.ds||0;S.lastClaimDay=d.lcd||"";S.bossesHandled=d.bh||0;S.mgCooldown=d.mc||0;S.mgPlayed=d.mp||0;S.rivalSeed=d.rs||0;S.weeklyTarget=d.wt||0;S.weeklyProgress=d.wp||0;S.weeklyWeek=d.ww||"";S.artifacts=d.art||[];return d.ts?(Date.now()-d.ts)/1e3:0;}catch(e){return 0;}}
 
 // === OFFLINE ===
-function applyOffline(el){el=Math.min(el,7200);S.wheelCooldown=Math.max(0,S.wheelCooldown-el);S.mgCooldown=Math.max(0,S.mgCooldown-el);const rate=totalRate();if(rate<=0||el<60)return;const earned=rate*el;S.dust+=earned;S.lifetimeDust+=earned;S.allTimeDust+=earned;const div=document.createElement("div");div.className="offline-banner";div.innerHTML=`<h3 style="color:#4ade80">Welcome Back!</h3><p style="color:#fbbf24;font-size:16px;font-family:monospace">$${fmt(earned)}</p><p style="font-size:11px;color:#94a3b8">${Math.floor(el/60)}min passive income</p><button onclick="this.parentElement.remove()" style="margin-top:6px;padding:5px 20px;background:#22c55e;border:none;border-radius:6px;color:#000;font-weight:600;cursor:pointer">Collect</button>`;document.body.appendChild(div);}
+function applyOffline(el){el=Math.min(el,7200);S.wheelCooldown=Math.max(0,S.wheelCooldown-el);S.mgCooldown=Math.max(0,S.mgCooldown-el);const rate=totalRate();if(rate<=0||el<60)return;const earned=rate*el;S.dust+=earned;S.lifetimeDust+=earned;S.allTimeDust+=earned;const div=document.createElement("div");div.className="offline-banner";div.innerHTML=`<h3 style="color:#f06292">Welcome Back!</h3><p style="color:#fbbf24;font-size:16px;font-family:monospace">$${fmt(earned)}</p><p style="font-size:11px;color:#94a3b8">${Math.floor(el/60)}min followers gained offline</p><button onclick="this.parentElement.remove()" style="margin-top:6px;padding:5px 20px;background:#e040fb;border:none;border-radius:6px;color:#000;font-weight:600;cursor:pointer">Collect</button>`;document.body.appendChild(div);}
 
 // === TAP ===
 const orbArea=document.getElementById("orbArea"),orb=document.getElementById("orb");
-function doTap(x,y,isAuto){S.totalTaps++;if(!isAuto)addCombo();const isMega=rollMega(),isCrit=isMega||rollCrit();let amount=tapPower()*(isAuto?1:S.comboMultiplier);if(isMega)amount*=500;else if(isCrit)amount*=getCritMult();if(isCrit){S.critCount++;screenShake();SFX.crit();if(navigator.vibrate)navigator.vibrate([30,15,40]);}else if(!isAuto){SFX.tap();if(navigator.vibrate)navigator.vibrate(15);}S.dust+=amount;S.lifetimeDust+=amount;S.allTimeDust+=amount;S.weeklyProgress+=amount;if(S.challengeActive&&!isAuto)hitBoss();if(!isAuto)tryDrop(.001*(1+S.comboMultiplier*.05));if(!isAuto||Math.random()<.08){const f=document.createElement("div");f.className=isCrit?"floater crit":"floater";f.textContent="$"+fmt(amount);f.style.left=(x+Math.random()*30-15)+"px";f.style.top=(y-10)+"px";orbArea.appendChild(f);setTimeout(()=>f.remove(),800);}}
+function doTap(x,y,isAuto){S.totalTaps++;if(!isAuto)addCombo();const isMega=rollMega(),isCrit=isMega||rollCrit();let amount=tapPower()*(isAuto?1:S.comboMultiplier);if(isMega)amount*=500;else if(isCrit)amount*=getCritMult();if(isCrit){S.critCount++;screenShake();SFX.crit();if(navigator.vibrate)navigator.vibrate([30,15,40]);}else if(!isAuto){SFX.tap();if(navigator.vibrate)navigator.vibrate(15);}S.dust+=amount;S.lifetimeDust+=amount;S.allTimeDust+=amount;S.weeklyProgress+=amount;if(S.challengeActive&&!isAuto)hitBoss();if(!isAuto)tryDrop(.001*(1+S.comboMultiplier*.05));if(!isAuto||Math.random()<.08){const f=document.createElement("div");f.className=isCrit?"floater crit":"floater";f.textContent="+"+fmt(amount);f.style.left=(x+Math.random()*30-15)+"px";f.style.top=(y-10)+"px";orbArea.appendChild(f);setTimeout(()=>f.remove(),800);}}
 orb.addEventListener("pointerdown",e=>{e.preventDefault();const r=orbArea.getBoundingClientRect();doTap(e.clientX-r.left-15,e.clientY-r.top,false);checkAchievements();});
 
-// === BUSINESS PAYOUT & COLLECTION ===
+// === CONTENT PAYOUT & COLLECTION ===
 function collectBiz(i){const g=S.gens[i];if(g.count===0||g.timer<bizTime(i))return;const payout=bizPayout(i);S.dust+=payout;S.lifetimeDust+=payout;S.allTimeDust+=payout;S.weeklyProgress+=payout;g.timer=0;g.running=S.managers[i]; // restart if managed
 SFX.payout();if(navigator.vibrate)navigator.vibrate(10);checkUnlocks();}
 
 let lastUnlockCheck="";
-function checkUnlocks(){const nu=nextUnlock();if(nu>=0&&isUnlocked(nu)&&!lastUnlockCheck.includes(String(nu))){lastUnlockCheck+=nu;SFX.unlock();showToast("NEW BUSINESS!",BIZ[nu].name+" unlocked!");screenFlash("rgba(74,222,128,0.3)");}}
+function checkUnlocks(){const nu=nextUnlock();if(nu>=0&&isUnlocked(nu)&&!lastUnlockCheck.includes(String(nu))){lastUnlockCheck+=nu;SFX.unlock();showToast("NEW CONTENT!",BIZ[nu].name+" unlocked!");screenFlash("rgba(240,98,146,0.3)");}}
 
 // === SHOP ===
 const shop=document.getElementById("shop");
@@ -428,11 +428,11 @@ function buildShop(){try{
   let h="";
   // Wheel & mini-game
   const wr=S.wheelCooldown<=0;
-  h+=`<div class="btn-sp btn-wheel${wr?" ready":""}" data-a="wheel">${wr?"LUCKY SPIN":"Spin ("+Math.ceil(S.wheelCooldown)+"s)"}</div>`;
+  h+=`<div class="btn-sp btn-wheel${wr?" ready":""}" data-a="wheel">${wr?"CONTENT ROULETTE":"Spin ("+Math.ceil(S.wheelCooldown)+"s)"}</div>`;
   // Tap upgrade
   const tc=tapUpgradeCost();
   h+=`<div class="buy-row"><div class="buy-btn buy${S.dust<tc?" disabled":""}" data-a="tap">Tap Lv.${S.tapLevel+1} — $${fmt(tc)}</div></div>`;
-  h+=`<div class="section-title">YOUR BUSINESSES</div>`;
+  h+=`<div class="section-title">YOUR CONTENT</div>`;
   // Business cards
   for(let i=0;i<BIZ.length;i++){
     const b=BIZ[i],g=S.gens[i];
@@ -448,7 +448,7 @@ function buildShop(){try{
       <div class="biz-icon">${b.icon}<div class="biz-mgr-badge">\uD83D\uDC64</div></div>
       <div class="biz-body">
         <div class="biz-top"><div class="biz-name">${b.name} <span class="biz-count">x${g.count}</span></div></div>
-        <div class="biz-payout">${g.count>0?"$"+fmt(bizPayout(i))+" / "+bizTime(i).toFixed(1)+"s":"$"+fmt(b.basePayout)+" each"}</div>
+        <div class="biz-payout">${g.count>0?""+fmt(bizPayout(i))+" / "+bizTime(i).toFixed(1)+"s":""+fmt(b.basePayout)+" each"}</div>
         ${nm?`<div class="biz-milestone">${ms>1?ms+"x | ":""}Next ${ms+1}x at ${nm}</div>`:""}
         <div class="biz-timer-bar"><div class="biz-timer-fill" id="tf${i}" style="width:${g.count>0?(Math.min(g.timer/bizTime(i),1)*100):0}%"></div></div>
       </div>
@@ -458,16 +458,16 @@ function buildShop(){try{
       </div>
       ${timeFull?'<div class="biz-collect">COLLECT</div>':""}
     </div>`;
-    // Manager button
+    // AI Writer button
     if(g.count>0&&!managed){
-      h+=`<div class="buy-row"><div class="buy-btn mgr${S.dust<b.mgrCost?" disabled":""}" data-a="mgr" data-i="${i}">\uD83D\uDC64 Hire Manager — $${fmt(b.mgrCost)}</div></div>`;
+      h+=`<div class="buy-row"><div class="buy-btn mgr${S.dust<b.mgrCost?" disabled":""}" data-a="mgr" data-i="${i}">\uD83D\uDC64 Hire AI Writer — $${fmt(b.mgrCost)}</div></div>`;
     }
   }
   // Prestige
   const pg=prestigeGain();
-  if(pg>0)h+=`<div class="btn-sp btn-ipo" data-a="ipo">IPO! +${fmt(pg)} Share${pg>1?"s":""} (+${fmt(pg*10)}%)</div>`;
+  if(pg>0)h+=`<div class="btn-sp btn-ipo" data-a="ipo">GO VIRAL! +${fmt(pg)} Share${pg>1?"s":""} (+${fmt(pg*10)}%)</div>`;
   const ag=ascensionGain();
-  if(ag>0)h+=`<div class="btn-sp btn-global" data-a="global">GO GLOBAL +${fmt(ag)} Legacy (+${fmt(ag*25)}%)</div>`;
+  if(ag>0)h+=`<div class="btn-sp btn-global" data-a="global">START A NETWORK +${fmt(ag)} Influence (+${fmt(ag*25)}%)</div>`;
   shop.innerHTML=h;
   document.getElementById("wheelNotif").style.display=wr?"block":"none";
 }catch(e){window._dbg("buildShop CRASH: "+e.message+" "+e.stack,"#f44");shop.innerHTML='<div style="color:#ef4444;padding:10px;font-size:11px">Error: '+e.message+'</div>';}}
@@ -489,12 +489,12 @@ shop.addEventListener("pointerdown",e=>{
   const a=btn.dataset.a;
   if(a==="wheel"){document.getElementById("wheelOverlay").classList.add("show");document.getElementById("wheelSpinBtn").disabled=S.wheelCooldown>0;document.getElementById("wheelResult").textContent="";drawW();}
   else if(a==="tap"){const c=tapUpgradeCost();if(S.dust>=c){S.dust-=c;S.tapLevel++;SFX.buy();}}
-  else if(a==="mgr"){const i=parseInt(btn.dataset.i);if(S.dust>=BIZ[i].mgrCost){S.dust-=BIZ[i].mgrCost;S.managers[i]=true;S.gens[i].running=true;SFX.achievement();showToast("Manager Hired!",BIZ[i].name+" auto-collects!");}}
+  else if(a==="mgr"){const i=parseInt(btn.dataset.i);if(S.dust>=BIZ[i].mgrCost){S.dust-=BIZ[i].mgrCost;S.managers[i]=true;S.gens[i].running=true;SFX.achievement();showToast("AI Writer Hired!",BIZ[i].name+" auto-posts!");}}
   else if(a==="hire"){const i=parseInt(btn.dataset.i);const c=employeeCost(i);if(S.gens[i].employees<BIZ[i].maxEmployees&&S.dust>=c){S.dust-=c;S.gens[i].employees++;SFX.buy();showToast("Employee Hired!",BIZ[i].name+" +15% speed");}}
   else if(a==="reloc"){const i=parseInt(btn.dataset.i);const g=S.gens[i];if(g.location<LOCATIONS.length-1){const c=BIZ[i].baseCost*RELOCATE_COST_MULT*Math.pow(3,g.location);if(S.dust>=c){S.dust-=c;g.location++;SFX.achievement();showToast("Relocated!",BIZ[i].name+" \u2192 "+LOCATIONS[g.location].name+" ("+LOCATIONS[g.location].mult+"x revenue)");}}}
   else if(btn.closest("[data-a='buy']")){const i=parseInt(btn.dataset.i);const c=bizCost(i);if(S.dust>=c){S.dust-=c;S.gens[i].count++;if(S.gens[i].count===1)S.gens[i].running=true;SFX.buy();checkUnlocks();}}
-  else if(a==="ipo"){const g=prestigeGain();if(!confirm("IPO?\n+"+fmt(g)+" Shares"))return;S.shares+=g;S.prestigeCount++;S.dust=0;S.lifetimeDust=0;S.tapLevel=0;S.gens.forEach(g=>{g.count=0;g.timer=0;g.running=false;});S.managers=BIZ.map(()=>false);S.comboCount=0;S.comboTimer=0;S.comboMultiplier=1;SFX.prestige();showToast("IPO!","+"+fmt(g)+" Shares");tryDrop(1);}
-  else if(a==="global"){const g=ascensionGain();if(!confirm("GO GLOBAL?\nResets ALL.\n+"+fmt(g)+" Legacy"))return;S.legacy+=g;S.ascensionCount++;S.dust=0;S.lifetimeDust=0;S.allTimeDust=0;S.shares=0;S.tapLevel=0;S.prestigeCount=0;S.gens.forEach(g=>{g.count=0;g.timer=0;g.running=false;});S.managers=BIZ.map(()=>false);S.skills={};SFX.ascend();showToast("GLOBAL!","+"+fmt(g)+" Legacy");tryDrop(1);}
+  else if(a==="ipo"){const g=prestigeGain();if(!confirm("GO VIRAL?\n+"+fmt(g)+" Clout"))return;S.shares+=g;S.prestigeCount++;S.dust=0;S.lifetimeDust=0;S.tapLevel=0;S.gens.forEach(g=>{g.count=0;g.timer=0;g.running=false;});S.managers=BIZ.map(()=>false);S.comboCount=0;S.comboTimer=0;S.comboMultiplier=1;SFX.prestige();showToast("GO VIRAL!","+"+fmt(g)+" Clout");tryDrop(1);}
+  else if(a==="global"){const g=ascensionGain();if(!confirm("START A NETWORK?\nResets ALL.\n+"+fmt(g)+" Influence"))return;S.legacy+=g;S.ascensionCount++;S.dust=0;S.lifetimeDust=0;S.allTimeDust=0;S.shares=0;S.tapLevel=0;S.prestigeCount=0;S.gens.forEach(g=>{g.count=0;g.timer=0;g.running=false;});S.managers=BIZ.map(()=>false);S.skills={};SFX.ascend();showToast("GLOBAL!","+"+fmt(g)+" Influence");tryDrop(1);}
   checkAchievements();
 });
 
@@ -502,10 +502,10 @@ shop.addEventListener("pointerdown",e=>{
 function buildSkills(){const el=document.getElementById("skillList");let h=`<div class="section-title">SHARES: ${fmt(S.shares)}</div>`;for(const sk of SKILLS){const owned=hs(sk.id),locked=sk.req&&!hs(sk.req),can=!owned&&!locked&&S.shares>=sk.cost;h+=`<div class="item${owned?" owned":""}${can?" affordable":""}${locked?" locked":""}" data-sk="${sk.id}"><div class="item-icon">${sk.icon}</div><div class="item-info"><div class="item-name">${sk.name}</div><div class="item-desc">${sk.desc}</div></div><div class="item-val">${owned?"OWNED":sk.cost}</div></div>`;}el.innerHTML=h;}
 document.getElementById("skillList").addEventListener("pointerdown",e=>{const el=e.target.closest("[data-sk]");if(!el)return;const id=el.dataset.sk,sk=SKILLS.find(s=>s.id===id);if(!sk||hs(id)||(sk.req&&!hs(sk.req))||S.shares<sk.cost)return;S.shares-=sk.cost;S.skills[id]=true;SFX.achievement();showToast("Perk!",sk.name);buildSkills();save();});
 
-const RIVALS=["StartupSteve","HustleQueen","BizKing99","TapMogul","CashKid"];
+const RIVALS=["TikTokTina","VlogKing","PodcastPro","ReelsMaster","StreamerKid"];
 function initRivals(){if(!S.rivalSeed)S.rivalSeed=Date.now();}
 function initWeekly(){const w="w"+Math.floor(Date.now()/(7*864e5));if(S.weeklyWeek!==w){S.weeklyWeek=w;S.weeklyProgress=0;S.weeklyTarget=Math.max(1e4,S.allTimeDust*.5)||1e4;}}
-function buildRivals(){const el=document.getElementById("rivalList");let h="";initWeekly();const wp=Math.min(S.weeklyProgress/S.weeklyTarget,1);h+=`<div class="weekly">${wp>=1?"COMPLETE!":"WEEKLY: $"+fmt(S.weeklyTarget)}<div class="weekly-bar"><div class="weekly-bar-fill" style="width:${wp*100}%"></div></div></div>`;h+=`<div class="section-title">LEADERBOARD</div>`;const now=Date.now(),el2=(now-S.rivalSeed)/1e3;const rivals=RIVALS.map((n,i)=>{const r=[.3,.6,1,1.5,.8][i],b=[500,2e3,8e3,5e4,1e3][i];return{name:n,dust:b+el2*r*Math.pow(1.02,el2/3600)*b*.01};});const all=[...rivals,{name:"YOU",dust:S.allTimeDust,isYou:true}];all.sort((a,b)=>b.dust-a.dust);all.forEach((r,i)=>{h+=`<div class="item${r.isYou?" owned":""}"><div class="item-icon" style="font-size:14px;font-weight:700;color:${r.isYou?"#4ade80":"#64748b"}">#${i+1}</div><div class="item-info"><div class="item-name">${r.name}</div><div class="item-desc">$${fmt(r.dust)}</div></div></div>`;});el.innerHTML=h;}
+function buildRivals(){const el=document.getElementById("rivalList");let h="";initWeekly();const wp=Math.min(S.weeklyProgress/S.weeklyTarget,1);h+=`<div class="weekly">${wp>=1?"COMPLETE!":"WEEKLY: $"+fmt(S.weeklyTarget)}<div class="weekly-bar"><div class="weekly-bar-fill" style="width:${wp*100}%"></div></div></div>`;h+=`<div class="section-title">LEADERBOARD</div>`;const now=Date.now(),el2=(now-S.rivalSeed)/1e3;const rivals=RIVALS.map((n,i)=>{const r=[.3,.6,1,1.5,.8][i],b=[500,2e3,8e3,5e4,1e3][i];return{name:n,dust:b+el2*r*Math.pow(1.02,el2/3600)*b*.01};});const all=[...rivals,{name:"YOU",dust:S.allTimeDust,isYou:true}];all.sort((a,b)=>b.dust-a.dust);all.forEach((r,i)=>{h+=`<div class="item${r.isYou?" owned":""}"><div class="item-icon" style="font-size:14px;font-weight:700;color:${r.isYou?"#f06292":"#64748b"}">#${i+1}</div><div class="item-info"><div class="item-name">${r.name}</div><div class="item-desc">$${fmt(r.dust)}</div></div></div>`;});el.innerHTML=h;}
 
 function buildMore(){const el=document.getElementById("moreList");let h=`<div class="section-title">ARTIFACTS (${S.artifacts.length})</div>`;if(!S.artifacts.length)h+=`<div style="text-align:center;font-size:10px;color:#475569;padding:6px">Tap to find artifacts!</div>`;const ac={};for(const a of S.artifacts){const k=a.name;ac[k]=(ac[k]||{...a,count:0});ac[k].count++;}Object.values(ac).forEach(a=>{h+=`<div class="item"><div class="item-icon">${a.icon}</div><div class="item-info"><div class="item-name">${a.name}${a.count>1?" x"+a.count:""}</div><div class="item-desc">${a.desc}</div></div></div>`;});h+=`<div class="section-title">ACHIEVEMENTS (+${((achievBonus()-1)*100).toFixed(0)}%)</div>`;for(const a of ACHIEVEMENTS)h+=`<div class="item${S.achieved[a.id]?" done":""}"><div class="item-icon">${a.icon}</div><div class="item-info"><div class="item-name">${a.name}</div><div class="item-desc">${a.desc}</div></div></div>`;el.innerHTML=h;}
 
