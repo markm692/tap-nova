@@ -199,20 +199,35 @@ const ACHIEVEMENTS=[
 function totalGens(){return S.gens.reduce((s,g)=>s+g.count,0);}
 function checkAchievements(){for(const a of ACHIEVEMENTS)if(!S.achieved[a.id]&&a.check()){S.achieved[a.id]=true;showToast(a.name,a.desc+" | +"+(a.bonus*100)+"%");screenFlash("rgba(251,191,36,0.3)");SFX.achievement();}}
 
+// === LOCATIONS ===
+const LOCATIONS=[
+  {name:"Suburb",icon:"\uD83C\uDFE1",mult:1,rentMult:1,desc:"Cheap, low traffic"},
+  {name:"Downtown",icon:"\uD83C\uDFD9\uFE0F",mult:2.5,rentMult:3,desc:"Busy, expensive"},
+  {name:"Airport",icon:"\u2708\uFE0F",mult:4,rentMult:5,desc:"Premium, very costly"},
+];
+const RELOCATE_COST_MULT=50; // x business base cost to relocate
+
+// === DEMAND SYSTEM ===
+const DEMAND_EVENTS=[
+  "Lemonade is trending! +100%","Gig economy booming! +80%","Retail revival! +60%",
+  "Food trucks go viral! +120%","Tech bubble! +150%","Corporate tax cuts! +90%","Mega deals! +200%",
+];
+let demandBoost={idx:-1,mult:1,timer:0}; // active demand event
+
 // === STATE ===
 const BIZ=[
-{name:"Lemonade Stand",icon:"\uD83C\uDF4B",baseCost:4,basePayout:1,baseTime:.6,unlock:0,mgrCost:100},
-{name:"Freelance Gig",icon:"\uD83D\uDCBB",baseCost:60,basePayout:15,baseTime:3,unlock:50,mgrCost:2e3},
-{name:"Corner Shop",icon:"\uD83C\uDFEA",baseCost:720,basePayout:100,baseTime:6,unlock:500,mgrCost:5e4},
-{name:"Food Trucks",icon:"\uD83D\uDE9A",baseCost:8640,basePayout:1200,baseTime:12,unlock:5e3,mgrCost:5e5},
-{name:"Tech Startup",icon:"\uD83D\uDE80",baseCost:1036800,basePayout:1e4,baseTime:24,unlock:1e5,mgrCost:5e6},
-{name:"Corporation",icon:"\uD83C\uDFE2",baseCost:29859840,basePayout:1e5,baseTime:48,unlock:1e6,mgrCost:5e7},
-{name:"Mega Corp",icon:"\uD83C\uDFD7",baseCost:859963392,basePayout:1e6,baseTime:96,unlock:25e6,mgrCost:1e9},
+{name:"Lemonade Stand",icon:"\uD83C\uDF4B",baseCost:4,basePayout:1,baseTime:.6,unlock:0,mgrCost:100,baseSalary:.1,maxEmployees:5},
+{name:"Freelance Gig",icon:"\uD83D\uDCBB",baseCost:60,basePayout:15,baseTime:3,unlock:50,mgrCost:2e3,baseSalary:1,maxEmployees:8},
+{name:"Corner Shop",icon:"\uD83C\uDFEA",baseCost:720,basePayout:100,baseTime:6,unlock:500,mgrCost:5e4,baseSalary:8,maxEmployees:10},
+{name:"Food Trucks",icon:"\uD83D\uDE9A",baseCost:8640,basePayout:1200,baseTime:12,unlock:5e3,mgrCost:5e5,baseSalary:50,maxEmployees:12},
+{name:"Tech Startup",icon:"\uD83D\uDE80",baseCost:1036800,basePayout:1e4,baseTime:24,unlock:1e5,mgrCost:5e6,baseSalary:400,maxEmployees:15},
+{name:"Corporation",icon:"\uD83C\uDFE2",baseCost:29859840,basePayout:1e5,baseTime:48,unlock:1e6,mgrCost:5e7,baseSalary:3e3,maxEmployees:20},
+{name:"Mega Corp",icon:"\uD83C\uDFD7",baseCost:859963392,basePayout:1e6,baseTime:96,unlock:25e6,mgrCost:1e9,baseSalary:2e4,maxEmployees:30},
 ];
 const MILESTONES=[25,50,100,200,300,400];
 const S={dust:0,lifetimeDust:0,allTimeDust:0,shares:0,legacy:0,
 tapLevel:0,prestigeCount:0,ascensionCount:0,totalTaps:0,
-gens:BIZ.map(()=>({count:0,timer:0,running:false})),
+gens:BIZ.map(()=>({count:0,timer:0,running:false,employees:0,location:0,reputation:3})),
 managers:BIZ.map(()=>false),
 comboCount:0,comboTimer:0,comboMultiplier:1,
 achieved:{},critCount:0,investorsCollected:0,
@@ -299,8 +314,29 @@ function globalMult(){return prestigeMult()*achievBonus()*getSynergyBonus()*buff
 function tapPower(){return(1+S.tapLevel*.5)*globalMult()*(1+artBonus("tap"));}
 function bizCost(i){return BIZ[i].baseCost*Math.pow(1.15,S.gens[i].count);}
 function milestoneMult(i){let m=1;const c=S.gens[i].count;for(const ms of MILESTONES)if(c>=ms)m++;return m;}
-function bizPayout(i){return BIZ[i].basePayout*S.gens[i].count*globalMult()*(1+artBonus("gen"))*milestoneMult(i);}
-function bizTime(i){return BIZ[i].baseTime*artSpeedMult();}
+// Employees: each employee speeds up payout timer, more employees = faster
+function employeeSpeedMult(i){const g=S.gens[i];return 1+g.employees*.15;} // +15% speed per employee
+// Location: multiplies revenue
+function locationMult(i){return LOCATIONS[S.gens[i].location].mult;}
+// Reputation: 1-5 stars, affects revenue (0.5x at 1 star, 1.5x at 5 stars)
+function reputationMult(i){return 0.5+(S.gens[i].reputation-1)*0.25;}
+// Supply/Demand: too many of same type = diminishing returns
+function supplyDemandMult(i){
+  const count=S.gens[i].count;
+  const diminish=Math.max(.3, 1-Math.log10(Math.max(count,1))*.12); // soft diminishing
+  const boost=(demandBoost.idx===i&&demandBoost.timer>0)?demandBoost.mult:1;
+  return diminish*boost;
+}
+// Total salary cost per second for business i
+function bizSalary(i){const g=S.gens[i];return BIZ[i].baseSalary*g.employees*LOCATIONS[g.location].rentMult;}
+function totalSalary(){let s=0;for(let i=0;i<BIZ.length;i++)s+=bizSalary(i);return s;}
+// Employee hire cost
+function employeeCost(i){return BIZ[i].baseCost*.5*Math.pow(1.3,S.gens[i].employees);}
+// Gross payout (before salary)
+function bizPayoutGross(i){return BIZ[i].basePayout*S.gens[i].count*globalMult()*(1+artBonus("gen"))*milestoneMult(i)*locationMult(i)*reputationMult(i)*supplyDemandMult(i);}
+// Net payout per cycle (subtract salary for the cycle duration)
+function bizPayout(i){const gross=bizPayoutGross(i);const salCost=bizSalary(i)*bizTime(i);return Math.max(0,gross-salCost);}
+function bizTime(i){return BIZ[i].baseTime*artSpeedMult()/employeeSpeedMult(i);}
 function totalRate(){let r=0;for(let i=0;i<BIZ.length;i++){const g=S.gens[i];if(g.count>0)r+=bizPayout(i)/bizTime(i);}return r;}
 function tapUpgradeCost(){return 10*Math.pow(1.8,S.tapLevel);}
 function prestigeGain(){return S.lifetimeDust<1e6?0:Math.floor(Math.sqrt(S.lifetimeDust/1e6));}
@@ -308,6 +344,29 @@ function ascensionGain(){if(S.prestigeCount<10||S.shares<10)return 0;return Math
 function isUnlocked(i){return S.allTimeDust>=BIZ[i].unlock||S.gens[i].count>0;}
 function nextUnlock(){for(let i=0;i<BIZ.length;i++)if(!isUnlocked(i))return i;return-1;}
 function nextMilestone(i){const c=S.gens[i].count;for(const ms of MILESTONES)if(c<ms)return ms;return null;}
+// Reputation changes: expanding too fast lowers it, good management raises it
+function updateReputation(dt){
+  for(let i=0;i<BIZ.length;i++){
+    const g=S.gens[i];if(g.count===0)continue;
+    // Ideal ratio: ~1 employee per 3 businesses
+    const idealEmp=Math.ceil(g.count/3);
+    const empRatio=g.employees/Math.max(idealEmp,1);
+    // Understaffed = rep drops, well-staffed = rep rises
+    if(empRatio<.5)g.reputation=Math.max(1,g.reputation-.1*dt);
+    else if(empRatio>=.8)g.reputation=Math.min(5,g.reputation+.02*dt);
+    else g.reputation=Math.min(5,g.reputation+.005*dt);
+  }
+}
+// Demand events: random business gets a boost
+function updateDemand(dt){
+  if(demandBoost.timer>0){demandBoost.timer-=dt;if(demandBoost.timer<=0)demandBoost.idx=-1;}
+  else if(Math.random()<.0005){ // ~every 33 minutes on average
+    demandBoost.idx=Math.floor(Math.random()*BIZ.length);
+    demandBoost.mult=1.5+Math.random()*1.5; // 1.5x to 3x
+    demandBoost.timer=30+Math.random()*30; // 30-60 seconds
+    if(S.gens[demandBoost.idx].count>0)showToast("\uD83D\uDCC8 TRENDING!",BIZ[demandBoost.idx].name+" demand surging!");
+  }
+}
 
 // === COMBO ===
 const CD=1.2;
@@ -361,8 +420,8 @@ document.querySelectorAll(".tab").forEach(tab=>tab.addEventListener("pointerdown
 
 // === SAVE/LOAD ===
 const SAVE_KEY="tapempire_v2";
-function save(){try{localStorage.setItem(SAVE_KEY,JSON.stringify({d:S.dust,ld:S.lifetimeDust,ad:S.allTimeDust,sh:S.shares,lg:S.legacy,tl:S.tapLevel,pc:S.prestigeCount,ac:S.ascensionCount,tt:S.totalTaps,cc:S.critCount,ic:S.investorsCollected,g:S.gens.map(g=>({c:g.count})),mg:S.managers,ach:S.achieved,sk:S.skills,wc:S.wheelCooldown,ws:S.wheelSpins,ds:S.dailyStreak,lcd:S.lastClaimDay,bh:S.bossesHandled,mc:S.mgCooldown,mp:S.mgPlayed,rs:S.rivalSeed,wt:S.weeklyTarget,wp:S.weeklyProgress,ww:S.weeklyWeek,art:S.artifacts,ts:Date.now()}));}catch(e){}}
-function load(){try{const raw=localStorage.getItem(SAVE_KEY);if(!raw)return 0;const d=JSON.parse(raw);S.dust=d.d||0;S.lifetimeDust=d.ld||0;S.allTimeDust=d.ad||0;S.shares=d.sh||0;S.legacy=d.lg||0;S.tapLevel=d.tl||0;S.prestigeCount=d.pc||0;S.ascensionCount=d.ac||0;S.totalTaps=d.tt||0;S.critCount=d.cc||0;S.investorsCollected=d.ic||0;if(d.g)d.g.forEach((g,i)=>{if(S.gens[i])S.gens[i].count=g.c||0;});if(d.mg)S.managers=d.mg;S.achieved=d.ach||{};S.skills=d.sk||{};S.wheelCooldown=d.wc||0;S.wheelSpins=d.ws||0;S.dailyStreak=d.ds||0;S.lastClaimDay=d.lcd||"";S.bossesHandled=d.bh||0;S.mgCooldown=d.mc||0;S.mgPlayed=d.mp||0;S.rivalSeed=d.rs||0;S.weeklyTarget=d.wt||0;S.weeklyProgress=d.wp||0;S.weeklyWeek=d.ww||"";S.artifacts=d.art||[];return d.ts?(Date.now()-d.ts)/1e3:0;}catch(e){return 0;}}
+function save(){try{localStorage.setItem(SAVE_KEY,JSON.stringify({d:S.dust,ld:S.lifetimeDust,ad:S.allTimeDust,sh:S.shares,lg:S.legacy,tl:S.tapLevel,pc:S.prestigeCount,ac:S.ascensionCount,tt:S.totalTaps,cc:S.critCount,ic:S.investorsCollected,g:S.gens.map(g=>({c:g.count,e:g.employees,l:g.location,r:g.reputation})),mg:S.managers,ach:S.achieved,sk:S.skills,wc:S.wheelCooldown,ws:S.wheelSpins,ds:S.dailyStreak,lcd:S.lastClaimDay,bh:S.bossesHandled,mc:S.mgCooldown,mp:S.mgPlayed,rs:S.rivalSeed,wt:S.weeklyTarget,wp:S.weeklyProgress,ww:S.weeklyWeek,art:S.artifacts,ts:Date.now()}));}catch(e){}}
+function load(){try{const raw=localStorage.getItem(SAVE_KEY);if(!raw)return 0;const d=JSON.parse(raw);S.dust=d.d||0;S.lifetimeDust=d.ld||0;S.allTimeDust=d.ad||0;S.shares=d.sh||0;S.legacy=d.lg||0;S.tapLevel=d.tl||0;S.prestigeCount=d.pc||0;S.ascensionCount=d.ac||0;S.totalTaps=d.tt||0;S.critCount=d.cc||0;S.investorsCollected=d.ic||0;if(d.g)d.g.forEach((g,i)=>{if(S.gens[i]){S.gens[i].count=g.c||0;S.gens[i].employees=g.e||0;S.gens[i].location=g.l||0;S.gens[i].reputation=g.r||3;}});if(d.mg)S.managers=d.mg;S.achieved=d.ach||{};S.skills=d.sk||{};S.wheelCooldown=d.wc||0;S.wheelSpins=d.ws||0;S.dailyStreak=d.ds||0;S.lastClaimDay=d.lcd||"";S.bossesHandled=d.bh||0;S.mgCooldown=d.mc||0;S.mgPlayed=d.mp||0;S.rivalSeed=d.rs||0;S.weeklyTarget=d.wt||0;S.weeklyProgress=d.wp||0;S.weeklyWeek=d.ww||"";S.artifacts=d.art||[];return d.ts?(Date.now()-d.ts)/1e3:0;}catch(e){return 0;}}
 
 // === OFFLINE ===
 function applyOffline(el){el=Math.min(el,7200);S.wheelCooldown=Math.max(0,S.wheelCooldown-el);S.mgCooldown=Math.max(0,S.mgCooldown-el);const rate=totalRate();if(rate<=0||el<60)return;const earned=rate*el;S.dust+=earned;S.lifetimeDust+=earned;S.allTimeDust+=earned;const div=document.createElement("div");div.className="offline-banner";div.innerHTML=`<h3 style="color:#4ade80">Welcome Back!</h3><p style="color:#fbbf24;font-size:16px;font-family:monospace">$${fmt(earned)}</p><p style="font-size:11px;color:#94a3b8">${Math.floor(el/60)}min passive income</p><button onclick="this.parentElement.remove()" style="margin-top:6px;padding:5px 20px;background:#22c55e;border:none;border-radius:6px;color:#000;font-weight:600;cursor:pointer">Collect</button>`;document.body.appendChild(div);}
@@ -405,7 +464,12 @@ function buildShop(){
       <div class="biz-icon">${b.icon}<div class="biz-mgr-badge">\uD83D\uDC64</div></div>
       <div class="biz-body">
         <div class="biz-top"><div class="biz-name">${b.name} <span class="biz-count">x${g.count}</span></div></div>
-        <div class="biz-payout">${g.count>0?"$"+fmt(bizPayout(i))+" / "+bizTime(i).toFixed(1)+"s":"$"+fmt(b.basePayout)+" each"}</div>
+        <div class="biz-payout">${g.count>0?"$"+fmt(bizPayout(i))+" / "+bizTime(i).toFixed(1)+"s":"$"+fmt(b.basePayout)+" each"}${demandBoost.idx===i&&demandBoost.timer>0?' <span style="color:#ef4444">TRENDING!</span>':""}</div>
+        <div style="font-size:8px;color:#94a3b8;display:flex;gap:6px;margin-top:1px">
+          ${g.count>0?`<span>${LOCATIONS[g.location].icon}${LOCATIONS[g.location].name}</span>
+          <span>\uD83D\uDC64${g.employees}/${b.maxEmployees}</span>
+          <span>${"\u2B50".repeat(Math.round(g.reputation))}${g.reputation<3?'<span style="color:#ef4444">!</span>':""}</span>
+          ${bizSalary(i)>0?'<span style="color:#ef4444">-$'+fmt(bizSalary(i))+'/s</span>':""}`:""}</div>
         ${nm?`<div class="biz-milestone">${ms>1?ms+"x | ":""}Next ${ms+1}x at ${nm}</div>`:""}
         <div class="biz-timer-bar"><div class="biz-timer-fill" id="tf${i}" style="width:${g.count>0?(Math.min(g.timer/bizTime(i),1)*100):0}%"></div></div>
       </div>
@@ -415,9 +479,17 @@ function buildShop(){
       </div>
       ${timeFull?'<div class="biz-collect">COLLECT</div>':""}
     </div>`;
-    // Manager button
-    if(!managed&&g.count>0){
-      h+=`<div class="buy-row"><div class="buy-btn mgr${S.dust<b.mgrCost?" disabled":""}" data-a="mgr" data-i="${i}">Hire Manager — $${fmt(b.mgrCost)}</div></div>`;
+    // Action buttons row: Manager, Hire Employee, Relocate
+    if(g.count>0){
+      const eCost=employeeCost(i);
+      const canHire=g.employees<b.maxEmployees&&S.dust>=eCost;
+      const canReloc=g.location<LOCATIONS.length-1;
+      const relocCost=BIZ[i].baseCost*RELOCATE_COST_MULT*Math.pow(3,g.location);
+      h+=`<div class="buy-row">`;
+      if(!managed)h+=`<div class="buy-btn mgr${S.dust<b.mgrCost?" disabled":""}" data-a="mgr" data-i="${i}">\uD83D\uDC64Mgr $${fmt(b.mgrCost)}</div>`;
+      if(g.employees<b.maxEmployees)h+=`<div class="buy-btn buy${!canHire?" disabled":""}" data-a="hire" data-i="${i}">\uD83D\uDC77Hire $${fmt(eCost)}</div>`;
+      if(canReloc)h+=`<div class="buy-btn buy${S.dust<relocCost?" disabled":""}" data-a="reloc" data-i="${i}">\uD83D\uDCCD${LOCATIONS[g.location+1].name} $${fmt(relocCost)}</div>`;
+      h+=`</div>`;
     }
   }
   // Prestige
@@ -440,9 +512,11 @@ shop.addEventListener("pointerdown",e=>{
   if(a==="wheel"){document.getElementById("wheelOverlay").classList.add("show");document.getElementById("wheelSpinBtn").disabled=S.wheelCooldown>0;document.getElementById("wheelResult").textContent="";drawW();}
   else if(a==="tap"){const c=tapUpgradeCost();if(S.dust>=c){S.dust-=c;S.tapLevel++;SFX.buy();}}
   else if(a==="mgr"){const i=parseInt(btn.dataset.i);if(S.dust>=BIZ[i].mgrCost){S.dust-=BIZ[i].mgrCost;S.managers[i]=true;S.gens[i].running=true;SFX.achievement();showToast("Manager Hired!",BIZ[i].name+" auto-collects!");}}
+  else if(a==="hire"){const i=parseInt(btn.dataset.i);const c=employeeCost(i);if(S.gens[i].employees<BIZ[i].maxEmployees&&S.dust>=c){S.dust-=c;S.gens[i].employees++;SFX.buy();showToast("Employee Hired!",BIZ[i].name+" +15% speed");}}
+  else if(a==="reloc"){const i=parseInt(btn.dataset.i);const g=S.gens[i];if(g.location<LOCATIONS.length-1){const c=BIZ[i].baseCost*RELOCATE_COST_MULT*Math.pow(3,g.location);if(S.dust>=c){S.dust-=c;g.location++;SFX.achievement();showToast("Relocated!",BIZ[i].name+" \u2192 "+LOCATIONS[g.location].name+" ("+LOCATIONS[g.location].mult+"x revenue)");}}}
   else if(btn.closest("[data-a='buy']")){const i=parseInt(btn.dataset.i);const c=bizCost(i);if(S.dust>=c){S.dust-=c;S.gens[i].count++;if(S.gens[i].count===1)S.gens[i].running=true;SFX.buy();checkUnlocks();}}
-  else if(a==="ipo"){const g=prestigeGain();if(!confirm("IPO?\n+"+fmt(g)+" Shares"))return;S.shares+=g;S.prestigeCount++;S.dust=0;S.lifetimeDust=0;S.tapLevel=0;S.gens.forEach(g=>{g.count=0;g.timer=0;g.running=false;});S.managers=BIZ.map(()=>false);S.comboCount=0;S.comboTimer=0;S.comboMultiplier=1;SFX.prestige();showToast("IPO!","+"+fmt(g)+" Shares");tryDrop(1);}
-  else if(a==="global"){const g=ascensionGain();if(!confirm("GO GLOBAL?\nResets ALL.\n+"+fmt(g)+" Legacy"))return;S.legacy+=g;S.ascensionCount++;S.dust=0;S.lifetimeDust=0;S.allTimeDust=0;S.shares=0;S.tapLevel=0;S.prestigeCount=0;S.gens.forEach(g=>{g.count=0;g.timer=0;g.running=false;});S.managers=BIZ.map(()=>false);S.skills={};SFX.ascend();showToast("GLOBAL!","+"+fmt(g)+" Legacy");tryDrop(1);}
+  else if(a==="ipo"){const g=prestigeGain();if(!confirm("IPO?\n+"+fmt(g)+" Shares"))return;S.shares+=g;S.prestigeCount++;S.dust=0;S.lifetimeDust=0;S.tapLevel=0;S.gens.forEach(g=>{g.count=0;g.timer=0;g.running=false;g.employees=0;g.location=0;g.reputation=3;});S.managers=BIZ.map(()=>false);S.comboCount=0;S.comboTimer=0;S.comboMultiplier=1;SFX.prestige();showToast("IPO!","+"+fmt(g)+" Shares");tryDrop(1);}
+  else if(a==="global"){const g=ascensionGain();if(!confirm("GO GLOBAL?\nResets ALL.\n+"+fmt(g)+" Legacy"))return;S.legacy+=g;S.ascensionCount++;S.dust=0;S.lifetimeDust=0;S.allTimeDust=0;S.shares=0;S.tapLevel=0;S.prestigeCount=0;S.gens.forEach(g=>{g.count=0;g.timer=0;g.running=false;g.employees=0;g.location=0;g.reputation=3;});S.managers=BIZ.map(()=>false);S.skills={};SFX.ascend();showToast("GLOBAL!","+"+fmt(g)+" Legacy");tryDrop(1);}
   checkAchievements();
 });
 
@@ -459,7 +533,7 @@ function buildMore(){const el=document.getElementById("moreList");let h=`<div cl
 
 // === UI ===
 const dustVal=document.getElementById("dustVal"),rateVal=document.getElementById("rateVal"),novaInfo=document.getElementById("novaInfo");
-function updateUI(){dustVal.textContent=fmt(S.dust);rateVal.textContent="$"+fmt(totalRate())+"/s";let info=[];if(S.shares>0)info.push("Shares: "+fmt(S.shares));if(S.legacy>0)info.push("Legacy: "+fmt(S.legacy));novaInfo.textContent=info.join(" | ");buildShop();}
+function updateUI(){dustVal.textContent=fmt(S.dust);const sal=totalSalary();rateVal.textContent="$"+fmt(totalRate())+"/s"+(sal>0?' <span style="color:#ef4444;font-size:9px">-$'+fmt(sal)+'/s salary</span>':"");let info=[];if(S.shares>0)info.push("Shares: "+fmt(S.shares));if(S.legacy>0)info.push("Legacy: "+fmt(S.legacy));novaInfo.textContent=info.join(" | ");buildShop();}
 
 // === GAME LOOP ===
 let lastTick=performance.now(),achievTimer=0,autoAccum=0;
@@ -472,6 +546,12 @@ for(let i=0;i<BIZ.length;i++){const g=S.gens[i];const bar=document.getElementByI
 const ar=getAutoTapRate();if(ar>0){autoAccum+=dt;const t=Math.floor(autoAccum*ar);if(t>0){autoAccum-=t/ar;const cx=orbArea.getBoundingClientRect();for(let i=0;i<t;i++)doTap(cx.width/2,cx.height/2,true);}}
 // Burst buff
 const burst=S.buffs.find(b=>b.type==="autoburst");if(burst){const t=Math.floor(dt*burst.value);const cx=orbArea.getBoundingClientRect();for(let i=0;i<t;i++)doTap(cx.width/2,cx.height/2,true);}
+// Salary deduction
+const sal=totalSalary()*dt;
+if(sal>0&&S.dust>0)S.dust=Math.max(0,S.dust-sal);
+// Reputation & demand
+updateReputation(dt);
+updateDemand(dt);
 updateCombo(dt);updateBuffs(dt);updateBoss(dt);
 if(S.wheelCooldown>0)S.wheelCooldown=Math.max(0,S.wheelCooldown-dt);
 if(S.mgCooldown>0)S.mgCooldown=Math.max(0,S.mgCooldown-dt);
