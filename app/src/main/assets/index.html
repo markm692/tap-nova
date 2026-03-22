@@ -350,13 +350,13 @@ function schedInv(){invTo=setTimeout(spawnInv,(30+Math.random()*60)*1e3);}
 function spawnInv(){if(S.investorActive)return;S.investorActive=true;
   let collected=false;
   invEl=document.createElement("div");
-  invEl.style.cssText="position:absolute;width:50px;height:50px;border-radius:50%;background:linear-gradient(135deg,#fbbf24,#f59e0b);box-shadow:0 0 20px rgba(251,191,36,.6);cursor:pointer;z-index:20;display:flex;align-items:center;justify-content:center;font-size:24px;animation:invBounce 1s ease-in-out infinite;pointer-events:auto";
-  invEl.textContent="\uD83D\uDC54";
-  // Position inside tap area
+  invEl.style.cssText="position:fixed;width:56px;height:56px;border-radius:50%;background:linear-gradient(135deg,#fbbf24,#f59e0b);box-shadow:0 0 20px rgba(251,191,36,.6);cursor:pointer;z-index:999;display:flex;align-items:center;justify-content:center;font-size:26px;animation:invBounce 1s ease-in-out infinite";
+  invEl.textContent="🤝";
+  // Position near tap button area
   const area=document.getElementById("orbArea");
   const r=area.getBoundingClientRect();
-  invEl.style.left=(10+Math.random()*(r.width-70))+"px";
-  invEl.style.top=(5+Math.random()*(r.height-60))+"px";
+  invEl.style.left=(r.left+10+Math.random()*(r.width-70))+"px";
+  invEl.style.top=(r.top+5+Math.random()*(r.height-60))+"px";
   const m=30+Math.floor(Math.random()*70);
   function collect(e){
     if(collected)return; // prevent double-collect
@@ -369,7 +369,7 @@ function spawnInv(){if(S.investorActive)return;S.investorActive=true;
     clearTimeout(invEx);removeInv();schedInv();checkAchievements();}
   invEl.addEventListener("pointerdown",collect);
   invEl.addEventListener("touchstart",collect,{passive:false});
-  area.appendChild(invEl);SFX.investorAppear();
+  document.body.appendChild(invEl);SFX.investorAppear();
   invEx=setTimeout(()=>{removeInv();schedInv();},5e3);}
 function removeInv(){if(invEl){invEl.remove();invEl=null;}S.investorActive=false;}
 
