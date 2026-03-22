@@ -422,22 +422,28 @@ function updateBuffs(dt){S.buffs=S.buffs.filter(b=>{b.remaining-=dt;return b.rem
 let invEl=null,invTo=null,invEx=null;
 function schedInv(){invTo=setTimeout(spawnInv,(30+Math.random()*60)*1e3);}
 function spawnInv(){if(S.investorActive)return;S.investorActive=true;
+  let collected=false;
   invEl=document.createElement("div");
-  invEl.style.cssText="position:fixed;width:50px;height:50px;border-radius:50%;background:linear-gradient(135deg,#fbbf24,#f59e0b);box-shadow:0 0 20px rgba(251,191,36,.6);cursor:pointer;z-index:90;display:flex;align-items:center;justify-content:center;font-size:24px;animation:invBounce 1s ease-in-out infinite";
+  invEl.style.cssText="position:absolute;width:50px;height:50px;border-radius:50%;background:linear-gradient(135deg,#fbbf24,#f59e0b);box-shadow:0 0 20px rgba(251,191,36,.6);cursor:pointer;z-index:20;display:flex;align-items:center;justify-content:center;font-size:24px;animation:invBounce 1s ease-in-out infinite;pointer-events:auto";
   invEl.textContent="\uD83D\uDC54";
-  // Random position on screen (avoid edges)
-  invEl.style.left=(15+Math.random()*60)+"%";
-  invEl.style.top=(15+Math.random()*30)+"%";
+  // Position inside tap area
+  const area=document.getElementById("orbArea");
+  const r=area.getBoundingClientRect();
+  invEl.style.left=(10+Math.random()*(r.width-70))+"px";
+  invEl.style.top=(5+Math.random()*(r.height-60))+"px";
   const m=30+Math.floor(Math.random()*70);
-  function collect(e){e.preventDefault();e.stopPropagation();
-    const r=tapPower()*m;S.dust+=r;S.lifetimeDust+=r;S.allTimeDust+=r;S.investorsCollected++;
+  function collect(e){
+    if(collected)return; // prevent double-collect
+    collected=true;
+    e.preventDefault();e.stopPropagation();
+    const rv=tapPower()*m;S.dust+=rv;S.lifetimeDust+=rv;S.allTimeDust+=rv;S.investorsCollected++;
     screenFlash("rgba(251,191,36,0.3)");SFX.investorCollect();
     if(navigator.vibrate)navigator.vibrate([30,20,30]);
-    showToast("INVESTOR!","$"+fmt(r)+" deal closed!");
+    showToast("INVESTOR!","$"+fmt(rv)+" deal closed!");
     clearTimeout(invEx);removeInv();schedInv();checkAchievements();}
   invEl.addEventListener("pointerdown",collect);
   invEl.addEventListener("touchstart",collect,{passive:false});
-  document.body.appendChild(invEl);SFX.investorAppear();
+  area.appendChild(invEl);SFX.investorAppear();
   invEx=setTimeout(()=>{removeInv();schedInv();},5e3);}
 function removeInv(){if(invEl){invEl.remove();invEl=null;}S.investorActive=false;}
 
