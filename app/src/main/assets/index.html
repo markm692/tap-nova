@@ -177,7 +177,25 @@ html,body{width:100%;height:100%;overflow:hidden;background:#0f172a;font-family:
 
 <script>
 // === DEBUG ===
-(function(){window._dbg=function(){};window.onerror=function(m,s,l){console.error("L"+l+": "+m);return false;};})();
+(function(){
+  const d=document.createElement("div");
+  d.style.cssText="position:fixed;bottom:0;left:0;right:0;max-height:45%;overflow-y:auto;background:rgba(0,0,0,.95);color:#0f0;font:11px monospace;padding:8px;z-index:9999;display:none;user-select:text;-webkit-user-select:text";
+  document.body.appendChild(d);
+  const t=document.createElement("div");
+  t.textContent="DBG";
+  t.style.cssText="position:fixed;bottom:4px;right:4px;background:#ef4444;color:#fff;font:bold 10px sans-serif;padding:3px 7px;border-radius:4px;z-index:10000;cursor:pointer";
+  document.body.appendChild(t);
+  let v=false;
+  t.addEventListener("click",()=>{v=!v;d.style.display=v?"block":"none";});
+  function log(m,c){const e=document.createElement("div");e.style.cssText="color:"+(c||"#0f0")+";margin:1px 0;user-select:text;-webkit-user-select:text";e.textContent=new Date().toLocaleTimeString()+": "+m;d.appendChild(e);d.scrollTop=d.scrollHeight;if(d.children.length>150)d.removeChild(d.firstChild);}
+  window._dbg=log;
+  window.onerror=function(m,s,l,c,e){log("ERROR L"+l+": "+m,"#f44");return false;};
+  window.addEventListener("unhandledrejection",function(e){log("PROMISE: "+e.reason,"#f84");});
+  const oLog=console.log,oErr=console.error;
+  console.log=function(){oLog.apply(console,arguments);log(Array.from(arguments).join(" "),"#0f0");};
+  console.error=function(){oErr.apply(console,arguments);log(Array.from(arguments).join(" "),"#f44");};
+  log("Debug ready","#0ff");
+})();
 
 // === ACHIEVEMENTS (before achievBonus) ===
 const ACHIEVEMENTS=[
@@ -523,7 +541,7 @@ function buildShop(){try{
   if(ag>0)h+=`<div class="btn-sp btn-global" data-a="global">GO GLOBAL +${fmt(ag)} Legacy (+${fmt(ag*25)}%)</div>`;
   shop.innerHTML=h;
   document.getElementById("wheelNotif").style.display=wr?"block":"none";
-}catch(e){console.error("buildShop:",e);shop.innerHTML='<div style="color:#ef4444;padding:10px;font-size:11px">Shop error: '+e.message+'</div>';}}
+}catch(e){window._dbg("buildShop CRASH: "+e.message+" "+e.stack,"#f44");shop.innerHTML='<div style="color:#ef4444;padding:10px;font-size:11px">Error: '+e.message+'</div>';}}
 shop.addEventListener("pointerdown",e=>{
   // Collect payout
   const biz=e.target.closest("[data-biz]");
@@ -583,13 +601,18 @@ achievTimer+=dt;if(achievTimer>=2){achievTimer=0;checkAchievements();checkUnlock
 updateUI();requestAnimationFrame(tick);}
 
 // === INIT ===
+window._dbg("=== INIT START ===","#ff0");
+try{
 const offlineSec=load();
+window._dbg("load done, offline="+offlineSec+"s","#0ff");
 initRivals();initWeekly();
 if(offlineSec>0)applyOffline(offlineSec);
-// Auto-start managed businesses
 for(let i=0;i<BIZ.length;i++)if(S.managers[i]&&S.gens[i].count>0)S.gens[i].running=true;
+window._dbg("calling updateUI...","#0ff");
 updateUI();
+window._dbg("updateUI done, starting loop","#0f0");
 requestAnimationFrame(tick);
+}catch(e){window._dbg("INIT CRASH: "+e.message+" at "+e.stack,"#f44");}
 schedInv();schedBoss();
 setTimeout(()=>checkStreak(),500);
 setInterval(save,15e3);
