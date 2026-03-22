@@ -511,6 +511,15 @@ function buildMore(){const el=document.getElementById("moreList");let h=`<div cl
 
 // === UI ===
 const dustVal=document.getElementById("dustVal"),rateVal=document.getElementById("rateVal"),novaInfo=document.getElementById("novaInfo");
+function updateUI(){
+  dustVal.textContent=fmt(S.dust);
+  rateVal.textContent=fmt(totalRate())+"/s";
+  let info=[];
+  if(S.shares>0)info.push("Clout: "+fmt(S.shares));
+  if(S.legacy>0)info.push("Influence: "+fmt(S.legacy));
+  novaInfo.textContent=info.join(" | ");
+  buildShop();
+}
 
 // === GAME LOOP ===
 let lastTick=performance.now(),achievTimer=0,autoAccum=0;
@@ -523,9 +532,6 @@ for(let i=0;i<BIZ.length;i++){const g=S.gens[i];const bar=document.getElementByI
 const ar=getAutoTapRate();if(ar>0){autoAccum+=dt;const t=Math.floor(autoAccum*ar);if(t>0){autoAccum-=t/ar;const cx=orbArea.getBoundingClientRect();for(let i=0;i<t;i++)doTap(cx.width/2,cx.height/2,true);}}
 // Burst buff
 const burst=S.buffs.find(b=>b.type==="autoburst");if(burst){const t=Math.floor(dt*burst.value);const cx=orbArea.getBoundingClientRect();for(let i=0;i<t;i++)doTap(cx.width/2,cx.height/2,true);}
-// Salary deduction
-if(sal>0&&S.dust>0)S.dust=Math.max(0,S.dust-sal);
-// Reputation & demand
 updateCombo(dt);updateBuffs(dt);updateBoss(dt);
 if(S.wheelCooldown>0)S.wheelCooldown=Math.max(0,S.wheelCooldown-dt);
 if(S.mgCooldown>0)S.mgCooldown=Math.max(0,S.mgCooldown-dt);
