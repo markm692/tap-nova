@@ -201,8 +201,8 @@ html,body{width:100%;height:100%;overflow:hidden;background:#0f172a;font-family:
 // === BIZ CONFIG ===
 const BIZ=[
 {name:"Blog Post",icon:"📝",baseCost:4,basePayout:1,baseTime:.6,unlock:0,mgrCost:100},
-{name:"TikTok",icon:"📱",baseCost:60,basePayout:15,baseTime:3,unlock:50,mgrCost:2e3},
-{name:"YouTube Channel",icon:"🎬",baseCost:720,basePayout:100,baseTime:6,unlock:500,mgrCost:5e4},
+{name:"Short Clips",icon:"📱",baseCost:60,basePayout:15,baseTime:3,unlock:50,mgrCost:2e3},
+{name:"Video Channel",icon:"🎬",baseCost:720,basePayout:100,baseTime:6,unlock:500,mgrCost:5e4},
 {name:"Podcast",icon:"🎙",baseCost:8640,basePayout:1200,baseTime:12,unlock:5e3,mgrCost:5e5},
 {name:"Merch Store",icon:"👕",baseCost:1036800,basePayout:1e4,baseTime:24,unlock:1e5,mgrCost:5e6},
 {name:"Online Course",icon:"🎓",baseCost:29859840,basePayout:1e5,baseTime:48,unlock:1e6,mgrCost:5e7},
@@ -502,7 +502,7 @@ shop.addEventListener("pointerdown",e=>{
 function buildSkills(){const el=document.getElementById("skillList");let h=`<div class="section-title">SHARES: ${fmt(S.shares)}</div>`;for(const sk of SKILLS){const owned=hs(sk.id),locked=sk.req&&!hs(sk.req),can=!owned&&!locked&&S.shares>=sk.cost;h+=`<div class="item${owned?" owned":""}${can?" affordable":""}${locked?" locked":""}" data-sk="${sk.id}"><div class="item-icon">${sk.icon}</div><div class="item-info"><div class="item-name">${sk.name}</div><div class="item-desc">${sk.desc}</div></div><div class="item-val">${owned?"OWNED":sk.cost}</div></div>`;}el.innerHTML=h;}
 document.getElementById("skillList").addEventListener("pointerdown",e=>{const el=e.target.closest("[data-sk]");if(!el)return;const id=el.dataset.sk,sk=SKILLS.find(s=>s.id===id);if(!sk||hs(id)||(sk.req&&!hs(sk.req))||S.shares<sk.cost)return;S.shares-=sk.cost;S.skills[id]=true;SFX.achievement();showToast("Perk!",sk.name);buildSkills();save();});
 
-const RIVALS=["TikTokTina","VlogKing","PodcastPro","ReelsMaster","StreamerKid"];
+const RIVALS=["Short ClipsTina","VlogKing","PodcastPro","ReelsMaster","StreamerKid"];
 function initRivals(){if(!S.rivalSeed)S.rivalSeed=Date.now();}
 function initWeekly(){const w="w"+Math.floor(Date.now()/(7*864e5));if(S.weeklyWeek!==w){S.weeklyWeek=w;S.weeklyProgress=0;S.weeklyTarget=Math.max(1e4,S.allTimeDust*.5)||1e4;}}
 function buildRivals(){const el=document.getElementById("rivalList");let h="";initWeekly();const wp=Math.min(S.weeklyProgress/S.weeklyTarget,1);h+=`<div class="weekly">${wp>=1?"COMPLETE!":"WEEKLY: "+fmt(S.weeklyTarget)}<div class="weekly-bar"><div class="weekly-bar-fill" style="width:${wp*100}%"></div></div></div>`;h+=`<div class="section-title">LEADERBOARD</div>`;const now=Date.now(),el2=(now-S.rivalSeed)/1e3;const rivals=RIVALS.map((n,i)=>{const r=[.3,.6,1,1.5,.8][i],b=[500,2e3,8e3,5e4,1e3][i];return{name:n,dust:b+el2*r*Math.pow(1.02,el2/3600)*b*.01};});const all=[...rivals,{name:"YOU",dust:S.allTimeDust,isYou:true}];all.sort((a,b)=>b.dust-a.dust);all.forEach((r,i)=>{h+=`<div class="item${r.isYou?" owned":""}"><div class="item-icon" style="font-size:14px;font-weight:700;color:${r.isYou?"#f06292":"#64748b"}">#${i+1}</div><div class="item-info"><div class="item-name">${r.name}</div><div class="item-desc">$${fmt(r.dust)}</div></div></div>`;});el.innerHTML=h;}
