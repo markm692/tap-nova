@@ -455,9 +455,12 @@ function buildShop(){try{
       </div>
       ${timeFull?'<div class="biz-collect">COLLECT</div>':""}
     </div>`;
-    // AI Writer button
-    if(g.count>0&&!managed){
-      h+=`<div class="buy-row"><div class="buy-btn mgr${S.dust<b.mgrCost?" disabled":""}" data-a="mgr" data-i="${i}">\uD83D\uDC64 Hire AI Writer — ${fmt(b.mgrCost)}</div></div>`;
+    // Buy + AI Writer buttons
+    if(unlocked){
+      h+=`<div class="buy-row">`;
+      h+=`<div class="buy-btn buy${!canBuy?" disabled":""}" data-buy="${i}">BUY +1 — ${fmt(cost)}</div>`;
+      if(g.count>0&&!managed)h+=`<div class="buy-btn mgr${S.dust<b.mgrCost?" disabled":""}" data-a="mgr" data-i="${i}">Hire Editor ${fmt(b.mgrCost)}</div>`;
+      h+=`</div>`;
     }
   }
   // Prestige
@@ -470,17 +473,21 @@ function buildShop(){try{
 }catch(e){window._dbg("buildShop CRASH: "+e.message+" "+e.stack,"#f44");shop.innerHTML='<div style="color:#ef4444;padding:10px;font-size:11px">Error: '+e.message+'</div>';}}
 shop.addEventListener("pointerdown",e=>{
   // Collect payout
+  // Buy button
+  const buyBtn=e.target.closest("[data-buy]");
+  if(buyBtn){const i=parseInt(buyBtn.dataset.buy);const g=S.gens[i];
+    const c=bizCost(i);
+    if(S.dust>=c){S.dust-=c;g.count++;if(g.count===1)g.running=true;SFX.buy();checkUnlocks();}
+    return;}
+  // Business card tap — collect or start timer
   const biz=e.target.closest("[data-biz]");
   if(biz){const i=parseInt(biz.dataset.biz);const g=S.gens[i];
-    // If clicking the cost/buy area, or business has 0 count — buy it
-    const clickedCost=e.target.closest(".biz-cost")||e.target.closest(".biz-cost-label");
-    if(clickedCost||g.count===0){
+    if(g.count===0){// First buy
       const c=bizCost(i);
-      if(S.dust>=c){S.dust-=c;g.count++;if(g.count===1)g.running=true;SFX.buy();checkUnlocks();}
+      if(S.dust>=c){S.dust-=c;g.count++;g.running=true;SFX.buy();checkUnlocks();}
     }
-    // Otherwise start/collect timer
     else if(g.timer>=bizTime(i)){collectBiz(i);}
-    else if(!g.running&&g.count>0){g.running=true;g.timer=0;}
+    else if(!g.running){g.running=true;g.timer=0;}
     return;}
   const btn=e.target.closest("[data-a]");if(!btn)return;
   const a=btn.dataset.a;
